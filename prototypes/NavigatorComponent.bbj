@@ -11,7 +11,12 @@ rem  * A sample BBj Widget Implementation
 rem  */
 class public NavigatorComponent extends AbstractBCBoundWidget
 
-    field private BBjNavigator nav!
+REM     field private BBjNavigator nav!
+    field private BBjToolButton btn_first!
+    field private BBjToolButton btn_last!
+    field private BBjToolButton btn_previous!
+    field private BBjToolButton btn_next!
+    field private BBjInputE     input_display!
         
     rem --------------------- constructors -------------------------------------
     
@@ -44,22 +49,76 @@ class public NavigatorComponent extends AbstractBCBoundWidget
     rem  */
     method public void redraw(Boolean f_init!)
         if (f_init!) then
-            #nav! = #getCanvas().addNavigator(100,0,0,#getWidth(),#getHeight(),"navigate")
-            #nav!.setCallback(BBjAPI.ON_NAV_FIRST,#this!,"onNavFirst")
-            #nav!.setCallback(BBjAPI.ON_NAV_LAST,#this!,"onNavLast")
-            #nav!.setCallback(BBjAPI.ON_NAV_PREVIOUS,#this!,"onNavPrev")
-            #nav!.setCallback(BBjAPI.ON_NAV_NEXT,#this!,"onNavNext")
+            #generateNavigator(100,0,0,#getWidth(),#getHeight(),"navigate")
+REM             #nav! = #getCanvas().addNavigator(100,0,0,#getWidth(),#getHeight(),"navigate")
+REM             #nav!.setCallback(BBjAPI.ON_NAV_FIRST,#this!,"onNavFirst")
+REM             #nav!.setCallback(BBjAPI.ON_NAV_LAST,#this!,"onNavLast")
+REM             #nav!.setCallback(BBjAPI.ON_NAV_PREVIOUS,#this!,"onNavPrev")
+REM             #nav!.setCallback(BBjAPI.ON_NAV_NEXT,#this!,"onNavNext")
+            #btn_first!.setCallback(BBjAPI.ON_TOOL_BUTTON_PUSH,#this!,"onNavFirst")
+            #btn_last!.setCallback(BBjAPI.ON_TOOL_BUTTON_PUSH,#this!,"onNavLast")
+            #btn_previous!.setCallback(BBjAPI.ON_TOOL_BUTTON_PUSH,#this!,"onNavPrev")
+            #btn_next!.setCallback(BBjAPI.ON_TOOL_BUTTON_PUSH,#this!,"onNavNext")
         FI
-            
-        #nav!.setSize(#getWidth(),#getHeight())
-
+        #resizeComponents(#getWidth(),#getHeight())
+    methodend
+    
+    method private void generateNavigator(BBjNumber ID, BBjNumber x, BBjNumber y, BBjNumber width, BBjNumber height, String title!)
+        #btn_first!     = #getCanvas().addToolButton(#getCanvas().getAvailableControlID(), x,y,height,height,"")
+        #btn_previous!  = #getCanvas().addToolButton(#getCanvas().getAvailableControlID(), x + height,y,height,height,"")
+        #btn_last!      = #getCanvas().addToolButton(#getCanvas().getAvailableControlID(), x + width - height,y,height,height,"")
+        #btn_next!      = #getCanvas().addToolButton(#getCanvas().getAvailableControlID(), x + width - (2 * height) ,y,height,height,"")
+        displayWidth!   = #btn_next!.getX() - #btn_previous!.getX() - height
+        #input_display! = #getCanvas().addInputE(#getCanvas().getAvailableControlID(), x + (2 * height),y,displayWidth!,height,"")
+        #btn_first!.setImageFile("BusinessUIComponents\icon\ic_first_page_black_24dp.png")
+        #btn_previous!.setImageFile("BusinessUIComponents\icon\ic_chevron_left_black_24dp.png")
+        #btn_last!.setImageFile("BusinessUIComponents\icon\ic_last_page_black_24dp.png")
+        #btn_next!.setImageFile("BusinessUIComponents\icon\ic_chevron_right_black_24dp.png")
+        #btn_first!.setImageSize(height, height)
+        #btn_previous!.setImageSize(height, height)
+        #btn_last!.setImageSize(height, height)
+        #btn_next!.setImageSize(height, height)
+    methodend
+    
+    method public void resizeComponents(BBjNumber width!, BBjNumber height!)
+        x = 0
+        y = 0
+        #btn_first!.setLocation(x,y)
+        #btn_first!.setSize(height!, height!)
+        #btn_previous!.setLocation(x + height!,y)
+        #btn_previous!.setSize(height!, height!)
+        #btn_last!.setLocation(x + width! - height!,y)
+        #btn_last!.setSize(height!, height!)
+        #btn_next!.setLocation(x + width! - (2 * height!),y)
+        #btn_next!.setSize(height!, height!)
+        #input_display!.setLocation(x + (2 * height!),y)
+        displayWidth!   = #btn_next!.getX() - #btn_previous!.getX() - height!
+        #input_display!.setSize(displayWidth!, height!)
+        #btn_first!.setImageSize(height!, height!)
+        #btn_previous!.setImageSize(height!, height!)
+        #btn_last!.setImageSize(height!, height!)
+        #btn_next!.setImageSize(height!, height!)
     methodend
 
 
     method private void updateScreen()
-            sel! = #getBinder().getSelection()
-            rs! = #getBinder().getRS()
-            #nav!.setText(str(#getBinder().getRS())+ " selected "+str(sel!))
+        sel! = #getBinder().getSelection()
+        rs! = #getBinder().getRS()
+        if rs! <> null() then
+            max = rs!.size()
+        else
+            max = 0
+        endif
+        if sel! <> null() then
+            count = sel!.size()
+        else
+            count = 0
+        endif
+        text! = str(count) + " of " + str(max) + " selected"
+        if count = 1 then
+            text! = text! + ": " + cast(DataRow, rs!.get(sel!.get(0))).toJson(0)
+        endif
+        #input_display!.setText(text!)
     methodend
     
     method public void onSetData()
@@ -70,19 +129,19 @@ class public NavigatorComponent extends AbstractBCBoundWidget
         #updateScreen()
     methodend
 
-    method public void onNavFirst( BBjNavigatorMoveFirstEvent ev! )
+    method public void onNavFirst( BBjToolButtonPushEvent ev! )
         #getBinder().setSelection(BCBinder.SEL_FIRST)
     methodend
     
-    method public void onNavNext ( BBjNavigatorMoveNextEvent ev! )
+    method public void onNavNext ( BBjToolButtonPushEvent ev! )
         #getBinder().setSelection(BCBinder.SEL_NEXT)
     methodend
     
-    method public void onNavPrev( BBjNavigatorMovePreviousEvent ev! )
+    method public void onNavPrev( BBjToolButtonPushEvent ev! )
         #getBinder().setSelection(BCBinder.SEL_PREVIOUS)
     methodend
     
-    method public void onNavLast( BBjNavigatorMoveLastEvent ev! )
+    method public void onNavLast( BBjToolButtonPushEvent ev! )
         #getBinder().setSelection(BCBinder.SEL_LAST)
     methodend
 

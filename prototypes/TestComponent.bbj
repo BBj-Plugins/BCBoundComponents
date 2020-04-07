@@ -1,4 +1,5 @@
 use ::BusinessUIComponents/AbstractBCBoundWidget.bbj::AbstractBCBoundWidget
+use ::BusinessUIComponents/prototypes/NavigatorComponent.bbj::NavigatorComponent
 use ::BBjGridExWidget/BBjGridExWidget.bbj::BBjGridExWidget
 use com.basiscomponents.bc.BCBound
 use com.basiscomponents.bc.BCBinder
@@ -11,7 +12,7 @@ rem  * A sample BBj Widget Implementation
 rem  */
 class public TestComponent extends AbstractBCBoundWidget
 
-    field private BBjNavigator nav!
+    field private NavigatorComponent nav!
     field private BBjCEdit dump!
     field private BBjCheckBox veto_selection!
         
@@ -46,13 +47,15 @@ class public TestComponent extends AbstractBCBoundWidget
     rem  */
     method public void redraw(Boolean f_init!)
         if (f_init!) then
-            #nav! = #getCanvas().addNavigator(100,10,#getHeight()-30,#getWidth()-20,20,"navigate")
+            #nav! = new NavigatorComponent(#getCanvas(), 100, 10,#getHeight()-30,#getWidth()-20,20)
+REM             #nav! = new NavigatorComponent(#getCanvas().getParentWindow(), 333, 10,10,#getWidth()-20,20)
+REM             #nav! = #getCanvas().addNavigator(100,10,#getHeight()-30,#getWidth()-20,20,"navigate")
             #dump! = #getCanvas().addCEdit(101,10,10,#getWidth()-20,#getHeight()-100,"(record shows here)")
             
-            #nav!.setCallback(BBjAPI.ON_NAV_FIRST,#this!,"onNavFirst")
-            #nav!.setCallback(BBjAPI.ON_NAV_LAST,#this!,"onNavLast")
-            #nav!.setCallback(BBjAPI.ON_NAV_PREVIOUS,#this!,"onNavPrev")
-            #nav!.setCallback(BBjAPI.ON_NAV_NEXT,#this!,"onNavNext")
+REM             #nav!.setCallback(BBjAPI.ON_NAV_FIRST,#this!,"onNavFirst")
+REM             #nav!.setCallback(BBjAPI.ON_NAV_LAST,#this!,"onNavLast")
+REM             #nav!.setCallback(BBjAPI.ON_NAV_PREVIOUS,#this!,"onNavPrev")
+REM             #nav!.setCallback(BBjAPI.ON_NAV_NEXT,#this!,"onNavNext")
             
             #veto_selection! = #getCanvas().addCheckBox(102,10,#getHeight()-80,200,20,"Veto Sel Change")
             
@@ -80,6 +83,14 @@ class public TestComponent extends AbstractBCBoundWidget
             wend
             #dump!.setText(x$)
             
+    methodend
+    
+    rem /**
+    rem  * @override
+    rem  */
+    method public void setBinder(BCBinder binder!)
+        #super!.setBinder(binder!)
+        binder!.register(#nav!)
     methodend
     
     method public void onSetData()
