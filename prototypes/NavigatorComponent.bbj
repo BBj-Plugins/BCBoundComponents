@@ -50,11 +50,6 @@ REM     field private BBjNavigator nav!
     method public void redraw(Boolean f_init!)
         if (f_init!) then
             #generateNavigator(100,0,0,#getWidth(),#getHeight(),"navigate")
-REM             #nav! = #getCanvas().addNavigator(100,0,0,#getWidth(),#getHeight(),"navigate")
-REM             #nav!.setCallback(BBjAPI.ON_NAV_FIRST,#this!,"onNavFirst")
-REM             #nav!.setCallback(BBjAPI.ON_NAV_LAST,#this!,"onNavLast")
-REM             #nav!.setCallback(BBjAPI.ON_NAV_PREVIOUS,#this!,"onNavPrev")
-REM             #nav!.setCallback(BBjAPI.ON_NAV_NEXT,#this!,"onNavNext")
             #btn_first!.setCallback(BBjAPI.ON_TOOL_BUTTON_PUSH,#this!,"onNavFirst")
             #btn_last!.setCallback(BBjAPI.ON_TOOL_BUTTON_PUSH,#this!,"onNavLast")
             #btn_previous!.setCallback(BBjAPI.ON_TOOL_BUTTON_PUSH,#this!,"onNavPrev")
@@ -83,6 +78,9 @@ REM             #nav!.setCallback(BBjAPI.ON_NAV_NEXT,#this!,"onNavNext")
     method public void resizeComponents(BBjNumber width!, BBjNumber height!)
         x = 0
         y = 0
+        if width! < (4*height!) then
+            width! = 4*height!
+        endif
         #btn_first!.setLocation(x,y)
         #btn_first!.setSize(height!, height!)
         #btn_previous!.setLocation(x + height!,y)
@@ -91,9 +89,9 @@ REM             #nav!.setCallback(BBjAPI.ON_NAV_NEXT,#this!,"onNavNext")
         #btn_last!.setSize(height!, height!)
         #btn_next!.setLocation(x + width! - (2 * height!),y)
         #btn_next!.setSize(height!, height!)
-        #input_display!.setLocation(x + (2 * height!),y)
+        #input_display!.setLocation(x + (2 * height!),y + 1)
         displayWidth!   = #btn_next!.getX() - #btn_previous!.getX() - height!
-        #input_display!.setSize(displayWidth!, height!)
+        #input_display!.setSize(displayWidth!, height! - 2)
         #btn_first!.setImageSize(height!, height!)
         #btn_previous!.setImageSize(height!, height!)
         #btn_last!.setImageSize(height!, height!)
