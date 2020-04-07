@@ -1,0 +1,56 @@
+use ::BusinessGrid/ExampleBCs/ChileCustomerBC.bbj::ChileCustomerBC
+use ::BusinessGrid/BusinessGrid.bbj::BusinessGrid
+use ::BusinessUIComponents/prototypes/TestComponent.bbj::TestComponent
+use ::BusinessUIComponents/prototypes/NavigatorComponent.bbj::NavigatorComponent
+use ::BusinessUIComponents/prototypes/EditToolbarComponent.bbj::EditToolbarComponent
+use ::BusinessUIComponents/prototypes/SimpleFormComponent.bbj::SimpleFormComponent
+use ::BusinessUIComponents/unbound/HorizontalSplitter.bbj::HorizontalSplitter
+use com.basiscomponents.bc.BCBinder
+
+
+ARC$="BusinessUIComponents/Demo/DirtyDemo.arc"
+CWID=100
+BC$="ChileCustomerBC"
+
+? 'HIDE'
+wnd! = BBjAPI().openSysGui("X0").addWindow(10,10,900,600,"BBj Grid Ex Demo")
+wnd!        .setCallback(BBjAPI.ON_CLOSE,"byebye")
+wnd!        .setCallback(BBjAPI.ON_RESIZE,"resize")
+
+nav! = new NavigatorComponent(wnd!,100,5,5,200,20)
+edittb! = new EditToolbarComponent(wnd!,101,208,2,450,30)
+
+splitter! = new HorizontalSplitter(wnd!,102,0,30,900,570)
+
+bgrid! = new BusinessGrid(splitter!.getTopCanvas(),100,0,0,400,200)
+splitter!.setTopCtrl(bgrid!)
+
+form! = new SimpleFormComponent(splitter!.getBottomCanvas(),100,0,0,400,20)
+form!.setForm(arc$,cwid)
+splitter!.setBottomCtrl(form!)
+
+bc! = eval("new "+BC$+"()")
+
+binder! = new BCBinder(bc!)
+binder!.register(nav!)
+binder!.register(edittb!)
+binder!.register(form!)
+binder!.register(bgrid!)
+
+binder!.retrieve()
+
+
+process_events
+
+resize:
+  BBjAPI().removeTimer("resize",err=*next)
+  ev! = BBjAPI().getLastEvent()
+  BBjAPI().createTimer("resize",.7,"delayed_resize")
+  
+delayed_resize:
+  BBjAPI().removeTimer("resize",err=*next)
+  splitter!.setSize(ev!.getWidth(),ev!.getHeight()-30)
+return
+
+byebye:
+    bye
