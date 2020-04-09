@@ -48,17 +48,17 @@ class public EditToolbarComponent extends AbstractBCBoundWidget
     rem  */
     method public void redraw(Boolean f_init!)
         if (f_init!) then
-            #btn_new! = #getCanvas().addToolButton(100,0,10,20,20,"NEW")
+            #btn_new! = #getCanvas().addToolButton(100,0,0,20,20,"NEW")
             #btn_new!.setCallback(BBjAPI.ON_TOOL_BUTTON_PUSH,#this!,"onBtnNew")
             #btn_new!.setImageFile("BusinessUIComponents\icon\ic_add_black_24dp.png")
             #btn_new!.setImageSize(20, 20)
             
-            #btn_save! = #getCanvas().addToolButton(101,20,10,20,20,"SAVE")
+            #btn_save! = #getCanvas().addToolButton(101,20,0,20,20,"SAVE")
             #btn_save!.setCallback(BBjAPI.ON_TOOL_BUTTON_PUSH,#this!,"onBtnSave")
             #btn_save!.setImageFile("BusinessUIComponents\icon\ic_save_black_24dp.png")
             #btn_save!.setImageSize(20, 20)
             
-            #btn_delete! = #getCanvas().addToolButton(102,40,10,20,20,"DELETE")
+            #btn_delete! = #getCanvas().addToolButton(102,40,0,20,20,"DELETE")
             #btn_delete!.setCallback(BBjAPI.ON_TOOL_BUTTON_PUSH,#this!,"onBtnDelete")
             #btn_delete!.setImageFile("BusinessUIComponents\icon\ic_close_black_24dp.png")
             #btn_delete!.setImageSize(20, 20)
