@@ -1,0 +1,95 @@
+REM /**
+REM  * SearchBar.bbj
+REM  * @author jcorea
+REM  *
+REM  */
+
+
+use ::BusinessUIComponents/AbstractBCBoundWidget.bbj::AbstractBCBoundWidget
+use ::BBjGridExWidget/BBjGridExWidget.bbj::BBjGridExWidget
+use com.basiscomponents.bc.BCBound
+use com.basiscomponents.bc.BCBinder
+
+use com.basiscomponents.db.ResultSet
+use com.basiscomponents.db.DataRow
+
+rem /**
+rem  * A sample BBj Widget Implementation
+rem  */
+class public SearchBar extends AbstractBCBoundWidget
+
+    field private BBjToolButton btn_retrieve!
+    field private BBjInputE searchField!
+    
+        
+    rem --------------------- constructors -------------------------------------
+    
+    rem /**
+    rem  * disabled default constructor
+    rem  */
+    method private SearchBar()
+    methodend
+
+    rem /**
+    rem  * The constructor that creates the widget on wnd!
+    rem * @param BBjWindow wnd!: parent window
+    rem * @param BBjInt id: the control ID
+    rem * @param BBjInt x: x-location
+    rem * @param BBjInt y: y-location
+    rem * @param BBjInt w: width
+    rem * @param BBjInt h: height
+    rem */
+    method public SearchBar(BBjWindow wnd!, BBjInt id!, BBjInt x!, BBjInt y!, BBjInt w!, BBjInt h!)
+        #super!.create(wnd!,id!,x!,y!,w!,h!)
+    methodend
+    
+
+    rem ---------------------- methods from BBjWidget -------------------------------- 
+
+    rem /**
+    rem  * @Override
+    rem  * This method is called whenever the widget needs to be rendered
+    rem  * @param Boolean f_init!: if TRUE the control is rendered for the first time so this method has to perform initial rendering
+    rem  */
+    method public void redraw(Boolean f_init!)
+        if (f_init!) then
+            #btn_retrieve! = #getCanvas().addToolButton(100,#getWidth() - 20,0,#getHeight(),#getHeight(),"")
+            #btn_retrieve!.setCallback(BBjAPI.ON_TOOL_BUTTON_PUSH,#this!,"onBtnRetrieve")
+            #btn_retrieve!.setImageFile("BusinessUIComponents\icon\ic_search_black_24dp.png")
+            #btn_retrieve!.setImageSize(20, 20)
+            
+            #searchField! = #getCanvas().addInputE(101,0,1,#getWidth() - 20,#getHeight() - 2)
+        FI
+        
+    methodend
+
+    method public void onBtnRetrieve( BBjToolButtonPushEvent ev! )
+        searchString! = #searchField!.getText()
+        binder! = #getBinder()
+        bc! = binder!.getBC()
+        filter! = bc!.getFilter()
+        if filter! = null() then filter! = new DataRow()
+        if searchString!.trim().equals("") then
+            filter!.removeField("_SEARCH", err=*next)
+        else
+            filter!.setFieldValue("_SEARCH", "*" + searchString! + "*")
+        endif
+        bc!.setFilter(filter!)
+        binder!.retrieve()
+    methodend
+
+    method public void onSignal(int signal!, Object payload!)
+    methodend
+    
+    method public void onSetSelection()
+    methodend
+
+    method public void onSetData()
+    methodend
+    
+    method public Boolean canSetSelection()
+        methodret BBjAPI.TRUE
+    methodend
+    
+
+classend

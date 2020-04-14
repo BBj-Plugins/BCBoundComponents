@@ -4,8 +4,10 @@ use ::BusinessUIComponents/prototypes/TestComponent.bbj::TestComponent
 use ::BusinessUIComponents/prototypes/NavigatorComponent.bbj::NavigatorComponent
 use ::BusinessUIComponents/prototypes/EditToolbarComponent.bbj::EditToolbarComponent
 use ::BusinessUIComponents/prototypes/SimpleFormComponent.bbj::SimpleFormComponent
+use ::BusinessUIComponents/prototypes/SearchBar.bbj::SearchBar
 use ::BusinessUIComponents/unbound/HorizontalSplitter.bbj::HorizontalSplitter
 use com.basiscomponents.bc.BCBinder
+use com.basiscomponents.db.DataRow
 
 
 ARC$="BusinessUIComponents/Demo/DirtyDemo.arc"
@@ -24,6 +26,8 @@ edittb! = new EditToolbarComponent(wnd!,101,5,10,60,30)
 
 splitter! = new HorizontalSplitter(wnd!,102,5,30,900,800)
 
+searchBar! = new SearchBar(wnd!,103,675, 10, 120, 20)
+
 bgrid! = new BusinessGrid(splitter!.getTopCanvas(),100,0,0,300,200)
 splitter!.setTopCtrl(bgrid!)
 
@@ -38,11 +42,12 @@ binder!.register(nav!)
 binder!.register(edittb!)
 binder!.register(form!)
 binder!.register(bgrid!)
+binder!.register(searchBar!)
 
 binder!.retrieve()
 
 splitter!.setSize(wnd!.getWidth() -10,wnd!.getHeight()-30)
-nav!.setSize(wnd!.getWidth()-90,20)
+nav!.setSize(wnd!.getWidth()-230,20)
 
 sysgui!.setRepaintEnabled(1)
 process_events
@@ -55,8 +60,8 @@ resize:
 delayed_resize:
   BBjAPI().removeTimer("resize",err=*next)
   splitter!.setSize(ev!.getWidth() -10 ,ev!.getHeight()-30)
-  nav!.setSize(ev!.getWidth()-90,20)
-REM   edittb!.setLocation(ev!.getWidth() -75 , edittb!.getY())
+  nav!.setSize(ev!.getWidth()-230,20)
+  searchBar!.setLocation(ev!.getWidth()-125, searchBar!.getY())
 return
 
 byebye:
