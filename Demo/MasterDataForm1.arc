@@ -1,0 +1,160 @@
+//#charset: windows-1252
+
+VERSION "4.0"
+
+CHILD-WINDOW 100 0 0 776 531
+BEGIN
+    ENTERASTAB
+    EVENTMASK 0
+    KEYBOARDNAVIGATION
+    NAME "Child Window100"
+    STATICTEXT 100, "Company:", 50, 25, 90, 25
+    BEGIN
+        NAME "Static Text100"
+        NOT WORDWRAP
+    END
+
+    INPUTE 101, "", 150, 25, 206, 25
+    BEGIN
+        NAME "COMPANY"
+        PADCHARACTER 32
+        SPELLCHECKED
+        NOT DRAGENABLED
+    END
+
+    STATICTEXT 102, "Firstname:", 50, 56, 90, 25
+    BEGIN
+        NAME "Static Text102"
+        NOT WORDWRAP
+    END
+
+    INPUTE 103, "", 150, 56, 206, 25
+    BEGIN
+        NAME "FIRST_NAME"
+        PADCHARACTER 32
+        SPELLCHECKED
+        NOT DRAGENABLED
+    END
+
+    STATICTEXT 104, "Lastname:", 50, 86, 90, 25
+    BEGIN
+        NAME "Static Text104"
+        NOT WORDWRAP
+    END
+
+    INPUTE 105, "", 150, 87, 206, 25
+    BEGIN
+        NAME "LAST_NAME"
+        PADCHARACTER 32
+        SPELLCHECKED
+        NOT DRAGENABLED
+    END
+
+    STATICTEXT 107, "Billing Address:", 50, 117, 90, 25
+    BEGIN
+        NAME "Static Text107"
+        NOT WORDWRAP
+    END
+
+    STATICTEXT 109, "City:", 410, 25, 90, 25
+    BEGIN
+        NAME "Static Text109"
+        NOT WORDWRAP
+    END
+
+    STATICTEXT 106, "State:", 410, 56, 90, 25
+    BEGIN
+        NAME "Static Text106"
+        NOT WORDWRAP
+    END
+
+    STATICTEXT 110, "Country:", 410, 86, 90, 25
+    BEGIN
+        NAME "Static Text110"
+        NOT WORDWRAP
+    END
+
+    STATICTEXT 111, "Post Code:", 410, 118, 90, 25
+    BEGIN
+        NAME "Static Text111"
+        NOT WORDWRAP
+    END
+
+    STATICTEXT 112, "Phone:", 410, 149, 90, 25
+    BEGIN
+        NAME "Static Text112"
+        NOT WORDWRAP
+    END
+
+    STATICTEXT 113, "Fax:", 410, 180, 90, 25
+    BEGIN
+        NAME "Static Text113"
+        NOT WORDWRAP
+    END
+
+    INPUTE 114, "", 150, 118, 206, 25
+    BEGIN
+        NAME "BILL_ADDR1"
+        PADCHARACTER 32
+        SPELLCHECKED
+        NOT DRAGENABLED
+    END
+
+    INPUTE 115, "", 150, 149, 206, 25
+    BEGIN
+        NAME "BILL_ADDR2"
+        PADCHARACTER 32
+        SPELLCHECKED
+        NOT DRAGENABLED
+    END
+
+    INPUTE 108, "", 498, 25, 206, 25
+    BEGIN
+        NAME "CITY"
+        PADCHARACTER 32
+        SPELLCHECKED
+        NOT DRAGENABLED
+    END
+
+    INPUTE 116, "", 498, 56, 206, 25
+    BEGIN
+        NAME "STATE"
+        PADCHARACTER 32
+        SPELLCHECKED
+        NOT DRAGENABLED
+    END
+
+    INPUTE 117, "", 498, 87, 206, 25
+    BEGIN
+        NAME "COUNTRY"
+        PADCHARACTER 32
+        SPELLCHECKED
+        NOT DRAGENABLED
+    END
+
+    INPUTE 118, "", 498, 118, 206, 25
+    BEGIN
+        NAME "POST_CODE"
+        PADCHARACTER 32
+        SPELLCHECKED
+        NOT DRAGENABLED
+    END
+
+    INPUTE 119, "", 498, 149, 206, 25
+    BEGIN
+        NAME "PHONE"
+        PADCHARACTER 32
+        SPELLCHECKED
+        NOT DRAGENABLED
+    END
+
+    INPUTE 120, "", 498, 180, 206, 25
+    BEGIN
+        NAME "FAX"
+        PADCHARACTER 32
+        SPELLCHECKED
+        NOT DRAGENABLED
+    END
+
+END
+
