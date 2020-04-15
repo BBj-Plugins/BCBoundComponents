@@ -65,7 +65,7 @@ class public SimpleFormComponent extends AbstractBCBoundWidget
             n$=it!.next()
             #cw!.getControl(n$).setText("")
         wend
-        #cw!.setEnabled(0)
+        #cw!.setEnabled(1)
     methodend
 
     method private void updateScreen()
@@ -132,6 +132,35 @@ class public SimpleFormComponent extends AbstractBCBoundWidget
     
         #getBinder().sendSignal(BCBinder.SIGNAL_DIRTY)
     
+    methodend
+    
+    rem /**
+    rem  * returns the fields of the form with its values as a datarow, if the controlnames correlate to fields in the atributes record
+    rem  */
+    method public DataRow getFieldsForWrite()
+    rem if not enabled: do not return any fields
+        if !#cw!.isEnabled() then methodret new DataRow()
+        dr! = new DataRow()
+        it! = #fieldlist!.iterator()
+        rem add all control values where control name = field name in attributes record
+        while it!.hasNext()
+            field$ = it!.next() 
+            control! = #cw!.getControl(field$)
+            value! = control!.getText()
+            dr!.setFieldValue(field$, value!)
+        wend
+        methodret dr!
+    methodend
+    
+    method public void onSignal(int signal!, Object payload!)
+        binder! = #getBinder()
+        switch signal!
+            case binder!.SIGNAL_NEW
+                #clearForm()
+                break
+            case default
+                break
+        swend
     methodend
 
 classend

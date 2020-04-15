@@ -9,7 +9,7 @@ use ::BusinessUIComponents/unbound/HorizontalSplitter.bbj::HorizontalSplitter
 use com.basiscomponents.bc.BCBinder
 use com.basiscomponents.db.DataRow
 
-REM BBjAPI().getAdmin("guest", "").getEnvironment().reloadClasspath("components")
+BBjAPI().getAdmin("guest", "").getEnvironment().reloadClasspath("uicomponents")
 
 
 ARC$="BusinessUIComponents/Demo/MasterDataForm1.arc"

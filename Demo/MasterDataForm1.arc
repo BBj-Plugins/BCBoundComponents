@@ -8,13 +8,13 @@ BEGIN
     EVENTMASK 0
     KEYBOARDNAVIGATION
     NAME "Child Window100"
-    STATICTEXT 100, "Company:", 50, 25, 90, 25
+    STATICTEXT 100, "Company:", 50, 56, 90, 25
     BEGIN
         NAME "Static Text100"
         NOT WORDWRAP
     END
 
-    INPUTE 101, "", 150, 25, 206, 25
+    INPUTE 101, "", 150, 56, 206, 25
     BEGIN
         NAME "COMPANY"
         PADCHARACTER 32
@@ -22,13 +22,13 @@ BEGIN
         NOT DRAGENABLED
     END
 
-    STATICTEXT 102, "Firstname:", 50, 56, 90, 25
+    STATICTEXT 102, "Firstname:", 50, 87, 90, 25
     BEGIN
         NAME "Static Text102"
         NOT WORDWRAP
     END
 
-    INPUTE 103, "", 150, 56, 206, 25
+    INPUTE 103, "", 150, 87, 206, 25
     BEGIN
         NAME "FIRST_NAME"
         PADCHARACTER 32
@@ -36,13 +36,13 @@ BEGIN
         NOT DRAGENABLED
     END
 
-    STATICTEXT 104, "Lastname:", 50, 86, 90, 25
+    STATICTEXT 104, "Lastname:", 50, 117, 90, 25
     BEGIN
         NAME "Static Text104"
         NOT WORDWRAP
     END
 
-    INPUTE 105, "", 150, 87, 206, 25
+    INPUTE 105, "", 150, 118, 206, 25
     BEGIN
         NAME "LAST_NAME"
         PADCHARACTER 32
@@ -50,7 +50,7 @@ BEGIN
         NOT DRAGENABLED
     END
 
-    STATICTEXT 107, "Billing Address:", 50, 117, 90, 25
+    STATICTEXT 107, "Billing Address:", 50, 148, 90, 25
     BEGIN
         NAME "Static Text107"
         NOT WORDWRAP
@@ -92,7 +92,7 @@ BEGIN
         NOT WORDWRAP
     END
 
-    INPUTE 114, "", 150, 118, 206, 25
+    INPUTE 114, "", 150, 149, 206, 25
     BEGIN
         NAME "BILL_ADDR1"
         PADCHARACTER 32
@@ -100,7 +100,7 @@ BEGIN
         NOT DRAGENABLED
     END
 
-    INPUTE 115, "", 150, 149, 206, 25
+    INPUTE 115, "", 150, 180, 206, 25
     BEGIN
         NAME "BILL_ADDR2"
         PADCHARACTER 32
@@ -154,6 +154,20 @@ BEGIN
         PADCHARACTER 32
         SPELLCHECKED
         NOT DRAGENABLED
+    END
+
+    INPUTE 121, "", 150, 25, 206, 25
+    BEGIN
+        NAME "CUST_NUM"
+        PADCHARACTER 32
+        SPELLCHECKED
+        NOT DRAGENABLED
+    END
+
+    STATICTEXT 122, "Customer Nr:", 50, 25, 90, 25
+    BEGIN
+        NAME "Static Text122"
+        NOT WORDWRAP
     END
 
 END
