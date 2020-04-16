@@ -108,8 +108,23 @@ class public EditToolbarComponent extends AbstractBCBoundWidget
     
     method public Boolean canSetSelection()
         if #dirty! then
-            a=msgbox("unsaved data!")
-            methodret BBjAPI.FALSE
+            action = msgbox("Save Data?", 3)
+            switch action
+                case 6
+                    rem action = YES
+                    #onBtnSave(null())
+                    methodret Boolean.TRUE
+                case 7
+                    rem action = NO
+                    #dirty! = BBjAPI.FALSE
+                    #enableControls()
+                    methodret Boolean.TRUE
+                case 2
+                    rem action = CANCEL
+                    methodret BBjAPI.FALSE
+                case default
+                    methodret BBjAPI.FALSE
+             swend
         fi
         methodret BBjAPI.TRUE
     methodend

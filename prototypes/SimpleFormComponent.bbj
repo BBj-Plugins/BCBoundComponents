@@ -85,7 +85,11 @@ class public SimpleFormComponent extends AbstractBCBoundWidget
         it! = #fieldlist!.iterator()
         while it!.hasNext()
             n$=it!.next()
-            #cw!.getControl(n$).setText(rec!.getFieldAsString(n$))
+            if rec!.contains(n$) then
+                #cw!.getControl(n$).setText(rec!.getFieldAsString(n$))
+            else
+                #cw!.getControl(n$).setText("")
+            endif
         wend
         #cw!.setEnabled(1)
     methodend
@@ -99,7 +103,8 @@ class public SimpleFormComponent extends AbstractBCBoundWidget
     methodend
 
     method private void buildFieldList()
-        l! = #getBinder().getAttributesRecord().getFieldNames()
+        attributes! = #getBinder().getAttributesRecord()
+        l! = attributes!.getFieldNames()
         
         formfields! = #cw!.getAllControls()
         fieldlist! = new BBjVector()
@@ -113,15 +118,26 @@ class public SimpleFormComponent extends AbstractBCBoundWidget
                 fieldlist!.addItem(n$)
                 
                 #registerCallbacks(c!)
-                
+                precision! = attributes!.getFieldPrecision(n$)
+                #setFieldLength(c!, precision!)
             fi
         wend
         
         #fieldlist! = CAST(BBjVector,fieldlist!)
     methodend
     
+    method private void setFieldLength(BBjControl c!, int precision!)
+        if c!.getControlType() = BBjControl.INPUTE_TYPE then
+            cast(BBjInputE, c!).setLength(precision!)
+        endif
+    methodend
+    
     method private void registerCallbacks(BBjControl c!)
-        c!.setCallback(BBjAPI.ON_GAINED_FOCUS,#this!,"onControlGainedFocus") 
+        if c!.getControlType() = BBjControl.INPUTE_TYPE then
+            c!.setCallback(BBjAPI.ON_EDIT_MODIFY,#this!,"onControlEditModify") 
+        else
+            c!.setCallback(BBjAPI.ON_GAINED_FOCUS,#this!,"onControlGainedFocus") 
+        endif
     methodend
     
     method public void setBinder(BCBinder binder!)
@@ -129,9 +145,11 @@ class public SimpleFormComponent extends AbstractBCBoundWidget
     methodend
     
     method public void onControlGainedFocus(BBjGainedFocusEvent ev!)
-    
         #getBinder().sendSignal(BCBinder.SIGNAL_DIRTY)
+    methodend
     
+    method public void onControlEditModify(BBjEditModifyEvent ev!)
+        #getBinder().sendSignal(BCBinder.SIGNAL_DIRTY)
     methodend
     
     rem /**

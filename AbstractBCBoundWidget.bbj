@@ -34,5 +34,9 @@ class public AbstractBCBoundWidget extends BBjWidget implements IBCBound
     method public void onSignal(int signal!, Object payload!)
     
     methodend
+    
+    method public DataRow getFieldsForWrite()
+        methodret new DataRow()
+    methodend
 
 classend
