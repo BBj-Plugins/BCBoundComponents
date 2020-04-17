@@ -63,11 +63,14 @@ class public SearchBar extends AbstractBCBoundWidget
         
     methodend
 
+    rem /**
+    rem  * adds "_SEARCH" field to the bc filter and fetches a retrieve
+    rem  */
     method public void onBtnRetrieve( BBjToolButtonPushEvent ev! )
         searchString! = #searchField!.getText()
         binder! = #getBinder()
         bc! = binder!.getBC()
-        filter! = bc!.getFilter()
+        filter! = bc!.getFilter(err=*next)
         if filter! = null() then filter! = new DataRow()
         if searchString!.trim().equals("") then
             filter!.removeField("_SEARCH", err=*next)
@@ -85,6 +88,7 @@ class public SearchBar extends AbstractBCBoundWidget
     methodend
 
     method public void onSetData()
+        
     methodend
     
     method public Boolean canSetSelection()

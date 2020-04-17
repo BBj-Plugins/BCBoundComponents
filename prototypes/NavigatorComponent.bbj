@@ -17,6 +17,9 @@ REM     field private BBjNavigator nav!
     field private BBjToolButton btn_previous!
     field private BBjToolButton btn_next!
     field private BBjInputE     input_display!
+    
+    field private BBjVector keys!
+    field private BBjVector keyLabels!
         
     rem --------------------- constructors -------------------------------------
     
@@ -112,11 +115,59 @@ REM     field private BBjNavigator nav!
         else
             count = 0
         endif
-        text! = str(count) + " of " + str(max) + " selected"
+        text! = str(count) + " of " + str(max) + " selected. "
+        declare DataRow firstSel!
         if count = 1 then
-            text! = text! + ": " + cast(DataRow, rs!.get(sel!.get(0))).toJson(0)
+REM             firstSel! = cast(DataRow, rs!.get(sel!.get(0)))
+REM             text! = text! + ": " + firstSel!.toJson(0)
+                text! = text! + #getRowDescription()
         endif
         #input_display!.setText(text!)
+    methodend
+    
+    method protected String getRowDescription()
+        #scanKeysAndLabels()
+        sel! = #getBinder().getSelection()
+        rs! = #getBinder().getRS()
+        firstSel! = cast(DataRow, rs!.get(sel!.get(0)))
+        rowDescription! = "("
+        if #keys!.isEmpty() then methodret ""
+        for i=0 to #keys!.size() - 1
+            key! = #keys!.get(i)
+            label! = #keyLabels!.get(i)
+            value! = firstSel!.getFieldAsString(key!)
+            rowDescription! = rowDescription! + label! + ":" + value! + ", "
+        next i
+        rowDescription! = rowDescription!.substring(0,rowDescription!.length() - 2) + ")"
+        methodret rowDescription!
+    methodend
+    
+    method private void scanKeysAndLabels()
+        if #keys! <> null() then methodret
+        #keys! = new BBjVector()
+        #keyLabels! = new BBjVector()
+        attributes! = #getBinder().getBC().getAttributesRecord()
+        fieldNames! = attributes!.getFieldNames()
+        
+        it! = fieldNames!.iterator()
+        while it!.hasNext()
+            fieldName! = it!.next()
+            
+            label! = ""; editable! = ""
+            editable! = attributes!.getFieldAttribute(fieldName!, "EDITABLE",err=*next)
+            label! = attributes!.getFieldAttribute(fieldName!, "LABEL",err=*next)
+            
+            rem no key field? continue
+            if !editable!.trim().equals("2") then continue
+            #keys!.add(fieldName!)
+            
+            rem if field has no label: use fieldname as label
+            if label!.trim().equals("")  then
+                #keyLabels!.add(fieldName!)
+            else
+                #keyLabels!.add(label!)
+            endif
+        wend
     methodend
     
     method public void onSetData()

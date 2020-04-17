@@ -9,7 +9,7 @@ BEGIN
     EVENTMASK 0
     KEYBOARDNAVIGATION
     NAME "Child Window100"
-    STATICTEXT 100, "Company:", 50, 56, 90, 25
+    STATICTEXT 100, "Shipping Zone:", 50, 56, 90, 25
     BEGIN
         NAME "Static Text100"
         NOT WORDWRAP
@@ -17,13 +17,13 @@ BEGIN
 
     INPUTE 101, "", 150, 56, 206, 25
     BEGIN
-        NAME "COMPANY"
+        NAME "SHIP_ZONE"
         PADCHARACTER 32
         SPELLCHECKED
         NOT DRAGENABLED
     END
 
-    STATICTEXT 102, "Firstname:", 50, 87, 90, 25
+    STATICTEXT 102, "Shipping Method:", 50, 87, 90, 25
     BEGIN
         NAME "Static Text102"
         NOT WORDWRAP
@@ -31,13 +31,13 @@ BEGIN
 
     INPUTE 103, "", 150, 87, 206, 25
     BEGIN
-        NAME "FIRST_NAME"
+        NAME "SHIP_METHOD"
         PADCHARACTER 32
         SPELLCHECKED
         NOT DRAGENABLED
     END
 
-    STATICTEXT 104, "Lastname:", 50, 117, 90, 25
+    STATICTEXT 104, "Last Purchase:", 50, 117, 90, 25
     BEGIN
         NAME "Static Text104"
         NOT WORDWRAP
@@ -45,49 +45,49 @@ BEGIN
 
     INPUTE 105, "", 150, 118, 206, 25
     BEGIN
-        NAME "LAST_NAME"
+        NAME "LAST_PURCH_DATE"
         PADCHARACTER 32
         SPELLCHECKED
         NOT DRAGENABLED
     END
 
-    STATICTEXT 107, "Billing Address:", 50, 148, 90, 25
+    STATICTEXT 107, "Last Payment:", 50, 148, 90, 25
     BEGIN
         NAME "Static Text107"
         NOT WORDWRAP
     END
 
-    STATICTEXT 109, "City:", 410, 25, 90, 25
+    STATICTEXT 109, "Over 30:", 410, 25, 90, 25
     BEGIN
         NAME "Static Text109"
         NOT WORDWRAP
     END
 
-    STATICTEXT 106, "State:", 410, 56, 90, 25
+    STATICTEXT 106, "Over 60:", 410, 56, 90, 25
     BEGIN
         NAME "Static Text106"
         NOT WORDWRAP
     END
 
-    STATICTEXT 110, "Country:", 410, 86, 90, 25
+    STATICTEXT 110, "Over 90", 410, 86, 90, 25
     BEGIN
         NAME "Static Text110"
         NOT WORDWRAP
     END
 
-    STATICTEXT 111, "Post Code:", 410, 118, 90, 25
+    STATICTEXT 111, "Over 120:", 410, 118, 90, 25
     BEGIN
         NAME "Static Text111"
         NOT WORDWRAP
     END
 
-    STATICTEXT 112, "Phone:", 410, 149, 90, 25
+    STATICTEXT 112, "Sales MTD:", 410, 149, 90, 25
     BEGIN
         NAME "Static Text112"
         NOT WORDWRAP
     END
 
-    STATICTEXT 113, "Fax:", 410, 180, 90, 25
+    STATICTEXT 113, "Sales YTD:", 410, 180, 90, 25
     BEGIN
         NAME "Static Text113"
         NOT WORDWRAP
@@ -95,7 +95,7 @@ BEGIN
 
     INPUTE 114, "", 150, 149, 206, 25
     BEGIN
-        NAME "BILL_ADDR1"
+        NAME "LAST_PAY_DATE"
         PADCHARACTER 32
         SPELLCHECKED
         NOT DRAGENABLED
@@ -103,7 +103,7 @@ BEGIN
 
     INPUTE 115, "", 150, 180, 206, 25
     BEGIN
-        NAME "BILL_ADDR2"
+        NAME "CREDIT_CODE"
         PADCHARACTER 32
         SPELLCHECKED
         NOT DRAGENABLED
@@ -111,7 +111,7 @@ BEGIN
 
     INPUTE 108, "", 498, 25, 206, 25
     BEGIN
-        NAME "CITY"
+        NAME "OVER_30"
         PADCHARACTER 32
         SPELLCHECKED
         NOT DRAGENABLED
@@ -119,7 +119,7 @@ BEGIN
 
     INPUTE 116, "", 498, 56, 206, 25
     BEGIN
-        NAME "STATE"
+        NAME "OVER_60"
         PADCHARACTER 32
         SPELLCHECKED
         NOT DRAGENABLED
@@ -127,7 +127,7 @@ BEGIN
 
     INPUTE 117, "", 498, 87, 206, 25
     BEGIN
-        NAME "COUNTRY"
+        NAME "OVER_90"
         PADCHARACTER 32
         SPELLCHECKED
         NOT DRAGENABLED
@@ -135,7 +135,7 @@ BEGIN
 
     INPUTE 118, "", 498, 118, 206, 25
     BEGIN
-        NAME "POST_CODE"
+        NAME "OVER_120"
         PADCHARACTER 32
         SPELLCHECKED
         NOT DRAGENABLED
@@ -143,7 +143,7 @@ BEGIN
 
     INPUTE 119, "", 498, 149, 206, 25
     BEGIN
-        NAME "PHONE"
+        NAME "SALES_MTD"
         PADCHARACTER 32
         SPELLCHECKED
         NOT DRAGENABLED
@@ -151,7 +151,7 @@ BEGIN
 
     INPUTE 120, "", 498, 180, 206, 25
     BEGIN
-        NAME "FAX"
+        NAME "SALES_YTD"
         PADCHARACTER 32
         SPELLCHECKED
         NOT DRAGENABLED
@@ -159,17 +159,50 @@ BEGIN
 
     INPUTE 121, "", 150, 25, 206, 25
     BEGIN
-        DISABLED
-        NAME "CUST_NUM"
+        NAME "SALESPERSON"
         PADCHARACTER 32
         SPELLCHECKED
         NOT DRAGENABLED
     END
 
-    STATICTEXT 122, "Customer Nr:", 50, 25, 90, 25
+    STATICTEXT 122, "Sales Person:", 50, 25, 90, 25
     BEGIN
         NAME "Static Text122"
         NOT WORDWRAP
+    END
+
+    STATICTEXT 123, "Credit Code:", 50, 180, 90, 25
+    BEGIN
+        NAME "Static Text123"
+        NOT WORDWRAP
+    END
+
+    STATICTEXT 124, "Current Balance:", 50, 211, 90, 25
+    BEGIN
+        NAME "Static Text124"
+        NOT WORDWRAP
+    END
+
+    INPUTE 125, "", 150, 211, 206, 25
+    BEGIN
+        NAME "CURRENT_BAL"
+        PADCHARACTER 32
+        SPELLCHECKED
+        NOT DRAGENABLED
+    END
+
+    STATICTEXT 126, "Sales LY:", 410, 211, 90, 25
+    BEGIN
+        NAME "Static Text126"
+        NOT WORDWRAP
+    END
+
+    INPUTE 127, "", 498, 211, 206, 25
+    BEGIN
+        NAME "SALES_LY"
+        PADCHARACTER 32
+        SPELLCHECKED
+        NOT DRAGENABLED
     END
 
 END

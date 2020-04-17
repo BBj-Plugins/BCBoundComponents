@@ -82,9 +82,14 @@ class public EditToolbarComponent extends AbstractBCBoundWidget
     methodend
 
     method public void onBtnSave( BBjToolButtonPushEvent ev! )
-        #getBinder().sendSignal(BCBinder.SIGNAL_SAVE)
         #dirty! = BBjAPI.FALSE
+        #getBinder().sendSignal(BCBinder.SIGNAL_SAVE)
         #enableControls()
+        binder! = #getBinder()
+        bc! = binder!.getBC()
+        filter! = bc!.getFilter(err=*next)
+        rem if a filter is set, retrieve again, because the newly written record might be filtered out
+        if filter! <> null() and !filter!.isEmpty() then binder!.retrieve()
     methodend
     
     method public void onBtnDelete( BBjToolButtonPushEvent ev! )

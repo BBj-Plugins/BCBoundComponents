@@ -12,7 +12,8 @@ use com.basiscomponents.db.DataRow
 BBjAPI().getAdmin("guest", "").getEnvironment().reloadClasspath("uicomponents")
 
 
-ARC$="BusinessUIComponents/Demo/MasterDataForm1.arc"
+ARC1$="BusinessUIComponents/Demo/MasterDataForm1.arc"
+ARC2$="BusinessUIComponents/Demo/MasterDataForm2.arc"
 CWID=100
 BC$="ChileCustomerBC"
 
@@ -33,24 +34,36 @@ searchBar! = new SearchBar(wnd!,103,510, 10, 285, 20)
 bgrid! = new BusinessGrid(splitter!.getTopCanvas(),100,0,0,300,200)
 splitter!.setTopCtrl(bgrid!)
 
-form! = new SimpleFormComponent(splitter!.getBottomCanvas(),100,0,5,200,20)
-form!.setForm(arc$,cwid)
-splitter!.setBottomCtrl(form!)
+tabCtrl! = splitter!.getBottomCanvas().addTabCtrl(104, 0, 0, 500, 500)
+
+form1CW! = splitter!.getBottomCanvas().addChildWindow(105,0,0,500,500,"",$00000800$,sysgui!.getAvailableContext(),$$)
+form2CW! = splitter!.getBottomCanvas().addChildWindow(106,0,0,500,500,"",$00000800$,sysgui!.getAvailableContext(),$$)
+tabCtrl!.addTab("Personal", form1CW!)
+tabCtrl!.addTab("Business", form2CW!)
+
+form1! = new SimpleFormComponent(form1CW!,100,0,5,300,300)
+form1!.setForm(ARC1$,cwid)
+form2! = new SimpleFormComponent(form2CW!,101,0,5,300,300)
+form2!.setForm(ARC2$,cwid)
+splitter!.setBottomCtrl(tabCtrl!)
 
 bc! = eval("new "+BC$+"()")
 
 binder! = new BCBinder(bc!)
 binder!.register(nav!)
 binder!.register(edittb!)
-binder!.register(form!)
+binder!.register(form1!)
+binder!.register(form2!)
 binder!.register(bgrid!)
 binder!.register(searchBar!)
 
 binder!.retrieve()
 
 splitter!.setSize(wnd!.getWidth() -10,wnd!.getHeight()-30)
-nav!.setSize(wnd!.getWidth()-405,20)
 
+nav!.setSize(wnd!.getWidth()-405,20)
+form1!.setSize(tabCtrl!.getWidth(), tabCtrl!.getHeight())
+form2!.setSize(tabCtrl!.getWidth(), tabCtrl!.getHeight())
 sysgui!.setRepaintEnabled(1)
 process_events
 
