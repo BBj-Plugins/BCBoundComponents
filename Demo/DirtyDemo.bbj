@@ -1,5 +1,5 @@
-use ::BusinessGrid/ExampleBCs/ChileCustomerBC.bbj::ChileCustomerBC
-use ::BusinessGrid/BusinessGrid.bbj::BusinessGrid
+use ::BusinessUIComponents/ExampleBCs/ChileCustomerBC.bbj::ChileCustomerBC
+use ::BusinessUIComponents/BusinessGrid.bbj::BusinessGrid
 use ::BusinessUIComponents/prototypes/TestComponent.bbj::TestComponent
 use ::BusinessUIComponents/prototypes/NavigatorComponent.bbj::NavigatorComponent
 use ::BusinessUIComponents/prototypes/EditToolbarComponent.bbj::EditToolbarComponent

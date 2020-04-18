@@ -1,0 +1,182 @@
+use ::BusinessUIComponents/AbstractBCBoundWidget.bbj::AbstractBCBoundWidget
+use ::BBjGridExWidget/BBjGridExWidget.bbj::BBjGridExWidget
+
+
+use com.basiscomponents.db.ResultSet
+use com.basiscomponents.db.DataRow
+use com.basiscomponents.bc.BCBinder
+
+use ::BBjGridExWidget/GxClientModels.bbj::GxClientRowModel
+use ::BBjGridExWidget/GxState.bbj::GxState
+
+use ::ConfigurationWidget/ConfigurationWidget.bbj::ConfigurationWidget
+use ::ConfigurationWidget/CustomConfigurationsBC.bbj::CustomConfigurationsBC
+use ::ConfigurationWidget/IPersistentState.bbj::IPersistentState
+
+rem /**
+rem  * BBj Business Grid for BC classes, based on BBjGridExWidget
+rem  */
+class public BusinessGrid extends AbstractBCBoundWidget implements IPersistentState
+
+    field private BBjGridExWidget grid!
+    field private Boolean sending! = BBjAPI.FALSE
+    field private Boolean ignoreNext! = BBjAPI.FALSE
+    
+    field private ConfigurationWidget       cfgwidget!
+    field private CustomConfigurationsBC    cfgbc!
+    
+    rem --------------------- constructors -------------------------------------
+    
+    rem /**
+    rem  * disabled default constructor
+    rem  */
+    method private BusinessGrid()
+    methodend
+
+    rem /**
+    rem  * The constructor that creates the widget on wnd!
+    rem * @param BBjWindow wnd!: parent window
+    rem * @param BBjInt id: the control ID
+    rem * @param BBjInt x: x-location
+    rem * @param BBjInt y: y-location
+    rem * @param BBjInt w: width
+    rem * @param BBjInt h: height
+    rem */
+    method public BusinessGrid(BBjWindow wnd!, BBjInt id!, BBjInt x!, BBjInt y!, BBjInt w!, BBjInt h!)
+        #super!.create(wnd!,id!,x!,y!,w!,h!)
+    methodend
+    
+    rem /**
+    rem  * @Override
+    rem  * This method is called whenever the widget needs to be rendered
+    rem  * @param Boolean f_init!: if TRUE the control is rendered for the first time so this method has to perform initial rendering
+    rem  */
+    method public void redraw(Boolean f_init!)
+        if (f_init!) then
+            rem rendering for the first time
+            rem so have to initialize / create my controls
+            declare BBjGridExWidget grid!
+            #grid! = new BBjGridExWidget(#getCanvas(),100,0,30,#getWidth(),#getHeight()-30)
+            #grid!.getOptions().setNavigationBehavior(#grid!.GRID_NAVIGATION_BEHAVIOUR_NEXT_ROW())
+            #grid!.setCallback(#grid!.ON_GRID_ROW_SELECT(),#this!,"onGridSelection")
+            #cfgbc! = new CustomConfigurationsBC(info(3,2))
+            
+            
+        FI
+        
+        #grid!.setSize(#getWidth(),#getHeight()-30)
+        if #cfgwidget! <> null() then
+            #cfgwidget!.setLocation(#getWidth()-155, 5)
+        fi 
+    methodend
+
+    rem ---------------------- Event Handlers --------------------------------
+
+    rem -----------------------getter and setter -----------------------------
+    method public BBjGridExWidget getGrid()
+        methodret #grid!
+    methodend
+    
+    
+    rem ----------------------grid handling---------------------------------------------
+    
+    method public void onSetData()
+        if #getBinder().getRS() = null() or #getBinder().getAttributesRecord() = null() then
+            methodret
+        fi
+        
+        #grid!.setData(#getBinder().getRS())
+    methodend
+    
+    
+    method public void onSetSelection()
+            if (#sending!) then
+                methodret
+            fi
+            
+            sel! = #getBinder().getSelection()
+            rs! = #getBinder().getRS()
+            
+            
+            it! = sel!.iterator()
+            s! = new BBjVector()
+            while it!.hasNext()
+                rowkey$ = it!.next()
+                i = rs!.indexOf(rowkey$)
+                s!.addItem(i)
+            wend
+            #grid!.deselectAll()
+            if (s!.size()>0) then
+                #grid!.setSelectedRows(s!)
+                #grid!.ensureIndexVisible(s!.getItem(0),#grid!.GRID_ROWPOS_MIDDLE())
+            fi
+            
+            
+            
+    methodend
+    
+    method public void onGridSelection(BBjCustomEvent ev!)
+
+        if #ignoreNext! then
+            #ignoreNext! = BBjAPI.FALSE
+            methodret
+        fi
+        
+        if #getBinder().canSetSelection() then 
+
+              x! = ev!.getObject()
+              rows! = x!.getSelectedRows()
+              sel! = new BBjVector()
+              it! = rows!.iterator()
+              while it!.hasNext()
+                  row! = it!.next()
+                  sel!.addItem(row!.asDataRow().getRowKey())
+              wend
+              #sending! = BBjAPI.TRUE
+              #getBinder().setSelection(sel!)
+              #sending! = BBjAPI.FALSE
+         else
+            #onSetSelection()
+            #ignoreNext! = BBjAPI.TRUE
+         fi
+    methodend
+
+
+    rem methods from interface IPersistentState
+    
+    rem /**
+    rem  * this method will be called to apply the state given by the widget
+    rem  * @param state! state string with the state which was stored by the widget
+    rem  */
+    method public void applyState(String state!)
+        #grid!.setColumnState(new GxState(state!))
+    methodend
+    
+    rem /**
+    rem  * this method will provide the widget with the current state of the component.
+    rem  * the widget will store this data for later retrieval
+    rem  */
+    method public String retrieveState()
+        methodret #grid!.getColumnState().toString()
+    methodend
+    
+    rem /**
+    rem  * the widget will call this method to register itself for statechanges of the component
+    rem  * the method should set a callback which should call the method 'methodName' on 'callable!' whenever the state changed
+    rem  * Event should be BBjCustomEvent. 
+    rem  */
+    method public void setStateChangeCallback(String methodName!, CustomObject callable!)
+       #grid!.setCallback(#grid!.ON_GRID_COLUMN_STATE_CHANGE(),callable!,methodName!)
+    methodend
+    
+    method public void setBinder(BCBinder binder!)
+        #super!.setBinder(binder!)
+        x$=str(binder!.getBC())
+        while pos("::"=x$)>0
+            x$=X$(pos("::"=x$)+2)
+        wend
+        #cfgwidget! = new ConfigurationWidget(#getCanvas(),201, #getWidth()-155, 5 , #this!, Boolean.TRUE, "GRD", x$, #cfgbc! )
+    methodend    
+        
+    
+classend
