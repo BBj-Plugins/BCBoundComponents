@@ -1,0 +1,101 @@
+REM /**
+REM  * Dialog.bbj
+REM  * @author mneu
+REM  *
+REM  */
+
+use ::BusinessUIComponents/BusinessGrid.bbj::BusinessGrid
+use ::BBjGridExWidget/BBjGridExWidgetState.bbj::BBjGridExWidgetState
+use com.basiscomponents.db.DataRow
+use com.basiscomponents.db.ResultSet
+
+use com.basiscomponents.db.BBArrayList
+use com.basiscomponents.db.ResultSetExporter
+use com.basiscomponents.db.export.SheetConfiguration
+use com.basiscomponents.db.export.ReportDetails
+use com.basiscomponents.db.export.ColumnWidthCalculator
+
+use java.io.File
+
+use java.nio.file.Paths
+use java.nio.file.Path
+
+class public Dialog
+
+    field protected static BBjString PATH$ = java.lang.System.getProperty("user.home") + "/documents/"
+
+    field protected BBjWindow mainWindow!
+    field protected Boolean embedded! = Boolean.FALSE
+    
+    field protected BusinessGrid grid!
+    
+    field protected BBjButton btnExport!
+    field protected BBjButton btnCancel!
+    
+    field protected ResultSetExporter exporter! = new ResultSetExporter()
+
+    method public Dialog(BusinessGrid grid!, Boolean embedded!)
+        #grid! = grid!
+        #embedded! = embedded!
+    methodend
+    
+    method public Dialog(Boolean embedded!)
+        #embedded! = embedded!
+    methodend
+
+    method public void createDialogWindow(BBjString windowTitle$, BBjNumber windowHeight)
+        sysGui! = BBjAPI().getSysGui()
+        declare BBjTopLevelWindow wnd!
+        wnd! = cast(BBjTopLevelWindow, sysGui!.addWindow(sysGui!.getAvailableContext(),10,10,600,windowHeight,windowTitle$))
+        wnd!.setCallback(BBjAPI.ON_CLOSE, #this!, "onClose")
+        wnd!.setResizable(0)
+        #mainWindow! = wnd!
+    methodend
+    
+    method public void addBaseButtons(BBjNumber buttonHeightPosition)
+        #btnExport! = #mainWindow!.addButton(5010, 270, buttonHeightPosition, 150, 23, "Export")
+        #btnCancel! = #mainWindow!.addButton(6010, 440, buttonHeightPosition, 150, 23, "Cancel")
+    methodend
+    
+    method private BBjWindow buildEmbed(BBjWindow wnd!)
+        rem in subclass
+        methodret wnd!
+    methodend
+    
+    method public BBjWindow getEmbedded(BBjWindow wnd!)
+        #mainWindow! = #buildEmbed(wnd!)
+        #setCallbacks()
+        methodret #mainWindow!
+    methodend
+    
+    method protected void setCallbacks()
+        if !#embedded! then
+            #btnExport!.setCallback(BBjButton.ON_BUTTON_PUSH, #this!, "onExportButtonPush")
+            #btnCancel!.setCallback(BBjButton.ON_BUTTON_PUSH, #this!, "onCancelButtonPush")
+        endif
+    methodend
+    
+    method public void onSaveLocationButtonPush(BBjButtonPushEvent ev!)
+        str$ = FILESAVE("Export Pdf", #PATH$, "", "")
+        if str$ <> "::BAD::" and str$ <> "::CANCEL::" then
+            #stSaveLocation!.setText(str$)
+        endif
+    methodend
+    
+    method public void onExportButtonPush(BBjButtonPushEvent ev!)
+        rem in subclass
+    methodend
+    
+    method public void onCancelButtonPush(BBjButtonPushEvent ev!)
+        #mainWindow!.destroy()
+    methodend
+    
+    method public void onClose(BBjEvent ev!)
+        #mainWindow!.destroy()
+    methodend
+    
+    method protected void setMainWindow(BBjWindow wnd!)
+        #mainWindow! = wnd!
+    methodend
+
+classend

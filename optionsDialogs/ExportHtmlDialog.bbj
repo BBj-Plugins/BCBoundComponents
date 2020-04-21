@@ -1,0 +1,77 @@
+REM /**
+REM  * ExportPdfDialog.bbj
+REM  * @author mneu
+REM  *
+REM  */
+
+use ::BusinessUIComponents/optionsDialogs/Dialog.bbj::Dialog
+use ::BusinessUIComponents/BusinessGrid.bbj::BusinessGrid
+
+use com.basiscomponents.db.DataRow
+use com.basiscomponents.db.ResultSet
+use com.basiscomponents.db.ResultSetExporter
+
+use java.io.FileWriter
+
+class public ExportHtmlDialog extends Dialog
+
+    field private BBjButton btnSaveLocation!
+    field private BBjStaticText stSaveLocation!
+    
+    field private BBjButton btnExport!
+    field private BBjButton btnCancel!
+    
+    method public ExportHtmlDialog(BusinessGrid grid!, Boolean embedded!)
+        #super!(grid!, embedded!)
+    methodend
+    
+    method public ExportHtmlDialog(Boolean embedded!)
+        #super!(embedded!)
+    methodend
+
+    method public void createDialogWindow()
+        #createDialogWindow("Export Html", 105)
+        wnd! = #getmainWindow()
+        wnd! = cast(BBjTopLevelWindow, #buildEmbed(wnd!))
+        #addBaseButtons(65)
+        #setCallbacks()
+    methodend
+    
+    method private BBjWindow buildEmbed(BBjWindow wnd!)        
+        #btnSaveLocation! = wnd!.addButton(2040, 8, 15, 150, 23, "Choose save location")
+        #stSaveLocation! = wnd!.addStaticText(3040, 170, 15, 400, 23, "")
+        
+        methodret wnd!
+    methodend
+    
+    method public BBjWindow getEmbedded(BBjWindow wnd!)
+        #setMainWindow(#buildEmbed(wnd!))
+        #setCallbacks()
+        methodret #getmainWindow()
+    methodend
+    
+    method protected void setCallbacks()
+        #super!.setCallbacks()
+        #btnSaveLocation!.setCallback(BBjButton.ON_BUTTON_PUSH, #this!, "onSaveLocationButtonPush")
+    methodend
+    
+    method public void onSaveLocationButtonPush(BBjButtonPushEvent ev!)
+        str$ = FILESAVE("Export Xlsx", #getPATH(), "", "")
+        if str$ <> "::BAD::" and str$ <> "::CANCEL::" then
+            #stSaveLocation!.setText(str$)
+        endif
+    methodend
+    
+    method public void onExportButtonPush(BBjButtonPushEvent ev!)
+        rs! = #getgrid().getGrid().getRS()
+        if rs! = null() or rs!.isEmpty() then methodret
+        path$ = #stSaveLocation!.getText()
+        if cvs(path$,3) = "" then methodret
+        
+        writer! = new FileWriter(path$)
+        
+        #getexporter().writeHTML(rs!, writer!)
+        #getmainWindow().destroy()
+    methodend
+
+classend

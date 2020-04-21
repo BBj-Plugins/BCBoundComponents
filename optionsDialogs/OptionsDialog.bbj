@@ -1,0 +1,99 @@
+REM /**
+REM  * ExportPdfDialog.bbj
+REM  * @author mneu
+REM  *
+REM  */
+
+use ::BusinessUIComponents/BusinessGrid.bbj::BusinessGrid
+
+use com.basiscomponents.db.DataRow
+use com.basiscomponents.db.ResultSet
+use com.basiscomponents.db.ResultSetExporter
+
+use ::BusinessUIComponents/optionsDialogs/ExportHtmlDialog.bbj::ExportHtmlDialog
+use ::BusinessUIComponents/optionsDialogs/ExportPdfDialog.bbj::ExportPdfDialog
+use ::BusinessUIComponents/optionsDialogs/ExportTxtDialog.bbj::ExportTxtDialog
+use ::BusinessUIComponents/optionsDialogs/ExportXlsxDialog.bbj::ExportXlsxDialog
+use ::BusinessUIComponents/optionsDialogs/ExportXmlDialog.bbj::ExportXmlDialog
+
+class public OptionsDialog
+
+    field private static BBjString FLAG_BORDERLESS$ = $00000800$
+    field private static BBjString PATH$ = java.lang.System.getProperty("user.home") + "/documents/"
+
+    field private BBjWindow mainWindow!
+    
+    field private ExportHtmlDialog exportHtmlDialog!
+    field private ExportPdfDialog exportPdfDialog!
+    field private ExportTxtDialog exportTxtDialog!
+    field private ExportXlsxDialog exportXlsxDialog!
+    field private ExportXmlDialog exportXmlDialog!
+    
+    field private BBjButton btnSave!
+    field private BBjButton btnCancel!
+    
+    field private ResultSetExporter exporter! = new ResultSetExporter()
+
+    method public OptionsDialog()
+        #exportPdfDialog! = new ExportPdfDialog(Boolean.TRUE)
+        #exportHtmlDialog! = new ExportHtmlDialog(Boolean.TRUE)
+        #exportTxtDialog! = new ExportTxtDialog(Boolean.TRUE)
+        #exportXlsxDialog! = new ExportXlsxDialog(Boolean.TRUE)
+        #exportXmlDialog! = new ExportXmlDialog(Boolean.TRUE)
+    methodend
+
+    method public void createDialogWindow()
+        sysGui! = BBjAPI().getSysGui()
+        declare BBjTopLevelWindow wnd!
+        wnd! = cast(BBjTopLevelWindow, sysGui!.addWindow(sysGui!.getAvailableContext(),10,10,650,215,"Options"))
+        wnd!.setCallback(BBjAPI.ON_CLOSE, #this!, "onClose")
+        wnd!.setResizable(0)
+        
+        tabCtrl! = wnd!.addTabCtrl(2010, 8, 15, 634, 155)
+        
+        cw! = wnd!.addChildWindow(8010, 0, 0, 634, 140, "", #FLAG_BORDERLESS$, sysGui!.getAvailableContext())
+        tabCtrl!.addTab("Pdf", 8010)
+        #exportPdfDialog!.getEmbedded(cw!)
+        
+        cw! = wnd!.addChildWindow(8020, 0, 0, 634, 140, "", #FLAG_BORDERLESS$, sysGui!.getAvailableContext())
+        tabCtrl!.addTab("Html", 8020)
+        #exportHtmlDialog!.getEmbedded(cw!)
+        
+        cw! = wnd!.addChildWindow(8030, 0, 0, 634, 140, "", #FLAG_BORDERLESS$, sysGui!.getAvailableContext())
+        tabCtrl!.addTab("Txt", 8030)
+        #exportTxtDialog!.getEmbedded(cw!)
+        
+        cw! = wnd!.addChildWindow(8040, 0, 0, 634, 140, "", #FLAG_BORDERLESS$, sysGui!.getAvailableContext())
+        tabCtrl!.addTab("Xlsx", 8040)
+        #exportXlsxDialog!.getEmbedded(cw!)
+        
+        cw! = wnd!.addChildWindow(8050, 0, 0, 634, 140, "", #FLAG_BORDERLESS$, sysGui!.getAvailableContext())
+        tabCtrl!.addTab("Xml", 8050)
+        #exportXmlDialog!.getEmbedded(cw!)
+        
+        #btnSave! = wnd!.addButton(5010, 315, 180, 150, 23, "Save")
+        #btnCancel! = wnd!.addButton(6010, 485, 180, 150, 23, "Cancel")
+        
+        #mainWindow! = wnd!
+        #setCallbacks()
+    methodend
+    
+    method private void setCallbacks()
+        #btnSave!.setCallback(BBjButton.ON_BUTTON_PUSH, #this!, "onSaveButtonPush")
+        #btnCancel!.setCallback(BBjButton.ON_BUTTON_PUSH, #this!, "onCancelButtonPush")
+    methodend
+    
+    method public void onSaveButtonPush(BBjButtonPushEvent ev!)
+        rem TODO: implementation
+    methodend
+    
+    method public void onCancelButtonPush(BBjButtonPushEvent ev!)
+        #mainWindow!.destroy()
+    methodend
+    
+    method public void onClose(BBjEvent ev!)
+        #mainWindow!.destroy()
+    methodend
+    
+
+classend

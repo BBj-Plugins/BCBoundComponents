@@ -1,6 +1,6 @@
 use ::BusinessUIComponents/AbstractBCBoundWidget.bbj::AbstractBCBoundWidget
+use ::BusinessUIComponents/ExportMenuButton.bbj::ExportMenuButton
 use ::BBjGridExWidget/BBjGridExWidget.bbj::BBjGridExWidget
-
 
 use com.basiscomponents.db.ResultSet
 use com.basiscomponents.db.DataRow
@@ -24,6 +24,7 @@ class public BusinessGrid extends AbstractBCBoundWidget implements IPersistentSt
     
     field private ConfigurationWidget       cfgwidget!
     field private CustomConfigurationsBC    cfgbc!
+    field private ExportMenuButton          exportButton!
     
     rem --------------------- constructors -------------------------------------
     
@@ -61,8 +62,10 @@ class public BusinessGrid extends AbstractBCBoundWidget implements IPersistentSt
             #grid!.setCallback(#grid!.ON_GRID_ROW_SELECT(),#this!,"onGridSelection")
             #cfgbc! = new CustomConfigurationsBC(info(3,2))
             
-            
-        FI
+            rem TODO: exportbutton
+            #exportButton! = new ExportMenuButton(#getCanvas(), 202, 0, 5, 43, 23)
+            #exportButton!.setGrid(#this!)
+        fi
         
         #grid!.setSize(#getWidth(),#getHeight()-30)
         if #cfgwidget! <> null() then
@@ -110,13 +113,9 @@ class public BusinessGrid extends AbstractBCBoundWidget implements IPersistentSt
                 #grid!.setSelectedRows(s!)
                 #grid!.ensureIndexVisible(s!.getItem(0),#grid!.GRID_ROWPOS_MIDDLE())
             fi
-            
-            
-            
     methodend
     
     method public void onGridSelection(BBjCustomEvent ev!)
-
         if #ignoreNext! then
             #ignoreNext! = BBjAPI.FALSE
             methodret

@@ -1,0 +1,137 @@
+REM /**
+REM  * ExportPdfDialog.bbj
+REM  * @author mneu
+REM  *
+REM  */
+
+use ::BusinessUIComponents/optionsDialogs/Dialog.bbj::Dialog
+use ::BusinessUIComponents/BusinessGrid.bbj::BusinessGrid
+
+use ::BBjGridExWidget/BBjGridExWidgetState.bbj::BBjGridExWidgetState
+
+use com.basiscomponents.db.DataRow
+use com.basiscomponents.db.ResultSet
+
+use com.basiscomponents.db.BBArrayList
+use com.basiscomponents.db.ResultSetExporter
+use com.basiscomponents.db.export.SheetConfiguration
+use com.basiscomponents.db.export.ReportDetails
+use com.basiscomponents.db.export.ColumnWidthCalculator
+
+use java.io.File
+
+use java.nio.file.Paths
+use java.nio.file.Path
+
+class public ExportPdfDialog extends Dialog
+
+    field private BBjListButton lbPageFittingOptions!
+    field private BBjListButton lbPageLayout!
+    field private BBjInputN inFontSize!
+    field private BBjButton btnSaveLocation!
+    field private BBjStaticText stSaveLocation!
+    
+    field private Boolean showsBaristaHeader! = Boolean.FALSE
+
+    method public ExportPdfDialog(BusinessGrid grid!, Boolean embedded!)
+        #super!(grid!, embedded!)
+    methodend
+    
+    method public ExportPdfDialog(Boolean embedded!)
+        #super!(embedded!)
+    methodend
+
+    method public void createDialogWindow()
+        #createDialogWindow("Export Pdf", 180)
+        wnd! = #getmainWindow()
+        wnd! = cast(BBjTopLevelWindow, #buildEmbed(wnd!))
+        #addBaseButtons(140)
+        #setCallbacks()
+    methodend
+    
+    method private BBjWindow buildEmbed(BBjWindow wnd!)
+        wnd!.addStaticText(2010, 8, 15, 150, 23, "Page options")
+        #lbPageFittingOptions! = wnd!.addListButton(3010, 170, 15, 150, 200, "")
+        #lbPageFittingOptions!.setFieldHeight(23)
+        #lbPageFittingOptions!.addItem("normal fitting")
+        #lbPageFittingOptions!.addItem("fit to width")
+        #lbPageFittingOptions!.addItem("fit to height")
+        #lbPageFittingOptions!.addItem("fit to page")
+        #lbPageFittingOptions!.selectIndex(0)
+        
+        wnd!.addStaticText(2020, 8, 40, 150, 23, "Font size")
+        #inFontSize! = wnd!.addInputN(3020, 170, 40, 90, 23)
+        #inFontSize!.setMask("##") ; rem max font size = 99
+        #inFontSize!.setNegateable(Boolean.FALSE)
+        
+        wnd!.addStaticText(2030, 8, 65, 150, 23, "Page layout")
+        #lbPageLayout! = wnd!.addListButton(3030, 170, 65, 150, 200, "")
+        #lbPageLayout!.setFieldHeight(23)
+        #lbPageLayout!.addItem("portrait")
+        #lbPageLayout!.addItem("landscape")
+        #lbPageLayout!.selectIndex(0)
+        
+        #btnSaveLocation! = wnd!.addButton(2040, 8, 90, 150, 23, "Choose save location")
+        #stSaveLocation! = wnd!.addStaticText(3040, 170, 90, 400, 23, "")
+        
+        methodret wnd!
+    methodend
+    
+    method public BBjWindow getEmbedded(BBjWindow wnd!)
+        #setMainWindow(#buildEmbed(wnd!))
+        #setCallbacks()
+        methodret #getmainWindow()
+    methodend
+    
+    method protected void setCallbacks()
+        #super!.setCallbacks()
+        #btnSaveLocation!.setCallback(BBjButton.ON_BUTTON_PUSH, #this!, "onSaveLocationButtonPush")
+    methodend
+    
+    method public void onSaveLocationButtonPush(BBjButtonPushEvent ev!)
+        str$ = FILESAVE("Export Xlsx", #getPATH(), "", "")
+        if str$ <> "::BAD::" and str$ <> "::CANCEL::" then
+            #stSaveLocation!.setText(str$)
+        endif
+    methodend
+    
+    method public void onExportButtonPush(BBjButtonPushEvent ev!)
+        rs! = #getgrid().getGrid().getRS()
+        if rs! = null() or rs!.isEmpty() then methodret
+        filePath! = #stSaveLocation!.getText()
+        if filePath!.trim().equals("") then methodret
+        
+        path! = Paths.get(filePath!)
+        outputFilename$ = path!.getFileName().toString()
+        path$ = path!.getParent().toString() + "/"
+        
+        dr! = rs!.get(0)
+        
+        rem creating SheetConfiguration
+        declare SheetConfiguration sheetConfiguration!
+        sheetConfiguration! = new SheetConfiguration()
+        
+        fieldWidths! = ColumnWidthCalculator.calculateColumnWidths(rs!, #inFontSize!.getValue())
+
+        visibleRowsVec! = #getgrid().getGrid().getColumnState().getVisibleColumns()
+        for i = visibleRowsVec!.size() - 1 to 0 step - 1
+            fieldName$ = visibleRowsVec!.get(i)
+            header! = dr!.getDataField(fieldName$).getAttribute("LABEL")
+            if header! = null() then header! = fieldName$
+            width = fieldWidths!.getFieldAsNumber(fieldName$)
+            sheetConfiguration!.insertColumn(header!, width, fieldName$, k)
+        next i
+        
+        sheetConfiguration!.setReportDetails(new ReportDetails(0, "reportName", "tableName", "0000000000000000000001"))
+        sheetConfiguration!.setFontSize(#inFontSize!.getValue())
+        
+        fitTo = #lbPageFittingOptions!.getSelectedIndex()
+        
+        rem exporting
+        declare File outputFile!
+        outputFile! = #getexporter().exportToPDF(outputFilename$, path$, rs!, sheetConfiguration!, #showsBaristaHeader!, fitTo, #lbPageLayout!.getSelectedIndex())
+        bbjapi().getThinClient().browse(outputFile!.getAbsolutePath().replace("\", "/"))
+        #getmainWindow().destroy()
+    methodend   
+
+classend

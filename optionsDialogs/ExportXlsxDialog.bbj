@@ -1,0 +1,105 @@
+REM /**
+REM  * ExportPdfDialog.bbj
+REM  * @author mneu
+REM  *
+REM  */
+
+use ::BusinessUIComponents/optionsDialogs/Dialog.bbj::Dialog
+use ::BusinessUIComponents/BusinessGrid.bbj::BusinessGrid
+
+use ::BBjGridExWidget/BBjGridExWidgetState.bbj::BBjGridExWidgetState
+
+use com.basiscomponents.db.DataRow
+use com.basiscomponents.db.ResultSet
+
+use com.basiscomponents.db.BBArrayList
+use com.basiscomponents.db.export.SheetConfiguration
+use com.basiscomponents.db.export.ReportDetails
+use com.basiscomponents.db.ResultSetExporter
+
+use java.io.File
+
+class public ExportXlsxDialog extends Dialog
+
+    field private BBjCheckBox cbWriteHeader!
+    field private BBjButton btnSaveLocation!
+    field private BBjStaticText stSaveLocation!
+    
+    field private Boolean showsBaristaHeader! = Boolean.FALSE
+
+    method public ExportXlsxDialog(BusinessGrid grid!, Boolean embedded!)
+        #super!(grid!, embedded!)
+    methodend
+    
+    method public ExportXlsxDialog(Boolean embedded!)
+        #super!(embedded!)
+    methodend
+
+    method public void createDialogWindow()
+        #createDialogWindow("Export Xlsx", 130)
+        wnd! = #getmainWindow()
+        wnd! = cast(BBjTopLevelWindow, #buildEmbed(wnd!))
+        #addBaseButtons(90)
+        #setCallbacks()
+    methodend
+    
+    method private BBjWindow buildEmbed(BBjWindow wnd!)
+        wnd!.addStaticText(2010, 8, 15, 150, 23, "Write header")
+        #cbWriteHeader! = wnd!.addCheckBox(3010, 170, 15, 23, 23, "")
+        
+        #btnSaveLocation! = wnd!.addButton(2020, 8, 40, 150, 23, "Choose save location")
+        #stSaveLocation! = wnd!.addStaticText(3020, 170, 40, 400, 23, "")
+        
+        methodret wnd!
+    methodend
+    
+    method public BBjWindow getEmbedded(BBjWindow wnd!)
+        #setMainWindow(#buildEmbed(wnd!))
+        #setCallbacks()
+        methodret #getmainWindow()
+    methodend
+    
+    method protected void setCallbacks()
+        #super!.setCallbacks()
+        #btnSaveLocation!.setCallback(BBjButton.ON_BUTTON_PUSH, #this!, "onSaveLocationButtonPush")
+    methodend
+    
+    method public void onSaveLocationButtonPush(BBjButtonPushEvent ev!)
+        str$ = FILESAVE("Export Xlsx", #getPATH(), "", "")
+        if str$ <> "::BAD::" and str$ <> "::CANCEL::" then
+            #stSaveLocation!.setText(str$)
+        endif
+    methodend
+    
+    method public void onExportButtonPush(BBjButtonPushEvent ev!)
+        rs! = #getgrid().getGrid().getRS()
+        if rs! = null() or rs!.isEmpty() then methodret
+        path$ = #stSaveLocation!.getText()
+        if cvs(path$,3) = "" then methodret
+        
+        dr! = rs!.get(0)
+        
+        rem creating SheetConfiguration
+        declare SheetConfiguration sheetConfiguration!
+        sheetConfiguration! = new SheetConfiguration()
+
+        visibleRowsVec! = #getgrid().getGrid().getColumnState().getVisibleColumns()
+        for i = visibleRowsVec!.size() - 1 to 0 step - 1
+            fieldName$ = visibleRowsVec!.get(i)
+            header! = dr!.getDataField(fieldName$).getAttribute("LABEL")
+            if header! = null() then header! = fieldName$
+            width = 1000
+            sheetConfiguration!.insertColumn(header!, width, fieldName$, k)
+        next i
+        
+        rem exporting
+        declare File outputFile!
+        outputFile! = new File(path$)
+        
+        writeHeader! = #cbWriteHeader!.isSelected()
+        
+        #getexporter().writeXLSX(rs!, outputFile!, writeHeader!, sheetConfiguration!)
+        #getmainWindow().destroy()
+    methodend
+
+classend

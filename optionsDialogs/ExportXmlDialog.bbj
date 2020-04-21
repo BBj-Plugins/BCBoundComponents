@@ -1,0 +1,85 @@
+REM /**
+REM  * ExportPdfDialog.bbj
+REM  * @author mneu
+REM  *
+REM  */
+
+use ::BusinessUIComponents/optionsDialogs/Dialog.bbj::Dialog
+use ::BusinessUIComponents/BusinessGrid.bbj::BusinessGrid
+
+use com.basiscomponents.db.DataRow
+use com.basiscomponents.db.ResultSet
+use com.basiscomponents.db.ResultSetExporter
+
+use java.io.FileWriter
+
+class public ExportXmlDialog extends Dialog
+
+    field private BBjInputE ieRootTagName!
+    field private BBjInputE ieEntityName!
+    field private BBjButton btnSaveLocation!
+    field private BBjStaticText stSaveLocation!
+    
+    method public ExportXmlDialog(BusinessGrid grid!, Boolean embedded!)
+        #super!(grid!, embedded!)
+    methodend
+    
+    method public ExportXmlDialog(Boolean embedded!)
+        #super!(embedded!)
+    methodend
+
+    method public void createDialogWindow()
+        #createDialogWindow("Export Xml", 155)
+        wnd! = #getmainWindow()
+        wnd! = cast(BBjTopLevelWindow, #buildEmbed(wnd!))
+        #addBaseButtons(115)
+        #setCallbacks()
+    methodend
+    
+    method private BBjWindow buildEmbed(BBjWindow wnd!)
+        wnd!.addStaticText(2010, 8, 15, 150, 23, "Root tag name")
+        #ieRootTagName! = wnd!.addInputE(3010, 170, 15, 90, 23)
+        
+        wnd!.addStaticText(2020, 8, 40, 150, 23, "Entity name")
+        #ieEntityName! = wnd!.addInputE(3020, 170, 40, 90, 23)
+        
+        #btnSaveLocation! = wnd!.addButton(2040, 8, 65, 150, 23, "Choose save location")
+        #stSaveLocation! = wnd!.addStaticText(3040, 170, 65, 400, 23, "")
+        
+        methodret wnd!
+    methodend
+    
+    method public BBjWindow getEmbedded(BBjWindow wnd!)
+        #setMainWindow(#buildEmbed(wnd!))
+        #setCallbacks()
+        methodret #getmainWindow()
+    methodend
+    
+    method protected void setCallbacks()
+        #super!.setCallbacks()
+        #btnSaveLocation!.setCallback(BBjButton.ON_BUTTON_PUSH, #this!, "onSaveLocationButtonPush")
+    methodend
+    
+    method public void onSaveLocationButtonPush(BBjButtonPushEvent ev!)
+        str$ = FILESAVE("Export Xlsx", #getPATH(), "", "")
+        if str$ <> "::BAD::" and str$ <> "::CANCEL::" then
+            #stSaveLocation!.setText(str$)
+        endif
+    methodend
+    
+    method public void onExportButtonPush(BBjButtonPushEvent ev!)
+        rs! = #getgrid().getGrid().getRS()
+        if rs! = null() or rs!.isEmpty() then methodret
+        path$ = #stSaveLocation!.getText()
+        if cvs(path$,3) = "" then methodret
+        
+        rootTagName$ = #ieRootTagName!.getText()
+        entityName$ = #ieEntityName!.getText()
+        
+        writer! = new FileWriter(path$)
+        
+        #getexporter().writeXML(rs!, rootTagName$, entityName$, writer!)
+        #getmainWindow().destroy()
+    methodend
+
+classend

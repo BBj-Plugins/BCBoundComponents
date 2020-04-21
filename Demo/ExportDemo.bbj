@@ -1,0 +1,54 @@
+REM /**
+REM  * Demo.bbj
+REM  * @author mneu
+REM  *
+REM  */
+
+use ::BusinessUIComponents/ExportMenuButton.bbj::ExportMenuButton
+use ::BusinessUIComponents/BusinessGrid.bbj::BusinessGrid
+use ::BusinessUIComponents/ExampleBCs/ChileCustomerBC.bbj::ChileCustomerBC
+
+use com.basiscomponents.db.ResultSet
+use com.basiscomponents.bc.BCBinder
+
+? 'HIDE'
+? 'SHOW'
+sysGui! = BBjAPI().openSysGui("X0")
+wnd! = sysGui!.addWindow(10,10,900,600,"ExportMenuButton Demo")
+wnd!        .setCallback(BBjAPI.ON_CLOSE,"byebye")
+wnd!        .setCallback(BBjAPI.ON_RESIZE,"resize")
+
+REM BBjAPI().getAdmin("guest", "").getEnvironment().reloadClasspath("components")
+REM init the grid
+declare BusinessGrid grid!
+grid! = new BusinessGrid(wnd!,100,8,15,884,570)
+
+binder! = new BCBinder(new ChileCustomerBC())
+REM grid!.setBinder(binder!)
+binder!.register(grid!)
+
+binder!.retrieve()
+
+REM declare ExportMenuButton menuButton!
+REM menuButton! = new ExportMenuButton(wnd!, 1001, 200, 15, 43, 23)
+REM menuButton!.setGrid(grid!)
+
+process_events
+
+
+
+rem /**
+rem  * Listen to the BBjTopLevelWindow resize events and
+rem  * resize the grid to fill the available space. 
+rem  */
+resize:
+  declare auto BBjResizeEvent ev!
+  ev! = BBjAPI().getLastEvent()
+REM   grid!.setSize(ev!.getWidth(),ev!.getHeight())
+return
+
+rem /**
+rem  * Close the demo
+rem  */
+byebye:
+bye

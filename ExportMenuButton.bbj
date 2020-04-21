@@ -1,0 +1,116 @@
+REM /**
+REM  * ExportMenuButton.bbj
+REM  * @author mneu
+REM  *
+REM  */
+
+use ::BusinessUIComponents/optionsDialogs/ExportHtmlDialog.bbj::ExportHtmlDialog
+use ::BusinessUIComponents/optionsDialogs/ExportPdfDialog.bbj::ExportPdfDialog
+use ::BusinessUIComponents/optionsDialogs/ExportTxtDialog.bbj::ExportTxtDialog
+use ::BusinessUIComponents/optionsDialogs/ExportXlsxDialog.bbj::ExportXlsxDialog
+use ::BusinessUIComponents/optionsDialogs/ExportXmlDialog.bbj::ExportXmlDialog
+use ::BusinessUIComponents/optionsDialogs/ExportCustomReportDialog.bbj::ExportCustomReportDialog
+use ::BusinessUIComponents/optionsDialogs/OptionsDialog.bbj::OptionsDialog
+
+use ::BusinessUIComponents/BusinessGrid.bbj::BusinessGrid
+
+class public ExportMenuButton
+
+    field private BBjMenuButton menuButton!
+    field private BusinessGrid grid!
+
+    field private ExportHtmlDialog exportHtmlDialog!
+    field private ExportPdfDialog exportPdfDialog!
+    field private ExportTxtDialog exportTxtDialog!
+    field private ExportXlsxDialog exportXlsxDialog!
+    field private ExportXmlDialog exportXmlDialog!
+    field private ExportCustomReportDialog exportCustomReportDialog!
+    field private OptionsDialog optionsDialog!
+    
+    field private BBjWindow mainWindow!
+    
+    field private Boolean baristaHeaderVisible! = Boolean.FALSE
+
+    method public ExportMenuButton(BBjWindow wnd!, BBjNumber id, BBjNumber x, BBjNumber y, BBjNumber width, BBjNumber height)
+        #menuButton! = wnd!.addMenuButton(id, x, y, width, height, "")
+        #menuButton!.setImageFile("BusinessUIComponents/icon/print.png")
+        #menuButton!.setImageSize(23, 23)
+        
+        popupMenu! = #menuButton!.addDropdownMenu()
+        popupMenu!.insertMenuItem(0, 1000, "Export Excel").setCallback(BBjPopupMenu.ON_POPUP_ITEM_SELECT, #this!, "exportExcel")
+        popupMenu!.insertMenuItem(1, 1100, "Export Pdf").setCallback(BBjPopupMenu.ON_POPUP_ITEM_SELECT, #this!, "exportPdf")
+        popupMenu!.insertMenuItem(2, 1200, "Export HTML").setCallback(BBjPopupMenu.ON_POPUP_ITEM_SELECT, #this!, "exportHtml")
+        popupMenu!.insertMenuItem(3, 1300, "Export XML").setCallback(BBjPopupMenu.ON_POPUP_ITEM_SELECT, #this!, "exportXml")
+        popupMenu!.insertMenuItem(4, 1400, "Export Txt").setCallback(BBjPopupMenu.ON_POPUP_ITEM_SELECT, #this!, "exportTxt")
+        popupMenu!.insertMenuItem(5, 1500, "Export custom report").setCallback(BBjPopupMenu.ON_POPUP_ITEM_SELECT, #this!, "exportCustomReport")
+        popupMenu!.insertSeparator(6)
+        popupMenu!.insertMenuItem(7, 1600, "Options ...").setCallback(BBjPopupMenu.ON_POPUP_ITEM_SELECT, #this!, "showOptions")
+        
+        #mainWindow! = wnd!
+    methodend
+    
+    method public void setGrid(BusinessGrid grid!)
+        #grid! = grid!
+    methodend
+    
+    method public void showOptions(BBjPopupSelectEvent ev!)
+        if #optionsDialog! = null() then
+            #optionsDialog! = new OptionsDialog()
+        endif
+    
+        #optionsDialog!.createDialogWindow()
+    methodend
+    
+    method public void exportExcel(BBjPopupSelectEvent ev!)
+        if #exportXlsxDialog! = null() then
+            #exportXlsxDialog! = new ExportXlsxDialog(#grid!, Boolean.FALSE)
+        endif
+    
+        #exportXlsxDialog!.createDialogWindow()
+    methodend
+    
+    method public void exportPdf(BBjPopupSelectEvent ev!)
+        if #exportPdfDialog! = null() then
+            #exportPdfDialog! = new ExportPdfDialog(#grid!, Boolean.FALSE)
+        endif
+    
+        #exportPdfDialog!.createDialogWindow()
+    methodend
+    
+    method public void exportHtml(BBjPopupSelectEvent ev!)
+        if #exportHtmlDialog! = null() then
+            #exportHtmlDialog! = new ExportHtmlDialog(#grid!, Boolean.FALSE)
+        endif
+    
+        #exportHtmlDialog!.createDialogWindow()
+    methodend
+    
+    method public void exportXml(BBjPopupSelectEvent ev!)
+        if #exportXmlDialog! = null() then
+            #exportXmlDialog! = new ExportXmlDialog(#grid!, Boolean.FALSE)
+        endif
+    
+        #exportXmlDialog!.createDialogWindow()
+    methodend
+    
+    method public void exportTxt(BBjPopupSelectEvent ev!)
+        if #exportTxtDialog! = null() then
+            #exportTxtDialog! = new ExportTxtDialog(#grid!, Boolean.FALSE)
+        endif
+    
+        #exportTxtDialog!.createDialogWindow()
+    methodend
+    
+    method public void exportCustomReport(BBjPopupSelectEvent ev!)
+        if #exportCustomReportDialog! = null() then
+            #exportCustomReportDialog! = new ExportCustomReportDialog(#grid!, Boolean.FALSE)
+        endif
+    
+        #exportCustomReportDialog!.createDialogWindow()
+    methodend
+    
+    method public void setBaristaHeaderVisible(Boolean visible!)
+        #baristaHeaderVisible! = visible!
+    methodend
+
+classend

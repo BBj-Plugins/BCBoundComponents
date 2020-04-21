@@ -8,13 +8,25 @@ use ::BusinessUIComponents/prototypes/SearchBar.bbj::SearchBar
 use ::BusinessUIComponents/unbound/HorizontalSplitter.bbj::HorizontalSplitter
 use com.basiscomponents.bc.BCBinder
 use com.basiscomponents.db.DataRow
+use com.basiscomponents.db.ResultSet
 
 BBjAPI().getAdmin("guest", "").getEnvironment().reloadClasspath("uicomponents")
 
+declare ResultSet rs!
+rs! = new ResultSet()
 
-ARC1$="BusinessUIComponents/Demo/MasterDataForm1.arc"
-ARC2$="BusinessUIComponents/Demo/MasterDataForm2.arc"
-CWID=100
+declare DataRow dr!
+dr! = new DataRow()
+dr!.setFieldValue("ARC", "BusinessUIComponents/Demo/MasterDataForm1.arc")
+dr!.setFieldValue("CWID", 100)
+dr!.setFieldValue("TABNAME", "Personal")
+rs!.add(dr!)
+dr! = new DataRow()
+dr!.setFieldValue("ARC", "BusinessUIComponents/Demo/MasterDataForm2.arc")
+dr!.setFieldValue("CWID", 100)
+dr!.setFieldValue("TABNAME", "Business")
+rs!.add(dr!)
+
 BC$="ChileCustomerBC"
 
 ? 'HIDE'
@@ -36,15 +48,18 @@ splitter!.setTopCtrl(bgrid!)
 
 tabCtrl! = splitter!.getBottomCanvas().addTabCtrl(104, 0, 0, 500, 500)
 
-form1CW! = splitter!.getBottomCanvas().addChildWindow(105,0,0,500,500,"",$00000800$,sysgui!.getAvailableContext(),$$)
-form2CW! = splitter!.getBottomCanvas().addChildWindow(106,0,0,500,500,"",$00000800$,sysgui!.getAvailableContext(),$$)
-tabCtrl!.addTab("Personal", form1CW!)
-tabCtrl!.addTab("Business", form2CW!)
+cwIdStart = 200
 
-form1! = new SimpleFormComponent(form1CW!,100,0,5,300,300)
-form1!.setForm(ARC1$,cwid)
-form2! = new SimpleFormComponent(form2CW!,101,0,5,300,300)
-form2!.setForm(ARC2$,cwid)
+forms! = new BBjVector()
+for i = 0 to rs!.size() - 1
+    dr! = rs!.get(i)
+    formCW! = splitter!.getBottomCanvas().addChildWindow(cwIdStart + i,0,0,500,500,"",$00000800$,sysgui!.getAvailableContext(),$$)
+    tabCtrl!.addTab(dr!.getFieldAsString("TABNAME"), formCW!)
+    form! = new SimpleFormComponent(formCW!,100,0,5,300,300)
+    form!.setForm(dr!.getFieldAsString("ARC"), dr!.getFieldAsNumber("CWID"))
+    forms!.addItem(form!)
+next i
+
 splitter!.setBottomCtrl(tabCtrl!)
 
 bc! = eval("new "+BC$+"()")
@@ -52,18 +67,22 @@ bc! = eval("new "+BC$+"()")
 binder! = new BCBinder(bc!)
 binder!.register(nav!)
 binder!.register(edittb!)
-binder!.register(form1!)
-binder!.register(form2!)
 binder!.register(bgrid!)
 binder!.register(searchBar!)
+
+for i = 0 to forms!.size() - 1
+    binder!.register(forms!.getItem(i))
+next i
 
 binder!.retrieve()
 
 splitter!.setSize(wnd!.getWidth() -10,wnd!.getHeight()-30)
-
 nav!.setSize(wnd!.getWidth()-405,20)
-form1!.setSize(tabCtrl!.getWidth(), tabCtrl!.getHeight())
-form2!.setSize(tabCtrl!.getWidth(), tabCtrl!.getHeight())
+
+for i = 0 to forms!.size() - 1
+    forms!.getItem(i).setSize(tabCtrl!.getWidth(), tabCtrl!.getHeight())
+next i
+
 sysgui!.setRepaintEnabled(1)
 process_events
 

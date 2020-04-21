@@ -1,0 +1,155 @@
+REM /**
+REM  * ExportCustomReportDialog.bbj
+REM  * @author mneu
+REM  *
+REM  */
+
+use ::BusinessUIComponents/BusinessGrid.bbj::BusinessGrid
+
+use ::BBjGridExWidget/BBjGridExWidgetState.bbj::BBjGridExWidgetState
+
+use com.basiscomponents.db.DataRow
+use com.basiscomponents.db.ResultSet
+
+use com.basiscomponents.db.BBArrayList
+use com.basiscomponents.db.ResultSetExporter
+use com.basiscomponents.db.export.SheetConfiguration
+use com.basiscomponents.db.export.ReportDetails
+use com.basiscomponents.db.export.ColumnWidthCalculator
+
+use net.sf.jasperreports.engine.JRField
+use net.sf.jasperreports.engine.JasperReport
+use net.sf.jasperreports.engine.JRDataSource
+use net.sf.jasperreports.engine.JasperCompileManager
+use net.sf.jasperreports.engine.JasperFillManager
+
+use java.io.File
+
+use java.nio.file.Paths
+use java.nio.file.Path
+
+class public ExportCustomReportDialog
+
+    field private static BBjString PATH$ = java.lang.System.getProperty("user.home") + "/documents/"
+
+    field private BBjWindow mainWindow!
+    field private Boolean embedded! = Boolean.FALSE
+    
+    field private BusinessGrid grid!
+    
+    field private BBjButton btnReportLocation!
+    field private BBjStaticText stReportLocation!
+    field private BBjButton btnSaveLocation!
+    field private BBjStaticText stSaveLocation!
+    
+    field private BBjButton btnExport!
+    field private BBjButton btnCancel!
+    
+    field private Boolean showsBaristaHeader! = Boolean.FALSE
+    field private ResultSetExporter exporter! = new ResultSetExporter()
+
+    method public ExportCustomReportDialog(BusinessGrid grid!, Boolean embedded!)
+        #grid! = grid!
+        #embedded! = embedded!
+    methodend
+    
+    method public ExportCustomReportDialog(Boolean embedded!)
+        #embedded! = embedded!
+    methodend
+
+    method public void createDialogWindow()
+REM         if #mainWindow! <> null() and #mainWindow!.getAllControls().size() > 0 then methodret #mainWindow!
+        sysGui! = BBjAPI().getSysGui()
+        declare BBjTopLevelWindow wnd!
+        wnd! = cast(BBjTopLevelWindow, sysGui!.addWindow(sysGui!.getAvailableContext(),10,10,600,130,"Export Pdf"))
+        wnd!.setCallback(BBjAPI.ON_CLOSE, #this!, "onClose")
+        wnd!.setResizable(0)
+        
+        wnd! = cast(BBjTopLevelWindow, #buildEmbed(wnd!))
+        
+        #btnExport! = cast(BBjButton, wnd!.addButton(5010, 270, 90, 150, 23, "Export"))
+        #btnCancel! = cast(BBjButton, wnd!.addButton(6010, 440, 90, 150, 23, "Cancel"))
+        
+        #mainWindow! = wnd!
+        #setCallbacks()
+REM         methodret #mainWindow!
+    methodend
+    
+    method private BBjWindow buildEmbed(BBjWindow wnd!)
+        #btnReportLocation! = wnd!.addButton(2040, 8, 15, 150, 23, "Custom report")
+        #stReportLocation! = wnd!.addStaticText(3040, 170, 15, 400, 23, "")
+        
+        #btnSaveLocation! = wnd!.addButton(2050, 8, 40, 150, 23, "Choose save location")
+        #stSaveLocation! = wnd!.addStaticText(3050, 170, 40, 400, 23, "")
+        
+        methodret wnd!
+    methodend
+    
+    method public BBjWindow getEmbedded(BBjWindow wnd!)
+        #mainWindow! = #buildEmbed(wnd!)
+        #setCallbacks()
+        methodret #mainWindow!
+    methodend
+    
+    method private void setCallbacks()
+        #btnSaveLocation!.setCallback(BBjButton.ON_BUTTON_PUSH, #this!, "onSaveLocationButtonPush")
+        #btnReportLocation!.setCallback(BBjButton.ON_BUTTON_PUSH, #this!, "onCustomReportButtonPush")
+    
+        if !#embedded! then
+            #btnExport!.setCallback(BBjButton.ON_BUTTON_PUSH, #this!, "onExportButtonPush")
+            #btnCancel!.setCallback(BBjButton.ON_BUTTON_PUSH, #this!, "onCancelButtonPush")
+        endif
+    methodend
+    
+    method public void onSaveLocationButtonPush(BBjButtonPushEvent ev!)
+        str$ = FILESAVE("Export Pdf", #PATH$, "", "")
+        if str$ <> "::BAD::" and str$ <> "::CANCEL::" then
+            #stSaveLocation!.setText(str$)
+        endif
+    methodend
+    
+    method public void onCustomReportButtonPush(BBjButtonPushEvent ev!)
+        str$ = FILESAVE("Custom report", #PATH$, "", "")
+        if str$ <> "::BAD::" and str$ <> "::CANCEL::" then
+            #stReportLocation!.setText(str$)
+        endif
+    methodend
+    
+    method public void onExportButtonPush(BBjButtonPushEvent ev!)
+        rs! = #grid!.getGrid().getRS()
+        if rs! = null() or rs!.isEmpty() then methodret
+        file! = #stSaveLocation!.getText()
+        if file!.trim().equals("") then methodret
+        report! = #stReportLocation!.getText()
+        if report!.trim().equals("") then methodret
+        
+        compiledReport! = JasperCompileManager.compileReport(report!)
+
+        declare JRField field!
+
+        fields! = compiledReport!.getFields()
+        dr! = new DataRow()
+        for i = 0 to fields!.length - 1
+            field! = cast(JRField, fields![i])
+            name$ = field!.getName()
+            dr!.setFieldValue(name$, "")
+        next i
+
+        rem TODO: wie triggern wir das neue resultset, welches die felder des reports beinhaltet? kein controller vorhanden!
+        
+        rem exporting
+        declare File outputFile!
+        outputFile! = #exporter!.exportToPDFByCustomReport(file!, report!, rs!)
+        bbjapi().getThinClient().browse(outputFile!.getAbsolutePath().replace("\", "/"))
+        #mainWindow!.destroy()
+    methodend
+    
+    method public void onCancelButtonPush(BBjButtonPushEvent ev!)
+        #mainWindow!.destroy()
+    methodend
+    
+    method public void onClose(BBjEvent ev!)
+        #mainWindow!.destroy()
+    methodend   
+
+classend
