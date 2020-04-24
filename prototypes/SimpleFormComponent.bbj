@@ -140,9 +140,27 @@ class public SimpleFormComponent extends AbstractBCBoundWidget
                 break
                 
             case BBjControl.INPUTN_CONTROL
+                ?fieldAttributes!
                 if fieldAttributes!.containsKey("MASK") then
                     mask! = fieldAttributes!.get("MASK")
                     cast(BBjInputN, c!).setMask(mask!)
+                    cast(BBjInputN, c!).setLength(precision!)
+                else
+                    scale = 0
+                    if fieldAttributes!.containsKey("Scale") then
+                        scale = num(fieldAttributes!.get("Scale"))
+                    endif
+                    mask! = "#.#"
+                    if scale > 0 then
+                        beforeComma = num(precision!) - scale
+                        mask! = fill(beforeComma,"#") + cast(BBjInputN, c!).getDotCharacter() + fill(scale, "#")
+                        cast(BBjInputN, c!).setLength(precision! + 1)
+                    else
+                        mask! = fill(num(precision!),"#")
+                        cast(BBjInputN, c!).setLength(precision!)
+                    endif
+                    cast(BBjInputN, c!).setMask(mask!)
+                endif
                 endif
                 if fieldAttributes!.containsKey("Signed") then
                     signed! = fieldAttributes!.get("Signed")
