@@ -56,7 +56,6 @@ class public BusinessGrid extends AbstractBCBoundWidget implements IPersistentSt
         if (f_init!) then
             rem rendering for the first time
             rem so have to initialize / create my controls
-            declare BBjGridExWidget grid!
             #grid! = new BBjGridExWidget(#getCanvas(),100,0,30,#getWidth(),#getHeight()-30)
             #grid!.getOptions().setNavigationBehavior(#grid!.GRID_NAVIGATION_BEHAVIOUR_NEXT_ROW())
             #grid!.setCallback(#grid!.ON_GRID_ROW_SELECT(),#this!,"onGridSelection")
@@ -176,6 +175,7 @@ class public BusinessGrid extends AbstractBCBoundWidget implements IPersistentSt
             x$=X$(pos("::"=x$)+2)
         wend
         #cfgwidget! = new ConfigurationWidget(#getCanvas(),201, #getWidth()-155, 5 , #this!, Boolean.TRUE, "GRD", x$, #cfgbc! )
+        #cfgwidget!.setMinPaddingLeft(50)
     methodend    
         
     

@@ -119,25 +119,77 @@ class public SimpleFormComponent extends AbstractBCBoundWidget
                 
                 #registerCallbacks(c!)
                 precision! = attributes!.getFieldPrecision(n$)
-                #setFieldLength(c!, precision!)
+                #formatField(c!)
             fi
         wend
         
         #fieldlist! = CAST(BBjVector,fieldlist!)
     methodend
     
-    method private void setFieldLength(BBjControl c!, int precision!)
-        if c!.getControlType() = BBjControl.INPUTE_TYPE then
-            cast(BBjInputE, c!).setLength(precision!)
-        endif
+    rem /**
+    rem  * formats a control by parsing the attributes record and appliying those attributes.
+    rem  */
+    method private void formatField(BBjControl c!)
+        attributes! = #getBinder().getAttributesRecord()
+        fieldAttributes! = attributes!.getFieldAttributes(c!.getName())
+        precision! = attributes!.getFieldPrecision(c!.getName())
+        switch c!.getControlType()
+        
+            case BBjControl.INPUTE_TYPE
+                cast(BBjInputE, c!).setLength(precision!)
+                break
+                
+            case BBjControl.INPUTN_CONTROL
+                if fieldAttributes!.containsKey("MASK") then
+                    mask! = fieldAttributes!.get("MASK")
+                    cast(BBjInputN, c!).setMask(mask!)
+                endif
+                if fieldAttributes!.containsKey("Signed") then
+                    signed! = fieldAttributes!.get("Signed")
+REM                     cast(BBjInputN, c!).setNegateable(signed!)
+                    if signed!.equals("1") then
+                        cast(BBjInputN, c!).setNegateable(1)
+                    else
+                        cast(BBjInputN, c!).setNegateable(0)
+                    endif
+                endif
+                cast(BBjInputN, c!).setLength(precision! + 1)
+                break
+                
+            case BBjControl.INPUTD_CONTROL
+                if fieldAttributes!.containsKey("MASK") then
+                    mask! = fieldAttributes!.get("MASK")
+                else
+                    mask! = "%Yd-%Mz-%Dz"
+                endif
+                cast(BBjInputD, c!).setMask(mask!)
+                #addCalendarButton(cast(BBjInputD, c!))
+                break
+            
+            case default
+                break
+        swend
+    methodend
+    
+    method private void addCalendarButton(BBjInputD control!)
+        calendarButton! = #getCanvas().addButton(#getCanvas().getAvailableControlID(), control!.getX() + control!.getWidth() - control!.getHeight() + 1, control!.getY() + 1, control!.getHeight() - 2, control!.getHeight() - 2, "")
+        calendarButton!.setImageFile("BusinessUIComponents/icon/ic_insert_invitation_black_24dp.png")
+        calendarButton!.setImageSize(control!.getHeight() - 2,control!.getHeight() - 2)
+        calendarButton!.setUserData(control!)
+        calendarButton!.setCallback(BBjAPI.ON_BUTTON_PUSH,#this!,"onCalendarButtonPush") 
     methodend
     
     method private void registerCallbacks(BBjControl c!)
-        if c!.getControlType() = BBjControl.INPUTE_TYPE then
-            c!.setCallback(BBjAPI.ON_EDIT_MODIFY,#this!,"onControlEditModify") 
-        else
-            c!.setCallback(BBjAPI.ON_GAINED_FOCUS,#this!,"onControlGainedFocus") 
-        endif
+        switch c!.getControlType()
+            case BBjControl.INPUTE_TYPE
+            case BBjControl.INPUTN_TYPE
+            case BBjControl.INPUTD_TYPE
+                c!.setCallback(BBjAPI.ON_EDIT_MODIFY,#this!,"onControlEditModify") 
+                break
+            case default
+                c!.setCallback(BBjAPI.ON_GAINED_FOCUS,#this!,"onControlGainedFocus") 
+                break
+        swend
     methodend
     
     method public void setBinder(BCBinder binder!)
@@ -146,6 +198,12 @@ class public SimpleFormComponent extends AbstractBCBoundWidget
     
     method public void onControlGainedFocus(BBjGainedFocusEvent ev!)
         #getBinder().sendSignal(BCBinder.SIGNAL_DIRTY)
+    methodend
+    
+    method public void onCalendarButtonPush(BBjButtonPushEvent ev!)
+        control! = ev!.getControl()
+        inputD! = control!.getUserData()
+        cast(BBjInputD, inputD!).calendar()
     methodend
     
     method public void onControlEditModify(BBjEditModifyEvent ev!)
