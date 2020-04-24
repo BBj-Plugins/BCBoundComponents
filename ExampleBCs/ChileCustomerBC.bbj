@@ -440,6 +440,8 @@ REM         endif
             #addValidationError(rsErrors!,"LAST_NAME","LAST_NAME too long!")
             endif
         endif
+        
+        
 
         rem etc.
 
@@ -485,6 +487,7 @@ REM         endif
             wend
             errormsg$ = errormsg$(1,len(errormsg$)-1)
             throw errormsg$,999
+            methodret
         endif
 
 

@@ -95,46 +95,52 @@ BEGIN
 
     INPUTN 108, "", 498, 25, 206, 25
     BEGIN
+        MASK "-########."
         NAME "OVER_30"
         RESTORESTRING "0"
         NOT DRAGENABLED
         NOT INSERTMODE
     END
 
-    INPUTN 116, "", 498, 56, 206, 25
+    INPUTN 116, "0", 498, 56, 206, 25
     BEGIN
+        MASK "-########."
         NAME "OVER_60"
         RESTORESTRING "0"
         NOT DRAGENABLED
         NOT INSERTMODE
     END
 
-    INPUTN 117, "", 498, 87, 206, 25
+    INPUTN 117, "0", 498, 87, 206, 25
     BEGIN
+        MASK "-########."
         NAME "OVER_90"
         RESTORESTRING "0"
         NOT DRAGENABLED
         NOT INSERTMODE
     END
 
-    INPUTN 118, "", 498, 118, 206, 25
+    INPUTN 118, "0", 498, 118, 206, 25
     BEGIN
+        MASK "-########."
         NAME "OVER_120"
         RESTORESTRING "0"
         NOT DRAGENABLED
         NOT INSERTMODE
     END
 
-    INPUTN 119, "", 498, 149, 206, 25
+    INPUTN 119, ".00", 498, 149, 206, 25
     BEGIN
+        MASK "-########.00"
         NAME "SALES_MTD"
         RESTORESTRING "0"
         NOT DRAGENABLED
         NOT INSERTMODE
     END
 
-    INPUTN 120, "", 498, 180, 206, 25
+    INPUTN 120, ".00", 498, 180, 206, 25
     BEGIN
+        MASK "-########.00"
         NAME "SALES_YTD"
         RESTORESTRING "0"
         NOT DRAGENABLED
@@ -167,8 +173,9 @@ BEGIN
         NOT WORDWRAP
     END
 
-    INPUTN 125, "", 150, 211, 206, 25
+    INPUTN 125, ".00", 150, 211, 206, 25
     BEGIN
+        MASK "-########.00"
         NAME "CURRENT_BAL"
         RESTORESTRING "0"
         NOT DRAGENABLED
@@ -181,8 +188,9 @@ BEGIN
         NOT WORDWRAP
     END
 
-    INPUTN 127, "", 498, 211, 206, 25
+    INPUTN 127, ".00", 498, 211, 206, 25
     BEGIN
+        MASK "-########.00"
         NAME "SALES_LY"
         RESTORESTRING "0"
         NOT DRAGENABLED

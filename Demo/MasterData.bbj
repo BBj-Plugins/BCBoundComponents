@@ -87,15 +87,25 @@ sysgui!.setRepaintEnabled(1)
 process_events
 
 resize:
-  BBjAPI().removeTimer("resize",err=*next)
+REM   if timerActive! then return
+  timerActive! = Boolean.TRUE
   ev! = BBjAPI().getLastEvent()
   BBjAPI().createTimer("resize",.7,"delayed_resize")
-  
 delayed_resize:
   BBjAPI().removeTimer("resize",err=*next)
   splitter!.setSize(ev!.getWidth() -10 ,ev!.getHeight()-30)
-  nav!.setSize(ev!.getWidth()-405,20)
-  searchBar!.setLocation(ev!.getWidth()-290, searchBar!.getY())
+  navWidth = ev!.getWidth()-405
+  if navWidth < nav!.getHeight() * 4 then
+    navWidth = nav!.getHeight() * 4
+  endif
+  nav!.setSize(navWidth,20)
+  searchBarX = ev!.getWidth()-290
+REM   ?searchBarX
+REM   if searchBarX < 100 then escape
+  if searchBarX < (nav!.getX() +  nav!.getWidth()) then
+     searchBarX = nav!.getX() +  nav!.getWidth()
+  endif
+  searchBar!.setLocation(searchBarX, searchBar!.getY())
 return
 
 byebye:

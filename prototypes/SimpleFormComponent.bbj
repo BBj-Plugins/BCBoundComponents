@@ -140,38 +140,35 @@ class public SimpleFormComponent extends AbstractBCBoundWidget
                 break
                 
             case BBjControl.INPUTN_CONTROL
-                ?fieldAttributes!
                 if fieldAttributes!.containsKey("MASK") then
                     mask! = fieldAttributes!.get("MASK")
                     cast(BBjInputN, c!).setMask(mask!)
-                    cast(BBjInputN, c!).setLength(precision!)
                 else
                     scale = 0
                     if fieldAttributes!.containsKey("Scale") then
                         scale = num(fieldAttributes!.get("Scale"))
                     endif
-                    mask! = "#.#"
+                    beforeComma = num(precision!) - scale
+                    oldMask! = cast(BBjInputN, c!).getMask()
+                    rem if old mask of the control had a specific number of digits after dot defined, then use this instead
+                    if oldMask!.contains(cast(BBjInputN, c!).getDotCharacter()) then
+                        oldScale = oldMask!.substring(oldMask!.indexOf(cast(BBjInputN, c!).getDotCharacter())).length() - 1
+                        if oldScale < scale then scale = oldScale
+                    endif
                     if scale > 0 then
-                        beforeComma = num(precision!) - scale
-                        mask! = fill(beforeComma,"#") + cast(BBjInputN, c!).getDotCharacter() + fill(scale, "#")
-                        cast(BBjInputN, c!).setLength(precision! + 1)
+                        mask! = fill(beforeComma - 1,"#") + "0" + cast(BBjInputN, c!).getDotCharacter() + fill(scale, "#")
                     else
-                        mask! = fill(num(precision!),"#")
-                        cast(BBjInputN, c!).setLength(precision!)
+                        mask! = fill(beforeComma,"#")
+                    endif
+                    rem add '-' to mask if negatable
+                    if fieldAttributes!.containsKey("Signed") then
+                        signed! = fieldAttributes!.get("Signed")
+                        if signed!.equals("1") then
+                            mask! = "-" + mask!
+                        endif
                     endif
                     cast(BBjInputN, c!).setMask(mask!)
                 endif
-                endif
-                if fieldAttributes!.containsKey("Signed") then
-                    signed! = fieldAttributes!.get("Signed")
-REM                     cast(BBjInputN, c!).setNegateable(signed!)
-                    if signed!.equals("1") then
-                        cast(BBjInputN, c!).setNegateable(1)
-                    else
-                        cast(BBjInputN, c!).setNegateable(0)
-                    endif
-                endif
-                cast(BBjInputN, c!).setLength(precision! + 1)
                 break
                 
             case BBjControl.INPUTD_CONTROL

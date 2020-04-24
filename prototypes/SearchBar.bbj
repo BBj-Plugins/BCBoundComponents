@@ -21,6 +21,8 @@ class public SearchBar extends AbstractBCBoundWidget
     field private BBjToolButton btn_retrieve!
     field private BBjInputE searchField!
     
+    field protected BBjNumber minLength = 100
+    
         
     rem --------------------- constructors -------------------------------------
     
@@ -60,7 +62,6 @@ class public SearchBar extends AbstractBCBoundWidget
             
             #searchField! = #getCanvas().addInputE(101,0,1,#getWidth() - 20,#getHeight() - 2)
         FI
-        
     methodend
 
     rem /**
