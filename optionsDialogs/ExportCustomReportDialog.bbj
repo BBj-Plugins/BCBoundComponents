@@ -23,6 +23,8 @@ use net.sf.jasperreports.engine.JRDataSource
 use net.sf.jasperreports.engine.JasperCompileManager
 use net.sf.jasperreports.engine.JasperFillManager
 
+use ::FileChooser/FileChooser.bbj::FileChooser
+
 use java.io.File
 
 use java.nio.file.Paths
@@ -36,6 +38,10 @@ class public ExportCustomReportDialog
     field private Boolean embedded! = Boolean.FALSE
     
     field private BusinessGrid grid!
+    field private BBjString pgmName$
+    
+    field private FileChooser fileChooser!
+    field private FileChooser fileChooserJasperReport!
     
     field private BBjButton btnReportLocation!
     field private BBjStaticText stReportLocation!
@@ -48,13 +54,21 @@ class public ExportCustomReportDialog
     field private Boolean showsBaristaHeader! = Boolean.FALSE
     field private ResultSetExporter exporter! = new ResultSetExporter()
 
-    method public ExportCustomReportDialog(BusinessGrid grid!, Boolean embedded!)
+    method public ExportCustomReportDialog(BBjString pgmName$, BusinessGrid grid!, Boolean embedded!)
+        #pgmName$ = pgmName$
         #grid! = grid!
         #embedded! = embedded!
+        ns! = BBjAPI().getGroupNamespace()
+        ns!.setCallbackForVariable(#pgmName$ + "_CUSTOM_" + str(#embedded!) + "_user_action", #this!, "onFileChooserFinish")
+        ns!.setCallbackForVariable(#pgmName$ + "_CUSTOM_JASPER_" + str(#embedded!) + "_user_action", #this!, "onFileChooserJasperReportFinish")
     methodend
     
-    method public ExportCustomReportDialog(Boolean embedded!)
+    method public ExportCustomReportDialog(BBjString pgmName$, Boolean embedded!)
+        #pgmName$ = pgmName$
         #embedded! = embedded!
+        ns! = BBjAPI().getGroupNamespace()
+        ns!.setCallbackForVariable(#pgmName$ + "_CUSTOM_" + str(#embedded!) + "_user_action", #this!, "onFileChooserFinish")
+        ns!.setCallbackForVariable(#pgmName$ + "_CUSTOM_JASPER_" + str(#embedded!) + "_user_action", #this!, "onFileChooserJasperReportFinish")
     methodend
 
     method public void createDialogWindow()
@@ -101,18 +115,17 @@ REM         methodret #mainWindow!
         endif
     methodend
     
-    method public void onSaveLocationButtonPush(BBjButtonPushEvent ev!)
-        str$ = FILESAVE("Export Pdf", #PATH$, "", "")
-        if str$ <> "::BAD::" and str$ <> "::CANCEL::" then
-            #stSaveLocation!.setText(str$)
-        endif
+    method public void onCustomReportButtonPush(BBjButtonPushEvent ev!)
+        dirOnly = 0
+        useSaveDialog = 1
+        if #embedded! then dirOnly = 1, useSaveDialog = 0
+        #fileChooserJasperReport! = new FileChooser(#PATH$, 10, 10, #pgmName$ + "_CUSTOM_JASPER_" + str(#embedded!), 1, dirOnly, 0, useSaveDialog)
     methodend
     
-    method public void onCustomReportButtonPush(BBjButtonPushEvent ev!)
-        str$ = FILESAVE("Custom report", #PATH$, "", "")
-        if str$ <> "::BAD::" and str$ <> "::CANCEL::" then
-            #stReportLocation!.setText(str$)
-        endif
+    method public void onSaveLocationButtonPush(BBjButtonPushEvent ev!)
+        dirOnly = 0
+        useSaveDialog = 0
+        #fileChooser! = new FileChooser(#PATH$, 10, 10, #pgmName$ + "_CUSTOM_" + str(#embedded!), 1, dirOnly, 0, useSaveDialog)
     methodend
     
     method public void onExportButtonPush(BBjButtonPushEvent ev!)
@@ -151,5 +164,44 @@ REM         methodret #mainWindow!
     method public void onClose(BBjEvent ev!)
         #mainWindow!.destroy()
     methodend   
+    
+    method public BBjString getSaveLocation()
+        methodret #stSaveLocation!.getText()
+    methodend
+    
+    method public void onFileChooserFinish(BBjNamespaceEvent ev!)
+        val! = ev!.getNewValue()
+        
+        switch val!
+            case "::SAVE::"
+            case "::OPEN::"
+                chosenDirOrFilePath! = #fileChooser!.getSelectedFile()
+                break
+            case "::CANCEL::"
+                rem do nothing
+                methodret
+                break
+        swend
+        
+        if !chosenDirOrFilePath!.toLowerCase().endsWith(".pdf") then chosenDirOrFilePath! = chosenDirOrFilePath! + ".pdf"
+        #stSaveLocation!.setText(chosenDirOrFilePath!)
+    methodend
+    
+    method public void onFileChooserJasperReportFinish(BBjNamespaceEvent ev!)
+        val! = ev!.getNewValue()
+        
+        switch val!
+            case "::SAVE::"
+            case "::OPEN::"
+                chosenDirOrFilePath$ = #fileChooserJasperReport!.getSelectedFile()
+                break
+            case "::CANCEL::"
+                rem do nothing
+                methodret
+                break
+        swend
+        
+        #stReportLocation!.setText(chosenDirOrFilePath$)
+    methodend
 
 classend

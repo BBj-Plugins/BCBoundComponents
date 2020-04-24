@@ -61,9 +61,10 @@ class public BusinessGrid extends AbstractBCBoundWidget implements IPersistentSt
             #grid!.setCallback(#grid!.ON_GRID_ROW_SELECT(),#this!,"onGridSelection")
             #cfgbc! = new CustomConfigurationsBC(info(3,2))
             
-            rem TODO: exportbutton
             #exportButton! = new ExportMenuButton(#getCanvas(), 202, 0, 5, 43, 23)
             #exportButton!.setGrid(#this!)
+            #exportButton!.setBC(new CustomConfigurationsBC(info(3,2), "exportButtonConfigurations"))
+            #exportButton!.setProgramName(pgm(-2,0))
         fi
         
         #grid!.setSize(#getWidth(),#getHeight()-30)

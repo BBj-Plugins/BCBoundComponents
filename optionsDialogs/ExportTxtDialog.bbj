@@ -7,9 +7,12 @@ REM  */
 use ::BusinessUIComponents/optionsDialogs/Dialog.bbj::Dialog
 use ::BusinessUIComponents/BusinessGrid.bbj::BusinessGrid
 
+use ::FileChooser/FileChooser.bbj::FileChooser
+
 use com.basiscomponents.db.DataRow
 use com.basiscomponents.db.ResultSet
 use com.basiscomponents.db.ResultSetExporter
+use com.basiscomponents.db.util.DataRowJsonMapper
 
 use java.io.FileWriter
 
@@ -18,22 +21,31 @@ class public ExportTxtDialog extends Dialog
     field private BBjButton btnSaveLocation!
     field private BBjStaticText stSaveLocation!
     
+    field private FileChooser fileChooser!
+    
     field private BBjButton btnExport!
     field private BBjButton btnCancel!
     
 
-    method public ExportTxtDialog(BusinessGrid grid!, Boolean embedded!)
-        #super!(grid!, embedded!)
+    method public ExportTxtDialog(BBjString pgmName$, BusinessGrid grid!, Boolean embedded!)
+        #super!(pgmName$, grid!, embedded!)
+        ns! = BBjAPI().getGroupNamespace()
+        ns!.setCallbackForVariable(#getpgmName() + "_TXT_" + str(#getembedded()) + "_user_action", #this!, "onFileChooserFinish")
+    
     methodend
     
-    method public ExportTxtDialog(Boolean embedded!)
-        #super!(embedded!)
+    method public ExportTxtDialog(BBjString pgmName$, Boolean embedded!)
+        #super!(pgmName$, embedded!)
+        ns! = BBjAPI().getGroupNamespace()
+        ns!.setCallbackForVariable(#getpgmName() + "_TXT_" + str(#getembedded()) + "_user_action", #this!, "onFileChooserFinish")
+    
     methodend
 
     method public void createDialogWindow()
         #createDialogWindow("Export Txt", 105)
         wnd! = #getmainWindow()
         wnd! = cast(BBjTopLevelWindow, #buildEmbed(wnd!))
+        #fillFormWithConfigurations()
         #addBaseButtons(65)
         #setCallbacks()
     methodend
@@ -47,6 +59,7 @@ class public ExportTxtDialog extends Dialog
     
     method public BBjWindow getEmbedded(BBjWindow wnd!)
         #setMainWindow(#buildEmbed(wnd!))
+        #fillFormWithConfigurations()
         #setCallbacks()
         methodret #getmainWindow()
     methodend
@@ -57,10 +70,12 @@ class public ExportTxtDialog extends Dialog
     methodend
     
     method public void onSaveLocationButtonPush(BBjButtonPushEvent ev!)
-        str$ = FILESAVE("Export Xlsx", #getPATH(), "", "")
-        if str$ <> "::BAD::" and str$ <> "::CANCEL::" then
-            #stSaveLocation!.setText(str$)
-        endif
+        dirOnly = 0
+        useSaveDialog = 1
+        if #getembedded() then dirOnly = 1, useSaveDialog = 0
+        path$ = #getPATH()
+        if #getcustomSaveLocation() <> "" then path$ = #getcustomSaveLocation()
+        #fileChooser! = new FileChooser(path$, 10, 10, #getpgmName() + "_TXT_" + str(#getembedded()), 1, dirOnly, 0, useSaveDialog)
     methodend
     
     method public void onExportButtonPush(BBjButtonPushEvent ev!)
@@ -73,6 +88,45 @@ class public ExportTxtDialog extends Dialog
         
         #getexporter().writeTXT(rs!, writer!)
         #getmainWindow().destroy()
+    methodend
+    
+    method protected void fillFormWithConfigurations()
+        config$ = #getConfigurations()
+        if config$ = "" then methodret
+        
+        dr! = DataRowJsonMapper.fromJson(config$)
+        dr! = cast(DataRow, dr!.getField("txt").getValue())
+        #setCustomSaveLocation(dr!.getFieldAsString("path"))
+        
+        if #getembedded() then
+            if #getcustomSaveLocation() = "" then
+                #stSaveLocation!.setText(#getPATH())
+            else
+                #stSaveLocation!.setText(dr!.getFieldAsString("path"))
+            endif
+        endif
+    methodend
+    
+    method public BBjString getSaveLocation()
+        methodret #stSaveLocation!.getText()
+    methodend
+    
+    method public void onFileChooserFinish(BBjNamespaceEvent ev!)
+        val! = ev!.getNewValue()
+        
+        switch val!
+            case "::SAVE::"
+            case "::OPEN::"
+                chosenDirOrFilePath! = #fileChooser!.getSelectedFile()
+                break
+            case "::CANCEL::"
+                rem do nothing
+                methodret
+                break
+        swend
+        
+        if !chosenDirOrFilePath!.toLowerCase().endsWith(".txt") then chosenDirOrFilePath! = chosenDirOrFilePath! + ".txt"
+        #stSaveLocation!.setText(chosenDirOrFilePath!)
     methodend
 
 classend

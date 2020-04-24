@@ -4,6 +4,10 @@ REM  * @author mneu
 REM  *
 REM  */
 
+use com.google.gson.Gson
+use com.google.gson.JsonElement
+use com.google.gson.JsonObject
+
 use ::BusinessUIComponents/BusinessGrid.bbj::BusinessGrid
 use ::BBjGridExWidget/BBjGridExWidgetState.bbj::BBjGridExWidgetState
 use com.basiscomponents.db.DataRow
@@ -14,6 +18,8 @@ use com.basiscomponents.db.ResultSetExporter
 use com.basiscomponents.db.export.SheetConfiguration
 use com.basiscomponents.db.export.ReportDetails
 use com.basiscomponents.db.export.ColumnWidthCalculator
+
+use ::ConfigurationWidget/CustomConfigurationsBC.bbj::CustomConfigurationsBC
 
 use java.io.File
 
@@ -26,6 +32,10 @@ class public Dialog
 
     field protected BBjWindow mainWindow!
     field protected Boolean embedded! = Boolean.FALSE
+    field protected BBjString customSaveLocation$ = ""
+    
+    field protected CustomConfigurationsBC cfgBC!
+    field protected BBjString pgmName$
     
     field protected BusinessGrid grid!
     
@@ -34,12 +44,14 @@ class public Dialog
     
     field protected ResultSetExporter exporter! = new ResultSetExporter()
 
-    method public Dialog(BusinessGrid grid!, Boolean embedded!)
+    method public Dialog(BBjString pgmName$, BusinessGrid grid!, Boolean embedded!)
+        #pgmName$ = pgmName$
         #grid! = grid!
         #embedded! = embedded!
     methodend
     
-    method public Dialog(Boolean embedded!)
+    method public Dialog(BBjString pgmName$, Boolean embedded!)
+        #pgmName$ = pgmName$
         #embedded! = embedded!
     methodend
 
@@ -97,5 +109,31 @@ class public Dialog
     method protected void setMainWindow(BBjWindow wnd!)
         #mainWindow! = wnd!
     methodend
+    
+    method public void setConfigurationsBC(CustomConfigurationsBC cfgBC!)
+        #cfgBC! = cfgBC!
+    methodend
+    
+    method protected BBjString getConfigurations()
+        filter! = new DataRow()
+        filter!.setFieldValue("USERID", #cfgBC!.getUserName())
+        filter!.setFieldValue("KEYX", "")
+        filter!.setFieldValue("REALM", "std")
+        filter!.setFieldValue("SETTING", "std")
+        #cfgBC!.setFilter(filter!)
+        rs! = #cfgBC!.retrieve()
+        
+        if rs!.isEmpty() then methodret ""
+        
+        methodret rs!.get(0).getFieldAsString("CONFIG")
+    methodend
 
+    method protected void fillFormWithConfigurations()
+        rem implementation in subclass
+    methodend
+    
+    method protected void setCustomSaveLocation(BBjString customSaveLocation$)
+        #customSaveLocation$ = customSaveLocation$
+    methodend
+    
 classend
