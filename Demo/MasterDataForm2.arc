@@ -43,14 +43,6 @@ BEGIN
         NOT WORDWRAP
     END
 
-    INPUTE 105, "", 150, 118, 206, 25
-    BEGIN
-        NAME "LAST_PURCH_DATE"
-        PADCHARACTER 32
-        SPELLCHECKED
-        NOT DRAGENABLED
-    END
-
     STATICTEXT 107, "Last Payment:", 50, 148, 90, 25
     BEGIN
         NAME "Static Text107"
@@ -93,14 +85,6 @@ BEGIN
         NOT WORDWRAP
     END
 
-    INPUTE 114, "", 150, 149, 206, 25
-    BEGIN
-        NAME "LAST_PAY_DATE"
-        PADCHARACTER 32
-        SPELLCHECKED
-        NOT DRAGENABLED
-    END
-
     INPUTE 115, "", 150, 180, 206, 25
     BEGIN
         NAME "CREDIT_CODE"
@@ -109,52 +93,52 @@ BEGIN
         NOT DRAGENABLED
     END
 
-    INPUTE 108, "", 498, 25, 206, 25
+    INPUTN 108, "", 498, 25, 206, 25
     BEGIN
         NAME "OVER_30"
-        PADCHARACTER 32
-        SPELLCHECKED
+        RESTORESTRING "0"
         NOT DRAGENABLED
+        NOT INSERTMODE
     END
 
-    INPUTE 116, "", 498, 56, 206, 25
+    INPUTN 116, "", 498, 56, 206, 25
     BEGIN
         NAME "OVER_60"
-        PADCHARACTER 32
-        SPELLCHECKED
+        RESTORESTRING "0"
         NOT DRAGENABLED
+        NOT INSERTMODE
     END
 
-    INPUTE 117, "", 498, 87, 206, 25
+    INPUTN 117, "", 498, 87, 206, 25
     BEGIN
         NAME "OVER_90"
-        PADCHARACTER 32
-        SPELLCHECKED
+        RESTORESTRING "0"
         NOT DRAGENABLED
+        NOT INSERTMODE
     END
 
-    INPUTE 118, "", 498, 118, 206, 25
+    INPUTN 118, "", 498, 118, 206, 25
     BEGIN
         NAME "OVER_120"
-        PADCHARACTER 32
-        SPELLCHECKED
+        RESTORESTRING "0"
         NOT DRAGENABLED
+        NOT INSERTMODE
     END
 
-    INPUTE 119, "", 498, 149, 206, 25
+    INPUTN 119, "", 498, 149, 206, 25
     BEGIN
         NAME "SALES_MTD"
-        PADCHARACTER 32
-        SPELLCHECKED
+        RESTORESTRING "0"
         NOT DRAGENABLED
+        NOT INSERTMODE
     END
 
-    INPUTE 120, "", 498, 180, 206, 25
+    INPUTN 120, "", 498, 180, 206, 25
     BEGIN
         NAME "SALES_YTD"
-        PADCHARACTER 32
-        SPELLCHECKED
+        RESTORESTRING "0"
         NOT DRAGENABLED
+        NOT INSERTMODE
     END
 
     INPUTE 121, "", 150, 25, 206, 25
@@ -183,12 +167,12 @@ BEGIN
         NOT WORDWRAP
     END
 
-    INPUTE 125, "", 150, 211, 206, 25
+    INPUTN 125, "", 150, 211, 206, 25
     BEGIN
         NAME "CURRENT_BAL"
-        PADCHARACTER 32
-        SPELLCHECKED
+        RESTORESTRING "0"
         NOT DRAGENABLED
+        NOT INSERTMODE
     END
 
     STATICTEXT 126, "Sales LY:", 410, 211, 90, 25
@@ -197,11 +181,25 @@ BEGIN
         NOT WORDWRAP
     END
 
-    INPUTE 127, "", 498, 211, 206, 25
+    INPUTN 127, "", 498, 211, 206, 25
     BEGIN
         NAME "SALES_LY"
-        PADCHARACTER 32
-        SPELLCHECKED
+        RESTORESTRING "0"
+        NOT DRAGENABLED
+        NOT INSERTMODE
+    END
+
+    INPUTD 105, "", 150, 118, 206, 25
+    BEGIN
+        NAME "LAST_PURCH_DATE"
+        RESTORESTRING "0"
+        NOT DRAGENABLED
+    END
+
+    INPUTD 114, "", 150, 149, 206, 25
+    BEGIN
+        NAME "LAST_PAY_DATE"
+        RESTORESTRING "0"
         NOT DRAGENABLED
     END
 

@@ -175,6 +175,7 @@ class public BusinessGrid extends AbstractBCBoundWidget implements IPersistentSt
             x$=X$(pos("::"=x$)+2)
         wend
         #cfgwidget! = new ConfigurationWidget(#getCanvas(),201, #getWidth()-155, 5 , #this!, Boolean.TRUE, "GRD", x$, #cfgbc! )
+        #cfgwidget!.setMinPaddingLeft(50)
     methodend    
         
     
