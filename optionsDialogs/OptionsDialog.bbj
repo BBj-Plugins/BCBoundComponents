@@ -4,6 +4,10 @@ REM  * @author mneu
 REM  *
 REM  */
 
+use com.google.gson.Gson
+use com.google.gson.JsonElement
+use com.google.gson.JsonObject
+
 use ::BusinessUIComponents/BusinessGrid.bbj::BusinessGrid
 
 use com.basiscomponents.db.DataRow
@@ -16,12 +20,17 @@ use ::BusinessUIComponents/optionsDialogs/ExportTxtDialog.bbj::ExportTxtDialog
 use ::BusinessUIComponents/optionsDialogs/ExportXlsxDialog.bbj::ExportXlsxDialog
 use ::BusinessUIComponents/optionsDialogs/ExportXmlDialog.bbj::ExportXmlDialog
 
+use ::ConfigurationWidget/CustomConfigurationsBC.bbj::CustomConfigurationsBC
+
 class public OptionsDialog
 
     field private static BBjString FLAG_BORDERLESS$ = $00000800$
     field private static BBjString PATH$ = java.lang.System.getProperty("user.home") + "/documents/"
+    
+    field private CustomConfigurationsBC cfgBC!
 
     field private BBjWindow mainWindow!
+    field public BBjString pgmName$
     
     field private ExportHtmlDialog exportHtmlDialog!
     field private ExportPdfDialog exportPdfDialog!
@@ -34,12 +43,13 @@ class public OptionsDialog
     
     field private ResultSetExporter exporter! = new ResultSetExporter()
 
-    method public OptionsDialog()
-        #exportPdfDialog! = new ExportPdfDialog(Boolean.TRUE)
-        #exportHtmlDialog! = new ExportHtmlDialog(Boolean.TRUE)
-        #exportTxtDialog! = new ExportTxtDialog(Boolean.TRUE)
-        #exportXlsxDialog! = new ExportXlsxDialog(Boolean.TRUE)
-        #exportXmlDialog! = new ExportXmlDialog(Boolean.TRUE)
+    method public OptionsDialog(BBjString pgmName$)
+        #pgmName$ = pgmName$
+        #exportPdfDialog! = new ExportPdfDialog(#pgmName$, Boolean.TRUE)
+        #exportHtmlDialog! = new ExportHtmlDialog(#pgmName$, Boolean.TRUE)
+        #exportTxtDialog! = new ExportTxtDialog(#pgmName$, Boolean.TRUE)
+        #exportXlsxDialog! = new ExportXlsxDialog(#pgmName$, Boolean.TRUE)
+        #exportXmlDialog! = new ExportXmlDialog(#pgmName$, Boolean.TRUE)
     methodend
 
     method public void createDialogWindow()
@@ -53,22 +63,27 @@ class public OptionsDialog
         
         cw! = wnd!.addChildWindow(8010, 0, 0, 634, 140, "", #FLAG_BORDERLESS$, sysGui!.getAvailableContext())
         tabCtrl!.addTab("Pdf", 8010)
+        #exportPdfDialog!.setConfigurationsBC(#cfgBC!)
         #exportPdfDialog!.getEmbedded(cw!)
         
         cw! = wnd!.addChildWindow(8020, 0, 0, 634, 140, "", #FLAG_BORDERLESS$, sysGui!.getAvailableContext())
         tabCtrl!.addTab("Html", 8020)
+        #exportHtmlDialog!.setConfigurationsBC(#cfgBC!)
         #exportHtmlDialog!.getEmbedded(cw!)
         
         cw! = wnd!.addChildWindow(8030, 0, 0, 634, 140, "", #FLAG_BORDERLESS$, sysGui!.getAvailableContext())
         tabCtrl!.addTab("Txt", 8030)
+        #exportTxtDialog!.setConfigurationsBC(#cfgBC!)
         #exportTxtDialog!.getEmbedded(cw!)
         
         cw! = wnd!.addChildWindow(8040, 0, 0, 634, 140, "", #FLAG_BORDERLESS$, sysGui!.getAvailableContext())
         tabCtrl!.addTab("Xlsx", 8040)
+        #exportXlsxDialog!.setConfigurationsBC(#cfgBC!)
         #exportXlsxDialog!.getEmbedded(cw!)
         
         cw! = wnd!.addChildWindow(8050, 0, 0, 634, 140, "", #FLAG_BORDERLESS$, sysGui!.getAvailableContext())
         tabCtrl!.addTab("Xml", 8050)
+        #exportXmlDialog!.setConfigurationsBC(#cfgBC!)
         #exportXmlDialog!.getEmbedded(cw!)
         
         #btnSave! = wnd!.addButton(5010, 315, 180, 150, 23, "Save")
@@ -84,7 +99,8 @@ class public OptionsDialog
     methodend
     
     method public void onSaveButtonPush(BBjButtonPushEvent ev!)
-        rem TODO: implementation
+        #saveConfiguration()
+        #mainWindow!.destroy()
     methodend
     
     method public void onCancelButtonPush(BBjButtonPushEvent ev!)
@@ -95,5 +111,52 @@ class public OptionsDialog
         #mainWindow!.destroy()
     methodend
     
-
+    method public void setConfigurationsBC(CustomConfigurationsBC cfgBC!)
+        #cfgBC! = cfgBC!
+    methodend
+    
+    method private void saveConfiguration()
+        data! = #getOptionsDialogsData()
+    
+        selectedConfig! = new DataRow()
+        selectedConfig!.setFieldValue(#cfgBC!.getFieldNameKeyx(), "") ; rem programName
+        selectedConfig!.setFieldValue(#cfgBC!.getFieldNameRealm(), "std")
+        selectedConfig!.setFieldValue(#cfgBC!.getFieldNameSetting(), "std")
+        selectedConfig!.setFieldValue(#cfgBC!.getFieldNameConfig(), data!) ; rem JSON
+        selectedConfig!.setFieldValue(#cfgBC!.getFieldNameUserid(), #cfgBC!.getUserName())
+        #cfgBC!.write(selectedConfig!)
+    methodend
+    
+    method private BBjString getOptionsDialogsData()
+        json! = new JsonObject()
+        json!.add("pdf", new JsonObject())
+        json!.add("html", new JsonObject())
+        json!.add("txt", new JsonObject())
+        json!.add("xlsx", new JsonObject())
+        json!.add("xml", new JsonObject())
+        
+        pdf! = json!.getAsJsonObject("pdf")
+        pdf!.addProperty("fitting", str(#exportPdfDialog!.getSelectedFittingOption()))
+        pdf!.addProperty("fontSize", str(#exportPdfDialog!.getFontSize()))
+        pdf!.addProperty("pageLayout", str(#exportPdfDialog!.getSelectedPageLayout()))
+        pdf!.addProperty("path", str(#exportPdfDialog!.getSaveLocation()))
+        
+        html! = json!.getAsJsonObject("html")
+        html!.addProperty("path", str(#exportHtmlDialog!.getSaveLocation()))
+        
+        txt! = json!.getAsJsonObject("txt")
+        txt!.addProperty("path", str(#exportTxtDialog!.getSaveLocation()))
+        
+        xlsx! = json!.getAsJsonObject("xlsx")
+        xlsx!.addProperty("writeHeader", #exportXlsxDialog!.isWriteHeaderChecked())
+        xlsx!.addProperty("path", str(#exportXlsxDialog!.getSaveLocation()))
+        
+        xml! = json!.getAsJsonObject("xml")
+        xml!.addProperty("rootTagName", #exportXmlDialog!.getRootTagName())
+        xml!.addProperty("entityName", #exportXmlDialog!.getEntityName())
+        xml!.addProperty("path", str(#exportXmlDialog!.getSaveLocation()))
+        
+        methodret new Gson().toJson(json!)
+    methodend
+    
 classend

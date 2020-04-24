@@ -11,13 +11,16 @@ use ::BusinessUIComponents/optionsDialogs/ExportXlsxDialog.bbj::ExportXlsxDialog
 use ::BusinessUIComponents/optionsDialogs/ExportXmlDialog.bbj::ExportXmlDialog
 use ::BusinessUIComponents/optionsDialogs/ExportCustomReportDialog.bbj::ExportCustomReportDialog
 use ::BusinessUIComponents/optionsDialogs/OptionsDialog.bbj::OptionsDialog
-
 use ::BusinessUIComponents/BusinessGrid.bbj::BusinessGrid
+
+use ::ConfigurationWidget/CustomConfigurationsBC.bbj::CustomConfigurationsBC
 
 class public ExportMenuButton
 
     field private BBjMenuButton menuButton!
     field private BusinessGrid grid!
+    field private CustomConfigurationsBC cfgBC!
+    field private BBjString pgmName$
 
     field private ExportHtmlDialog exportHtmlDialog!
     field private ExportPdfDialog exportPdfDialog!
@@ -53,17 +56,22 @@ class public ExportMenuButton
         #grid! = grid!
     methodend
     
+    method public void setBC(CustomConfigurationsBC cfgBC!)
+        #cfgBC! = cfgBC!
+    methodend
+    
     method public void showOptions(BBjPopupSelectEvent ev!)
         if #optionsDialog! = null() then
-            #optionsDialog! = new OptionsDialog()
+            #optionsDialog! = new OptionsDialog(#pgmName$)
+            #optionsDialog!.setConfigurationsBC(#cfgBC!)
         endif
-    
         #optionsDialog!.createDialogWindow()
     methodend
     
     method public void exportExcel(BBjPopupSelectEvent ev!)
         if #exportXlsxDialog! = null() then
-            #exportXlsxDialog! = new ExportXlsxDialog(#grid!, Boolean.FALSE)
+            #exportXlsxDialog! = new ExportXlsxDialog(#pgmName$, #grid!, Boolean.FALSE)
+            #exportXlsxDialog!.setConfigurationsBC(#cfgBC!)
         endif
     
         #exportXlsxDialog!.createDialogWindow()
@@ -71,7 +79,8 @@ class public ExportMenuButton
     
     method public void exportPdf(BBjPopupSelectEvent ev!)
         if #exportPdfDialog! = null() then
-            #exportPdfDialog! = new ExportPdfDialog(#grid!, Boolean.FALSE)
+            #exportPdfDialog! = new ExportPdfDialog(#pgmName$, #grid!, Boolean.FALSE)
+            #exportPdfDialog!.setConfigurationsBC(#cfgBC!)
         endif
     
         #exportPdfDialog!.createDialogWindow()
@@ -79,7 +88,8 @@ class public ExportMenuButton
     
     method public void exportHtml(BBjPopupSelectEvent ev!)
         if #exportHtmlDialog! = null() then
-            #exportHtmlDialog! = new ExportHtmlDialog(#grid!, Boolean.FALSE)
+            #exportHtmlDialog! = new ExportHtmlDialog(#pgmName$, #grid!, Boolean.FALSE)
+            #exportHtmlDialog!.setConfigurationsBC(#cfgBC!)
         endif
     
         #exportHtmlDialog!.createDialogWindow()
@@ -87,7 +97,8 @@ class public ExportMenuButton
     
     method public void exportXml(BBjPopupSelectEvent ev!)
         if #exportXmlDialog! = null() then
-            #exportXmlDialog! = new ExportXmlDialog(#grid!, Boolean.FALSE)
+            #exportXmlDialog! = new ExportXmlDialog(#pgmName$, #grid!, Boolean.FALSE)
+            #exportXmlDialog!.setConfigurationsBC(#cfgBC!)
         endif
     
         #exportXmlDialog!.createDialogWindow()
@@ -95,7 +106,8 @@ class public ExportMenuButton
     
     method public void exportTxt(BBjPopupSelectEvent ev!)
         if #exportTxtDialog! = null() then
-            #exportTxtDialog! = new ExportTxtDialog(#grid!, Boolean.FALSE)
+            #exportTxtDialog! = new ExportTxtDialog(#pgmName$, #grid!, Boolean.FALSE)
+            #exportTxtDialog!.setConfigurationsBC(#cfgBC!)
         endif
     
         #exportTxtDialog!.createDialogWindow()
@@ -103,7 +115,7 @@ class public ExportMenuButton
     
     method public void exportCustomReport(BBjPopupSelectEvent ev!)
         if #exportCustomReportDialog! = null() then
-            #exportCustomReportDialog! = new ExportCustomReportDialog(#grid!, Boolean.FALSE)
+            #exportCustomReportDialog! = new ExportCustomReportDialog(#pgmName$, #grid!, Boolean.FALSE)
         endif
     
         #exportCustomReportDialog!.createDialogWindow()
@@ -111,6 +123,16 @@ class public ExportMenuButton
     
     method public void setBaristaHeaderVisible(Boolean visible!)
         #baristaHeaderVisible! = visible!
+        
+        if #exportPdfDialog! = null() then
+            #exportPdfDialog! = new ExportPdfDialog(#grid!, Boolean.FALSE)
+        endif
+        
+        #exportPdfDialog!.setBaristaHexerVisible(#baristaHeaderVisible!)
+    methodend
+    
+    method public void setProgramName(BBjString pgmName$)
+        #pgmName$ = pgmName$
     methodend
 
 classend

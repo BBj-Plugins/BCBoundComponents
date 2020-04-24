@@ -7,9 +7,12 @@ REM  */
 use ::BusinessUIComponents/optionsDialogs/Dialog.bbj::Dialog
 use ::BusinessUIComponents/BusinessGrid.bbj::BusinessGrid
 
+use ::FileChooser/FileChooser.bbj::FileChooser
+
 use com.basiscomponents.db.DataRow
 use com.basiscomponents.db.ResultSet
 use com.basiscomponents.db.ResultSetExporter
+use com.basiscomponents.db.util.DataRowJsonMapper
 
 use java.io.FileWriter
 
@@ -20,18 +23,26 @@ class public ExportXmlDialog extends Dialog
     field private BBjButton btnSaveLocation!
     field private BBjStaticText stSaveLocation!
     
-    method public ExportXmlDialog(BusinessGrid grid!, Boolean embedded!)
-        #super!(grid!, embedded!)
+    field private FileChooser fileChooser!
+    
+    method public ExportXmlDialog(BBjString pgmName$, BusinessGrid grid!, Boolean embedded!)
+        #super!(pgmName$, grid!, embedded!)
+        ns! = BBjAPI().getGroupNamespace()
+        ns!.setCallbackForVariable(#getpgmName() + "_XML_" + str(#getembedded()) + "_user_action", #this!, "onFileChooserFinish")
+    
     methodend
     
-    method public ExportXmlDialog(Boolean embedded!)
-        #super!(embedded!)
+    method public ExportXmlDialog(BBjString pgmName$, Boolean embedded!)
+        #super!(pgmName$, embedded!)
+        ns! = BBjAPI().getGroupNamespace()
+        ns!.setCallbackForVariable(#getpgmName() + "_XML_" + str(#getembedded()) + "_user_action", #this!, "onFileChooserFinish")
     methodend
 
     method public void createDialogWindow()
         #createDialogWindow("Export Xml", 155)
         wnd! = #getmainWindow()
         wnd! = cast(BBjTopLevelWindow, #buildEmbed(wnd!))
+        #fillFormWithConfigurations()
         #addBaseButtons(115)
         #setCallbacks()
     methodend
@@ -51,6 +62,7 @@ class public ExportXmlDialog extends Dialog
     
     method public BBjWindow getEmbedded(BBjWindow wnd!)
         #setMainWindow(#buildEmbed(wnd!))
+        #fillFormWithConfigurations()
         #setCallbacks()
         methodret #getmainWindow()
     methodend
@@ -61,10 +73,12 @@ class public ExportXmlDialog extends Dialog
     methodend
     
     method public void onSaveLocationButtonPush(BBjButtonPushEvent ev!)
-        str$ = FILESAVE("Export Xlsx", #getPATH(), "", "")
-        if str$ <> "::BAD::" and str$ <> "::CANCEL::" then
-            #stSaveLocation!.setText(str$)
-        endif
+        dirOnly = 0
+        useSaveDialog = 1
+        if #getembedded() then dirOnly = 1, useSaveDialog = 0
+        path$ = #getPATH()
+        if #getcustomSaveLocation() <> "" then path$ = #getcustomSaveLocation()
+        #fileChooser! = new FileChooser(path$, 10, 10, #getpgmName() + "_XML_" + str(#getembedded()), 1, dirOnly, 0, useSaveDialog)
     methodend
     
     method public void onExportButtonPush(BBjButtonPushEvent ev!)
@@ -73,13 +87,72 @@ class public ExportXmlDialog extends Dialog
         path$ = #stSaveLocation!.getText()
         if cvs(path$,3) = "" then methodret
         
-        rootTagName$ = #ieRootTagName!.getText()
-        entityName$ = #ieEntityName!.getText()
+        rootTagName! = #ieRootTagName!.getText()
+        entityName! = #ieEntityName!.getText()
+        
+        if rootTagName!.trim().equals("") or entityName!.trim().equals("") then methodret
         
         writer! = new FileWriter(path$)
         
-        #getexporter().writeXML(rs!, rootTagName$, entityName$, writer!)
+        #getexporter().writeXML(rs!, rootTagName!, entityName!, writer!)
         #getmainWindow().destroy()
+    methodend
+    
+    method public BBjString getRootTagName()
+        methodret #ieRootTagName!.getText()
+    methodend
+    
+    method public void setRootTagName(BBjString rootTagName$)
+        #ieRootTagName!.setText(rootTagName$)
+    methodend
+    
+    method public BBjString getEntityName()
+        methodret #ieEntityName!.getText()
+    methodend
+    
+    method public void setEntityName(BBjString entityName$)
+        #ieEntityName!.setText(entityName$)
+    methodend
+    
+    method public BBjString getSaveLocation()
+        methodret #stSaveLocation!.getText()
+    methodend
+    
+    method protected void fillFormWithConfigurations()
+        config$ = #getConfigurations()
+        if config$ = "" then methodret
+        
+        dr! = DataRowJsonMapper.fromJson(config$)
+        dr! = cast(DataRow, dr!.getField("xml").getValue())
+        #ieRootTagName!.setText(dr!.getFieldAsString("rootTagName"))
+        #ieEntityName!.setText(dr!.getFieldAsString("entityName"))
+        #setCustomSaveLocation(dr!.getFieldAsString("path"))
+        
+        if #getembedded() then
+            if #getcustomSaveLocation() = "" then
+                #stSaveLocation!.setText(#getPATH())
+            else
+                #stSaveLocation!.setText(dr!.getFieldAsString("path"))
+            endif
+        endif
+    methodend
+    
+    method public void onFileChooserFinish(BBjNamespaceEvent ev!)
+        val! = ev!.getNewValue()
+        
+        switch val!
+            case "::SAVE::"
+            case "::OPEN::"
+                chosenDirOrFilePath! = #fileChooser!.getSelectedFile()
+                break
+            case "::CANCEL::"
+                rem do nothing
+                methodret
+                break
+        swend
+        
+        if !chosenDirOrFilePath!.toLowerCase().endsWith(".xml") then chosenDirOrFilePath! = chosenDirOrFilePath! + ".xml"
+        #stSaveLocation!.setText(chosenDirOrFilePath!)
     methodend
 
 classend
