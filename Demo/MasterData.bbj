@@ -84,14 +84,18 @@ for i = 0 to forms!.size() - 1
 next i
 
 sysgui!.setRepaintEnabled(1)
+timerActive! = Boolean.FALSE
 process_events
 
 resize:
 REM   if timerActive! then return
-  timerActive! = Boolean.TRUE
   ev! = BBjAPI().getLastEvent()
-  BBjAPI().createTimer("resize",.7,"delayed_resize")
+  if timerActive! then return
+  timerActive! = Boolean.TRUE
+  BBjAPI().createTimer("resize",.4,"delayed_resize")
+return
 delayed_resize:
+  timerActive! = Boolean.FALSE
   BBjAPI().removeTimer("resize",err=*next)
   splitter!.setSize(ev!.getWidth() -10 ,ev!.getHeight()-30)
   navWidth = ev!.getWidth()-405

@@ -140,6 +140,8 @@ class public SimpleFormComponent extends AbstractBCBoundWidget
                 break
                 
             case BBjControl.INPUTN_CONTROL
+REM             ? fieldAttributes!
+REM             escape
                 if fieldAttributes!.containsKey("MASK") then
                     mask! = fieldAttributes!.get("MASK")
                     cast(BBjInputN, c!).setMask(mask!)
@@ -240,6 +242,7 @@ class public SimpleFormComponent extends AbstractBCBoundWidget
             value! = control!.getText()
             dr!.setFieldValue(field$, value!)
         wend
+REM         escape
         methodret dr!
     methodend
     
