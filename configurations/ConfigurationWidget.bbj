@@ -351,7 +351,7 @@ REM             #getCanvas().setSize(#getCanvas().getWidth(),20)
             description! = description! + " " + userSettingName!.trim()
             #listEditOptions!.addItem(description!)
         next i
-        #listEditOptions!.addItem("")
+REM         #listEditOptions!.addItem("")
     methodend
     
     rem /**

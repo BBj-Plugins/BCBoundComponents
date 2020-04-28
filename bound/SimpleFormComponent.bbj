@@ -5,6 +5,7 @@ use com.basiscomponents.bc.BCBinder
 
 use com.basiscomponents.db.ResultSet
 use com.basiscomponents.db.DataRow
+use java.util.HashMap
 
 rem /**
 rem  * A sample BBj Widget Implementation
@@ -12,7 +13,8 @@ rem  */
 class public SimpleFormComponent extends AbstractBCBoundWidget
 
     field private BBjWindow cw!
-    field private BBjVector fieldlist!
+    field private BBjVector fieldList!
+    field private BBjVector controlList!
 
     rem --------------------- constructors -------------------------------------
     
@@ -58,12 +60,12 @@ class public SimpleFormComponent extends AbstractBCBoundWidget
     methodend
 
     method private void clearForm()
-        if (#fieldlist! = null()) then #buildFieldList()
+        if (#fieldList! = null()) then #buildFieldList()
         
-        it! = #fieldlist!.iterator()
+        it! = #fieldList!.iterator()
         while it!.hasNext()
             n$=it!.next()
-            #cw!.getControl(n$).setText("")
+            #getControlFromControlList(n$).setText("")
         wend
         #cw!.setEnabled(1)
     methodend
@@ -71,7 +73,7 @@ class public SimpleFormComponent extends AbstractBCBoundWidget
     method private void updateScreen()
         if (#cw!= null()) then methodret
         
-        if (#fieldlist! = null()) then #buildFieldList()
+        if (#fieldList! = null()) then #buildFieldList()
         
         sel! = #getBinder().getSelection()
         
@@ -82,13 +84,13 @@ class public SimpleFormComponent extends AbstractBCBoundWidget
         rs! = #getBinder().getRS()
         rowkey$ = sel!.get(0)
         rec! = rs!.get(rowkey$)
-        it! = #fieldlist!.iterator()
+        it! = #fieldList!.iterator()
         while it!.hasNext()
             n$=it!.next()
             if rec!.contains(n$) then
-                #cw!.getControl(n$).setText(rec!.getFieldAsString(n$))
+                #getControlFromControlList(n$).setText(rec!.getFieldAsString(n$))
             else
-                #cw!.getControl(n$).setText("")
+                #getControlFromControlList(n$).setText("")
             endif
         wend
         #cw!.setEnabled(1)
@@ -101,13 +103,41 @@ class public SimpleFormComponent extends AbstractBCBoundWidget
     method public void onSetSelection()
         #updateScreen()
     methodend
+    
+    method private BBjVector getAllControlsRecursive(BBjVector controls!, BBjWindow window!)
+        currentControls! = window!.getAllControls()
+        it! = currentControls!.iterator()
+        while it!.hasNext()
+            control! = it!.next()
+            type = control!.getControlType()
+            if type = BBjControl.CHILD_TYPE then
+                controls! = #getAllControlsRecursive(controls!,cast(BBjChildWindow, control!))
+            else
+                controls!.add(control!)
+            endif
+        wend
+        methodret controls!
+    methodend
+    
+    method private BBjControl getControlFromControlList(String controlName!)
+        it! = #controlList!.iterator()
+        while it!.hasNext()
+            control! = it!.next()
+            name! = control!.getName()
+            if name!.equals(controlName!) then
+                methodret control!
+            endif
+        wend
+        methodret null()
+    methodend
 
     method private void buildFieldList()
         attributes! = #getBinder().getAttributesRecord()
         l! = attributes!.getFieldNames()
         
-        formfields! = #cw!.getAllControls()
-        fieldlist! = new BBjVector()
+        #controlList! = #getAllControlsRecursive(new BBjVector(), #cw!)
+        formfields! = #controlList!
+        fieldList! = new BBjVector()
         
         it! = formfields!.iterator()
         
@@ -115,7 +145,7 @@ class public SimpleFormComponent extends AbstractBCBoundWidget
             c! = it!.next() 
             n$=c!.getName()
             if l!.contains(n$) then
-                fieldlist!.addItem(n$)
+                fieldList!.addItem(n$)
                 
                 #registerCallbacks(c!)
                 precision! = attributes!.getFieldPrecision(n$)
@@ -123,7 +153,7 @@ class public SimpleFormComponent extends AbstractBCBoundWidget
             fi
         wend
         
-        #fieldlist! = CAST(BBjVector,fieldlist!)
+        #fieldList! = CAST(BBjVector,fieldList!)
     methodend
     
     rem /**
@@ -234,11 +264,11 @@ REM             escape
     rem if not enabled: do not return any fields
         if !#cw!.isEnabled() then methodret new DataRow()
         dr! = new DataRow()
-        it! = #fieldlist!.iterator()
+        it! = #fieldList!.iterator()
         rem add all control values where control name = field name in attributes record
         while it!.hasNext()
             field$ = it!.next() 
-            control! = #cw!.getControl(field$)
+            control! = #getControlFromControlList(field$)
             value! = control!.getText()
             dr!.setFieldValue(field$, value!)
         wend
