@@ -7,6 +7,7 @@ REM  */
 use ::BusinessUIComponents/optionsDialogs/ExportHtmlDialog.bbj::ExportHtmlDialog
 use ::BusinessUIComponents/optionsDialogs/ExportPdfDialog.bbj::ExportPdfDialog
 use ::BusinessUIComponents/optionsDialogs/ExportTxtDialog.bbj::ExportTxtDialog
+use ::BusinessUIComponents/optionsDialogs/ExportCsvDialog.bbj::ExportCsvDialog
 use ::BusinessUIComponents/optionsDialogs/ExportXlsxDialog.bbj::ExportXlsxDialog
 use ::BusinessUIComponents/optionsDialogs/ExportXmlDialog.bbj::ExportXmlDialog
 use ::BusinessUIComponents/optionsDialogs/ExportCustomReportDialog.bbj::ExportCustomReportDialog
@@ -25,6 +26,7 @@ class public ExportMenuButton
     field private ExportHtmlDialog exportHtmlDialog!
     field private ExportPdfDialog exportPdfDialog!
     field private ExportTxtDialog exportTxtDialog!
+    field private ExportCsvDialog exportCsvDialog!
     field private ExportXlsxDialog exportXlsxDialog!
     field private ExportXmlDialog exportXmlDialog!
     field private ExportCustomReportDialog exportCustomReportDialog!
@@ -45,9 +47,10 @@ class public ExportMenuButton
         popupMenu!.insertMenuItem(2, 1200, "Export HTML").setCallback(BBjPopupMenu.ON_POPUP_ITEM_SELECT, #this!, "exportHtml")
         popupMenu!.insertMenuItem(3, 1300, "Export XML").setCallback(BBjPopupMenu.ON_POPUP_ITEM_SELECT, #this!, "exportXml")
         popupMenu!.insertMenuItem(4, 1400, "Export Txt").setCallback(BBjPopupMenu.ON_POPUP_ITEM_SELECT, #this!, "exportTxt")
-        popupMenu!.insertMenuItem(5, 1500, "Export custom report").setCallback(BBjPopupMenu.ON_POPUP_ITEM_SELECT, #this!, "exportCustomReport")
-        popupMenu!.insertSeparator(6)
-        popupMenu!.insertMenuItem(7, 1600, "Options ...").setCallback(BBjPopupMenu.ON_POPUP_ITEM_SELECT, #this!, "showOptions")
+        popupMenu!.insertMenuItem(5, 1400, "Export Csv").setCallback(BBjPopupMenu.ON_POPUP_ITEM_SELECT, #this!, "exportCsv")
+        popupMenu!.insertMenuItem(6, 1500, "Export custom report").setCallback(BBjPopupMenu.ON_POPUP_ITEM_SELECT, #this!, "exportCustomReport")
+        popupMenu!.insertSeparator(7)
+        popupMenu!.insertMenuItem(8, 1600, "Options ...").setCallback(BBjPopupMenu.ON_POPUP_ITEM_SELECT, #this!, "showOptions")
         
         #mainWindow! = wnd!
     methodend
@@ -111,6 +114,15 @@ class public ExportMenuButton
         endif
     
         #exportTxtDialog!.createDialogWindow()
+    methodend
+    
+    method public void exportCsv(BBjPopupSelectEvent ev!)
+        if #exportCsvDialog! = null() then
+            #exportCsvDialog! = new ExportCsvDialog(#pgmName$, #grid!, Boolean.FALSE)
+            #exportCsvDialog!.setConfigurationsBC(#cfgBC!)
+        endif
+    
+        #exportCsvDialog!.createDialogWindow()
     methodend
     
     method public void exportCustomReport(BBjPopupSelectEvent ev!)

@@ -1,0 +1,135 @@
+REM /**
+REM  * ExportCsvDialog.bbj
+REM  * @author mneu
+REM  *
+REM  */
+
+use ::BusinessUIComponents/optionsDialogs/Dialog.bbj::Dialog
+use ::BusinessUIComponents/BusinessGrid.bbj::BusinessGrid
+
+use ::FileChooser/FileChooser.bbj::FileChooser
+
+use com.basiscomponents.db.DataRow
+use com.basiscomponents.db.ResultSet
+use com.basiscomponents.db.ResultSetExporter
+use com.basiscomponents.db.util.DataRowJsonMapper
+
+use java.io.FileWriter
+use java.io.File
+
+class public ExportCsvDialog extends Dialog
+
+    field private BBjButton btnSaveLocation!
+    field private BBjStaticText stSaveLocation!
+    
+    field private FileChooser fileChooser!
+    
+    field private BBjButton btnExport!
+    field private BBjButton btnCancel!
+    
+
+    method public ExportCsvDialog(BBjString pgmName$, BusinessGrid grid!, Boolean embedded!)
+        #super!(pgmName$, grid!, embedded!)
+        ns! = BBjAPI().getGroupNamespace()
+        ns!.setCallbackForVariable(#getpgmName() + "_CSV_" + str(#getembedded()) + "_user_action", #this!, "onFileChooserFinish")
+    
+    methodend
+    
+    method public ExportCsvDialog(BBjString pgmName$, Boolean embedded!)
+        #super!(pgmName$, embedded!)
+        ns! = BBjAPI().getGroupNamespace()
+        ns!.setCallbackForVariable(#getpgmName() + "_CSV_" + str(#getembedded()) + "_user_action", #this!, "onFileChooserFinish")
+    
+    methodend
+
+    method public void createDialogWindow()
+        #createDialogWindow("Export Txt", 105)
+        wnd! = #getmainWindow()
+        wnd! = cast(BBjTopLevelWindow, #buildEmbed(wnd!))
+        #fillFormWithConfigurations()
+        #addBaseButtons(65)
+        #setCallbacks()
+    methodend
+    
+    method private BBjWindow buildEmbed(BBjWindow wnd!)        
+        #btnSaveLocation! = wnd!.addButton(2040, 8, 15, 150, 23, "Choose save location")
+        #stSaveLocation! = wnd!.addStaticText(3040, 170, 15, 400, 23, "")
+        
+        methodret wnd!
+    methodend
+    
+    method public BBjWindow getEmbedded(BBjWindow wnd!)
+        #setMainWindow(#buildEmbed(wnd!))
+        #fillFormWithConfigurations()
+        #setCallbacks()
+        methodret #getmainWindow()
+    methodend
+    
+    method protected void setCallbacks()
+        #super!.setCallbacks()
+        #btnSaveLocation!.setCallback(BBjButton.ON_BUTTON_PUSH, #this!, "onSaveLocationButtonPush")
+    methodend
+    
+    method public void onSaveLocationButtonPush(BBjButtonPushEvent ev!)
+        dirOnly = 0
+        useSaveDialog = 1
+        if #getembedded() then dirOnly = 1, useSaveDialog = 0
+        path$ = #getPATH()
+        if #getcustomSaveLocation() <> "" then path$ = #getcustomSaveLocation()
+        #fileChooser! = new FileChooser(path$, 10, 10, #getpgmName() + "_CSV_" + str(#getembedded()), 1, dirOnly, 0, useSaveDialog)
+    methodend
+    
+    method public void onExportButtonPush(BBjButtonPushEvent ev!)
+        rs! = #getgrid().getGrid().getRS()
+        if rs! = null() or rs!.isEmpty() then methodret
+        path$ = #stSaveLocation!.getText()
+        if cvs(path$,3) = "" then methodret
+        
+        rem exporting
+        declare File outputFile!
+        outputFile! = new File(path$)
+        
+        #getexporter().exportToCSV(outputFile!, rs!)
+        #getmainWindow().destroy()
+    methodend
+    
+    method protected void fillFormWithConfigurations()
+REM         config$ = #getConfigurations()
+REM         if config$ = "" then methodret
+REM         
+REM         dr! = DataRowJsonMapper.fromJson(config$)
+REM         dr! = cast(DataRow, dr!.getField("csv").getValue())
+REM         #setCustomSaveLocation(dr!.getFieldAsString("path"))
+REM         
+REM         if #getembedded() then
+REM             if #getcustomSaveLocation() = "" then
+REM                 #stSaveLocation!.setText(#getPATH())
+REM             else
+REM                 #stSaveLocation!.setText(dr!.getFieldAsString("path"))
+REM             endif
+REM         endif
+    methodend
+    
+    method public BBjString getSaveLocation()
+        methodret #stSaveLocation!.getText()
+    methodend
+    
+    method public void onFileChooserFinish(BBjNamespaceEvent ev!)
+        val! = ev!.getNewValue()
+        
+        switch val!
+            case "::SAVE::"
+            case "::OPEN::"
+                chosenDirOrFilePath! = #fileChooser!.getSelectedFile()
+                break
+            case "::CANCEL::"
+                rem do nothing
+                methodret
+                break
+        swend
+        
+        if !chosenDirOrFilePath!.toLowerCase().endsWith(".csv") then chosenDirOrFilePath! = chosenDirOrFilePath! + ".csv"
+        #stSaveLocation!.setText(chosenDirOrFilePath!)
+    methodend
+
+classend
