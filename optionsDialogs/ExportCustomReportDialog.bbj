@@ -117,14 +117,14 @@ REM         methodret #mainWindow!
     
     method public void onCustomReportButtonPush(BBjButtonPushEvent ev!)
         dirOnly = 0
-        useSaveDialog = 1
+        useSaveDialog = 0
         if #embedded! then dirOnly = 1, useSaveDialog = 0
         #fileChooserJasperReport! = new FileChooser(#PATH$, 10, 10, #pgmName$ + "_CUSTOM_JASPER_" + str(#embedded!), 1, dirOnly, 0, useSaveDialog)
     methodend
     
     method public void onSaveLocationButtonPush(BBjButtonPushEvent ev!)
         dirOnly = 0
-        useSaveDialog = 0
+        useSaveDialog = 1
         #fileChooser! = new FileChooser(#PATH$, 10, 10, #pgmName$ + "_CUSTOM_" + str(#embedded!), 1, dirOnly, 0, useSaveDialog)
     methodend
     

@@ -27,6 +27,8 @@ class public BusinessGrid extends AbstractBCBoundWidget implements IPersistentSt
     field private ConfigurationWidget    cfgwidget!
     field private CustomConfigurationsBC cfgbc!
     field private ExportMenuButton       exportButton!
+    
+    field private Boolean columnConfigurationSet! = Boolean.FALSE
 
     rem --------------------- constructors -------------------------------------
 
@@ -107,6 +109,55 @@ class public BusinessGrid extends AbstractBCBoundWidget implements IPersistentSt
         if #getBinder().getRS() = null() or #getBinder().getAttributesRecord() = null() then
             methodret
         fi
+        
+        if !#columnConfigurationSet! then
+            attrRecord! = #getBinder().getAttributesRecord()
+            rs! = new ResultSet()
+            rs!.add(attrRecord!)
+            #grid!.setData(rs!)
+            
+            if !attrRecord!.isEmpty() then 
+                fieldNames! = attrRecord!.getFieldNames()
+                
+                for i = 0 to fieldNames!.size() - 1
+                    fieldName$ = fieldNames!.get(i)
+                    
+                    attributes! = attrRecord!.getFieldAttributes(fieldName$)
+                    header$ = fieldName$
+                    if attributes!.containsKey("LABEL") then
+                        header$ = attributes!.get("LABEL")
+                    endif
+                    
+                    #grid!.addColumn(fieldName$, header$)
+                    
+                    if attributes!.containsKey("ColumnTypeName") then
+                        columnTypeName$ = attributes!.get("ColumnTypeName")
+                        
+                        switch columnTypeName$
+                            case "NUMERIC"
+                                #grid!.setColumnAlignment(fieldName$, #grid!.GRID_ALIGN_RIGHT())
+                            break
+                            
+                            case "BOOLEAN"
+                                column! = #grid!.getColumn(fieldName$)
+                                column!.getCellRenderer().setTrueValue(GxRendererBoolean.SWITCH_RENDERER())
+                                column!.getCellRenderer().setFalseValue(GxRendererBoolean.SWITCH_RENDERER())
+                            case "DATE"
+                                #grid!.setColumnAlignment(fieldName$, #grid!.GRID_ALIGN_CENTER())
+                            break
+                        swend
+                        
+                    endif
+                    
+                    if attributes!.containsKey("MASK") then
+                        #grid!.setColumnMask(fieldName$, attributes!.get("MASK"))
+                    endif
+                    
+                next i
+            endif
+            #columnConfigurationSet! = Boolean.TRUE
+        endif
+        
         #grid!.setData(#getBinder().getRS())
     methodend
 
