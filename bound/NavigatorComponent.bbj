@@ -20,7 +20,7 @@ REM     field private BBjNavigator nav!
     
     field private BBjVector keys!
     field private BBjVector keyLabels!
-        
+    
     rem --------------------- constructors -------------------------------------
     
     rem /**
@@ -100,7 +100,6 @@ REM     field private BBjNavigator nav!
         #btn_last!.setImageSize(height!, height!)
         #btn_next!.setImageSize(height!, height!)
     methodend
-
 
     method private void updateScreen()
         sel! = #getBinder().getSelection()

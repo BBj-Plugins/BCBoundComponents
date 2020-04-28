@@ -1,5 +1,5 @@
 use ::BusinessUIComponents/AbstractBCBoundWidget.bbj::AbstractBCBoundWidget
-use ::BusinessUIComponents/prototypes/NavigatorComponent.bbj::NavigatorComponent
+use ::BusinessUIComponents/bound/NavigatorComponent.bbj::NavigatorComponent
 use ::BBjGridExWidget/BBjGridExWidget.bbj::BBjGridExWidget
 use com.basiscomponents.bc.BCBound
 use com.basiscomponents.bc.BCBinder

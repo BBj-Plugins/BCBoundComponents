@@ -1,10 +1,10 @@
 use ::BusinessUIComponents/ExampleBCs/ChileCustomerBC.bbj::ChileCustomerBC
 use ::BusinessUIComponents/BusinessGrid.bbj::BusinessGrid
-use ::BusinessUIComponents/prototypes/TestComponent.bbj::TestComponent
-use ::BusinessUIComponents/prototypes/NavigatorComponent.bbj::NavigatorComponent
-use ::BusinessUIComponents/prototypes/EditToolbarComponent.bbj::EditToolbarComponent
-use ::BusinessUIComponents/prototypes/SimpleFormComponent.bbj::SimpleFormComponent
-use ::BusinessUIComponents/prototypes/SearchBar.bbj::SearchBar
+use ::BusinessUIComponents/bound/TestComponent.bbj::TestComponent
+use ::BusinessUIComponents/bound/NavigatorComponent.bbj::NavigatorComponent
+use ::BusinessUIComponents/bound/EditToolbarComponent.bbj::EditToolbarComponent
+use ::BusinessUIComponents/bound/SimpleFormComponent.bbj::SimpleFormComponent
+use ::BusinessUIComponents/bound/SearchBar.bbj::SearchBar
 use ::BusinessUIComponents/unbound/HorizontalSplitter.bbj::HorizontalSplitter
 use com.basiscomponents.bc.BCBinder
 use com.basiscomponents.db.DataRow
@@ -84,18 +84,32 @@ for i = 0 to forms!.size() - 1
 next i
 
 sysgui!.setRepaintEnabled(1)
+timerActive! = Boolean.FALSE
 process_events
 
 resize:
-  BBjAPI().removeTimer("resize",err=*next)
+REM   if timerActive! then return
   ev! = BBjAPI().getLastEvent()
-  BBjAPI().createTimer("resize",.7,"delayed_resize")
-  
+  if timerActive! then return
+  timerActive! = Boolean.TRUE
+  BBjAPI().createTimer("resize",.4,"delayed_resize")
+return
 delayed_resize:
+  timerActive! = Boolean.FALSE
   BBjAPI().removeTimer("resize",err=*next)
   splitter!.setSize(ev!.getWidth() -10 ,ev!.getHeight()-30)
-  nav!.setSize(ev!.getWidth()-405,20)
-  searchBar!.setLocation(ev!.getWidth()-290, searchBar!.getY())
+  navWidth = ev!.getWidth()-405
+  if navWidth < nav!.getHeight() * 4 then
+    navWidth = nav!.getHeight() * 4
+  endif
+  nav!.setSize(navWidth,20)
+  searchBarX = ev!.getWidth()-290
+REM   ?searchBarX
+REM   if searchBarX < 100 then escape
+  if searchBarX < (nav!.getX() +  nav!.getWidth()) then
+     searchBarX = nav!.getX() +  nav!.getWidth()
+  endif
+  searchBar!.setLocation(searchBarX, searchBar!.getY())
 return
 
 byebye:

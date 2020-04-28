@@ -1,0 +1,256 @@
+REM /**
+REM  * CustomConfigurationBC.bbj
+REM  * @author jcorea
+REM  * Custom implementation of the ConfigurationsBC, which uses creates a new VKEYED file "configurationWidgetConfigs" in bbj/cfg folder (unless it already exists)
+REM  * 
+REM  */
+use com.basiscomponents.bc.ConfigurationsBC
+use com.basiscomponents.bc.IConfigurationsBC
+use com.basiscomponents.db.DataRow
+use com.basiscomponents.db.ResultSet
+
+use java.util.Collection
+use java.util.LinkedList
+use java.io.File
+use java.util.regex.Pattern
+use java.util.regex.Matcher
+use com.basis.bbj.datatypes.TemplatedString
+use com.basis.startup.type.BBjException
+use com.basiscomponents.bc.BusinessComponent
+use com.basiscomponents.db.BBArrayList
+use com.basiscomponents.util.JLibDataFileHandler
+use com.google.common.base.Strings
+use com.basis.filesystem.ConnectionMgr
+use com.basis.filesystem.Filesystem
+
+class public CustomConfigurationsBC implements BusinessComponent,IConfigurationsBC
+    field protected ConfigurationsBC configurationsBC!
+
+    method public CustomConfigurationsBC(String userName!)
+        bbjHome! = new File(System.getProperty("basis.BBjHome"),err=*next)
+        if bbjHome! <> null() then
+            path! = bbjHome!.getPath() + File.separator + "cfg" + File.separator + "configurationWidgetConfigs"
+        
+        else
+            path! = dsk("") + dir("") + "configurationWidgetConfigs"
+        endif
+REM         path! = "C:\Users\FOO\Documents\00tempConfigscanbedeleted"
+        template! = "REALM:C(3*=10):DESCRIPTION=Realm:,KEYX:C(40*=10):DESCRIPTION=Key:,USERID:C(64*=10):DESCRIPTION=UserID:,SETTING:C(40*=10):DESCRIPTION=Setting:,CR_MONT:C(10*=10):DESCRIPTION=createduser:,CR_TS_LD:C(14*=10):DESCRIPTION=createdtimestamp:,MOD_MONT:C(10*=10):DESCRIPTION=modificationuser:,MOD_TS_LD:C(14*=10):DESCRIPTION=modificationtimestamp:,CONFIG:C(1*=10):DESCRIPTION=Configurationpayload:"
+        #createDataFile(path!,template!, 4)
+        #configurationsBC! = new ConfigurationsBC(path!, userName!)
+    methodend
+
+    method public CustomConfigurationsBC(String userName!, String fileName!)
+        bbjHome! = new File(System.getProperty("basis.BBjHome"),err=*next)
+        if bbjHome! <> null() then
+            path! = bbjHome!.getPath() + File.separator + "cfg" + File.separator + fileName!
+        
+        else
+            path! = dsk("") + dir("") + "configurationWidgetConfigs"
+        endif
+        template! = "REALM:C(3*=10):DESCRIPTION=Realm:,KEYX:C(40*=10):DESCRIPTION=Key:,USERID:C(64*=10):DESCRIPTION=UserID:,SETTING:C(40*=10):DESCRIPTION=Setting:,CR_MONT:C(10*=10):DESCRIPTION=createduser:,CR_TS_LD:C(14*=10):DESCRIPTION=createdtimestamp:,MOD_MONT:C(10*=10):DESCRIPTION=modificationuser:,MOD_TS_LD:C(14*=10):DESCRIPTION=modificationtimestamp:,CONFIG:C(1*=10):DESCRIPTION=Configurationpayload:"
+        #createDataFile(path!,template!, 4)
+        #configurationsBC! = new ConfigurationsBC(path!, userName!)
+    methodend
+    
+    method public String getConfigFile()
+        methodret #configurationsBC!.getConfigFile()
+    methodend
+    
+    method public String getTemplateConfigFile()
+        methodret #configurationsBC!.getTemplateConfigFile()
+    methodend
+    
+    method public void setConfigFile(String path!)
+        #configurationsBC!.getConfigFile(path!)
+    methodend
+    
+    method public void setUserName(String userName!)
+        #configurationsBC!.setUserName(userName!)
+    methodend
+    
+    method public String getUserName()
+        methodret #configurationsBC!.getUserName()
+    methodend
+    
+    method public void setFieldsMinLengthAutoConvert(boolean fieldsMinLengthAutoConvert!)
+        #configurationsBC!.setFieldsMinLengthAutoConvert(fieldsMinLengthAutoConvert!)
+    methodend
+    
+    method public static void setTemplateConfigFile(String template!)
+        ConfigurationsBC.setTemplateConfigFile(template!)
+    methodend
+    
+    method public DataRow getAttributesRecord()
+        methodret #configurationsBC!.getAttributesRecord()
+    methodend
+    
+    method public DataRow fillWithSpacesToMatchMinLength(DataRow dr!)
+        methodret #configurationsBC!.fillWithSpacesToMatchMinLength(dr!)
+    methodend
+    
+    method public void setFilter(DataRow filter!)
+        #configurationsBC!.setFilter(filter!)
+    methodend
+    
+    method public String getAdminUser()
+        methodret #configurationsBC!.getAdminUser()
+    methodend
+    
+    method public void setAdminUser(String adminUser!)
+        #configurationsBC!.setAdminUser(adminUser!)
+    methodend
+    
+    method public void setFieldSelection(DataRow fieldSelection!)
+        #configurationsBC!.setFieldSelection(fieldSelection!)
+    methodend
+    
+    method public void setFieldSelection(Collection fieldSelection!)
+        #configurationsBC!.setFieldSelection(fieldSelection!)
+    methodend
+    
+    method public void setScope(String scope!)
+        #configurationsBC!.setScope(scope!)
+    methodend
+    
+    method public ResultSet retrieve()
+        methodret #configurationsBC!.retrieve()
+    methodend
+    
+    method public ResultSet retrieve(int first!, int last!)
+        methodret #configurationsBC!.retrieve(first!, last!)
+    methodend
+    
+    method public ResultSet validateWrite(DataRow dr!)
+        methodret #configurationsBC!.validateWrite(dr!)
+    methodend
+    
+    method public DataRow write(DataRow dr!)
+        methodret #configurationsBC!.write(dr!)
+    methodend
+    
+    method public ResultSet validateRemove(DataRow dr!)
+        methodret #configurationsBC!.validateRemove(dr!)
+    methodend
+    
+    method public Boolean canModify(DataRow dr!)
+        methodret #configurationsBC!.canModify(dr!)
+    methodend
+    
+    method public void remove(DataRow dr!)
+        #configurationsBC!.remove(dr!)
+    methodend
+    
+    method public DataRow getNewObjectTemplate(DataRow conditions!)
+        methodret #configurationsBC!.getNewObjectTemplate(conditions!)
+    methodend
+    
+    method public ResultSet getEffectiveConfiguration()
+        methodret #configurationsBC!.getEffectiveConfiguration()
+    methodend
+    
+    method public DataRow getFilter()
+        methodret #configurationsBC!.getFilter()
+    methodend
+    
+    method public DataRow getFieldSelection()
+        methodret #configurationsBC!.getFieldSelection()
+    methodend
+    
+    method public ResultSet getAvaillableConfigurations()
+        methodret #configurationsBC!.getAvaillableConfigurations()
+    methodend
+    
+    method public DataRow getScope()
+        methodret #configurationsBC!.getScope()
+    methodend
+    
+    method public String getScopeDefault()
+        methodret #configurationsBC!.getScopeDefault()
+    methodend
+    
+    method public String getScopeNoscope()
+        methodret #configurationsBC!.getScopeNoscope()
+    methodend
+    
+    method public String getFieldNameRealm()
+        methodret #configurationsBC!.getFieldNameRealm()
+    methodend
+    
+    method public String getFieldNameKeyx()
+        methodret #configurationsBC!.getFieldNameKeyx()
+    methodend
+    
+    method public String getFieldNameUserid()
+        methodret #configurationsBC!.getFieldNameUserid()
+    methodend
+    
+    method public String getFieldNameSetting()
+        methodret #configurationsBC!.getFieldNameSetting()
+    methodend
+    
+    method public String getFieldNameCreaUser()
+        methodret #configurationsBC!.getFieldNameCreaUser()
+    methodend
+    
+    method public String getFieldNameCreaDt()
+        methodret #configurationsBC!.getFieldNameCreaDt()
+    methodend
+    
+    method public String getFieldNameModUser()
+        methodret #configurationsBC!.getFieldNameModUser()
+    methodend
+    
+    method public String getFieldNameModDt()
+        methodret #configurationsBC!.getFieldNameModDt()
+    methodend
+    
+    method public String getFieldNameConfig()
+        methodret #configurationsBC!.getFieldNameConfig()
+    methodend
+    
+    rem /**
+    rem  * creates a vkeyed datafile if doesnt already exist
+    rem  */
+    method public void createDataFile(String path!, String template!, BBjNumber keyCount)
+        file! = new File(path!)
+        if file! <> null() and file!.isFile() then methodret
+        filesys! = BBjAPI().getFileSystem()
+        fields! = template!.split(",")
+        lengthPattern! = Pattern.compile("([a-zA-Z]{1})\((\d*)\*=(\d*)\)")
+        offset = 0
+        keylengths! = new BBjVector()
+        if fields!.length > 0 then
+            for i=0 to fields!.length -1
+                field! = fields![i]
+                if field!.trim().equals("") then continue
+                attributes! = field!.split(":")
+                if attributes!.length < 2 then continue
+                fieldName! = attributes![0]
+                typeAndLength! = attributes![1]
+                lengthPatternMatcher! = lengthPattern!.matcher(typeAndLength!)
+                if !lengthPatternMatcher!.matches() then continue
+                fieldType! = lengthPatternMatcher!.group(1)
+                if fieldType!.equals("N") then
+                    numeric = 1
+                else
+                    numeric = 0
+                endif
+                
+                fieldLength = num(lengthPatternMatcher!.group(2))
+                recLength = recLength + fieldLength + 1
+                if i < keyCount then
+                    keylengths!.add(fieldLength)
+                endif
+            next i
+        endif
+        length1=keylengths!.get(0)
+        length2=keylengths!.get(1)
+        length3=keylengths!.get(2)
+        length4=keylengths!.get(3)
+        VKEYED path!, [1:1:length1] + [2:1:length2] + [3:1:length3] + [4:1:length4], 0, recLength
+    methodend
+classend
+
+bc! = new CustomConfigurationsBC("JC")
+?bc!.getUserName()

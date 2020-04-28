@@ -13,6 +13,7 @@ use java.sql.Statement
 use java.sql.Types
 use java.util.HashMap
 use java.util.HashSet
+use java.text.SimpleDateFormat
 
 
 class public ChileCustomerBC implements BusinessComponent
@@ -179,9 +180,11 @@ REM         dr!.setFieldValue("SALES_LY",null())
 REM         dr!.setFieldValue("LAST_PURCH_DATE",null())
         dr!.setFieldAttribute("LAST_PURCH_DATE","EDITABLE","1")
         dr!.setFieldAttribute("LAST_PURCH_DATE","LABEL","Last Purchase")
+        dr!.setFieldAttribute("LAST_PURCH_DATE","MASK","%Yd-%Mz-%Dz")
 REM         dr!.setFieldValue("LAST_PAY_DATE",null())
         dr!.setFieldAttribute("LAST_PAY_DATE","EDITABLE","1")
         dr!.setFieldAttribute("LAST_PAY_DATE","LABEL","Last Payment")
+        dr!.setFieldAttribute("LAST_PAY_DATE","MASK","%Yd-%Mz-%Dz")
 REM         dr!.setFieldValue("CREDIT_CODE",null())
         dr!.setFieldAttribute("CREDIT_CODE","EDITABLE","1")
         dr!.setFieldAttribute("CREDIT_CODE","LABEL","Terms")
@@ -418,7 +421,7 @@ REM         endif
         declare ResultSet rsErrors!
         rsErrors! = new ResultSet()
 
-        if dr! = null() then
+        if dr! = null() or dr!.isEmpty() then
             #addValidationError(rsErrors!,"","Missing data to write!")
             methodret rsErrors!
         endif
@@ -440,11 +443,42 @@ REM         endif
             #addValidationError(rsErrors!,"LAST_NAME","LAST_NAME too long!")
             endif
         endif
+        
+        fieldNames! = dr!.getFieldNames()
+        it! = fieldNames!.iterator()
+        while it!.hasNext()
+            fieldName! = it!.next()
+            #validateFieldContent( rsErrors!,  dr!,  fieldName!)
+        wend
+        
 
         rem etc.
 
         methodret rsErrors!
 
+    methodend
+    
+    method protected void validateFieldContent(ResultSet rsErrors!, DataRow dr!, String fieldName!)
+        attributes! = #getAttributesRecord()
+        fieldAttributes! = attributes!.getFieldAttributes(fieldName!)
+        if !attributes!.contains(fieldName!) then methodret
+        type! = fieldAttributes!.get("ColumnTypeName")
+        switch type!
+            case "DATE";rem ColumnTypeName DATE
+                sdf! = new SimpleDateFormat("yyyy-MM-dd")
+                exc = 1; sdf!.parse(dr!.getFieldAsString(fieldName!),err=*next); exc = 0
+                if exc then
+                    #addValidationError(rsErrors!,fieldName!,fieldName! + " not valid. must be yyyy-MM-dd format.")
+                endif
+                break
+            case "NUMERIC"
+                exc = 1; a = num(dr!.getFieldAsString(fieldName!),err=*next); exc = 0
+                if exc then
+                    #addValidationError(rsErrors!,fieldName!,fieldName! + " not valid. must be numeric.")
+                endif
+            case default
+                break
+        swend
     methodend
     
     method protected DataRow addCustNum(DataRow dr!)
@@ -485,6 +519,7 @@ REM         endif
             wend
             errormsg$ = errormsg$(1,len(errormsg$)-1)
             throw errormsg$,999
+            methodret
         endif
 
 

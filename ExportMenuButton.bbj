@@ -14,7 +14,7 @@ use ::BusinessUIComponents/optionsDialogs/ExportCustomReportDialog.bbj::ExportCu
 use ::BusinessUIComponents/optionsDialogs/OptionsDialog.bbj::OptionsDialog
 use ::BusinessUIComponents/BusinessGrid.bbj::BusinessGrid
 
-use ::ConfigurationWidget/CustomConfigurationsBC.bbj::CustomConfigurationsBC
+use ::BusinessUIComponents/configurations/CustomConfigurationsBC.bbj::CustomConfigurationsBC
 
 class public ExportMenuButton
 

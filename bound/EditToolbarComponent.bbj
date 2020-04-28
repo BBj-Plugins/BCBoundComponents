@@ -83,7 +83,7 @@ class public EditToolbarComponent extends AbstractBCBoundWidget
 
     method public void onBtnSave( BBjToolButtonPushEvent ev! )
         #dirty! = BBjAPI.FALSE
-        #getBinder().sendSignal(BCBinder.SIGNAL_SAVE)
+        #getBinder().sendSignal(BCBinder.SIGNAL_SAVE, err=*next)
         #enableControls()
         binder! = #getBinder()
         bc! = binder!.getBC()
