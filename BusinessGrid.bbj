@@ -9,9 +9,9 @@ use com.basiscomponents.bc.BCBinder
 use ::BBjGridExWidget/GxClientModels.bbj::GxClientRowModel
 use ::BBjGridExWidget/GxState.bbj::GxState
 
-use ::ConfigurationWidget/ConfigurationWidget.bbj::ConfigurationWidget
-use ::ConfigurationWidget/CustomConfigurationsBC.bbj::CustomConfigurationsBC
-use ::ConfigurationWidget/IPersistentState.bbj::IPersistentState
+use ::BusinessUIComponents/configurations/ConfigurationWidget.bbj::ConfigurationWidget
+use ::BusinessUIComponents/configurations/CustomConfigurationsBC.bbj::CustomConfigurationsBC
+use ::BusinessUIComponents/configurations/IPersistentState.bbj::IPersistentState
 
 
 rem /**

@@ -20,7 +20,7 @@ use ::BusinessUIComponents/optionsDialogs/ExportTxtDialog.bbj::ExportTxtDialog
 use ::BusinessUIComponents/optionsDialogs/ExportXlsxDialog.bbj::ExportXlsxDialog
 use ::BusinessUIComponents/optionsDialogs/ExportXmlDialog.bbj::ExportXmlDialog
 
-use ::ConfigurationWidget/CustomConfigurationsBC.bbj::CustomConfigurationsBC
+use ::BusinessUIComponents/configurations/CustomConfigurationsBC.bbj::CustomConfigurationsBC
 
 class public OptionsDialog
 

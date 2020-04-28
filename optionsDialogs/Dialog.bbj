@@ -19,7 +19,7 @@ use com.basiscomponents.db.export.SheetConfiguration
 use com.basiscomponents.db.export.ReportDetails
 use com.basiscomponents.db.export.ColumnWidthCalculator
 
-use ::ConfigurationWidget/CustomConfigurationsBC.bbj::CustomConfigurationsBC
+use ::BusinessUIComponents/configurations/CustomConfigurationsBC.bbj::CustomConfigurationsBC
 
 use java.io.File
 

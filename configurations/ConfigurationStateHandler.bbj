@@ -1,0 +1,71 @@
+REM /**
+REM  * ConfigurationStateHandler.bbj
+REM  * @author jcorea
+REM  * 
+REM  * handler class between the configuration widget and the component. registers for callbacks on the component and communicates
+REM  * between the widget and the component
+REM  *
+REM  */
+
+use ::BusinessUIComponents/configurations/IPersistentState.bbj::IPersistentState
+use ::BusinessUIComponents/configurations/ConfigurationWidget.bbj::ConfigurationWidget
+
+class public ConfigurationStateHandler
+    field protected IPersistentState statefulObject!
+    field protected ConfigurationWidget configurationWidget!
+    field protected Boolean suppressNextStateChangeEvent! = Boolean.FALSE
+    
+    method public ConfigurationStateHandler(IPersistentState statefulObject!, ConfigurationWidget configurationWidget!)
+        #statefulObject! = statefulObject!
+        #configurationWidget! = configurationWidget!
+        configurationWidget!.setStateHandler(#this!)
+REM         configurationWidget!.init()
+        #registerCallbacks()
+    methodend
+    
+    rem /**
+    rem  * registers callback for statechange on the component for statechange
+    rem  */
+    method protected void registerCallbacks()
+        #statefulObject!.setStateChangeCallback("onStateChange",#this!)
+REM         BBjAPI().setCustomEventCallback(#getOnConfigurationChangeEventName(), #this!,"onConfigurationChange")
+    methodend
+    
+    rem /**
+    rem  * get called when the state of the component changes.
+    rem  * the widget then has to react to the state change
+    rem  */
+    method public void onStateChange(BBjEvent ev!)
+        if #suppressNextStateChangeEvent! then
+            #suppressNextStateChangeEvent! = Boolean.FALSE
+        else
+            #configurationWidget!.stateChange()
+REM             BBjAPI().postPriorityCustomEvent(#gridConfigurationWidget!.getOnStateChangeEventName(), rs!.toJson())
+        endif
+    methodend
+    
+    rem /**
+    rem  * returns the current state of the component
+    rem  */
+    method public String getState()
+        methodret #statefulObject!.retrieveState()
+    methodend
+    
+    
+    rem /**
+    rem  * will be called by the widget when the configuration has changed and
+    rem  * will apply the state to the object
+    rem  */
+    method public void configurationChange(String state!)
+        #suppressNextStateChangeEvent! = Boolean.TRUE
+        #statefulObject!.applyState(state!)
+    methodend
+    
+    rem /**
+    rem  * refires the configuration event on the widget which reapplies the current state
+    rem  */
+    method public void refreshConfiguration()
+        #configurationWidget!.fireConfigurationChangeEvent()
+    methodend
+
+classend

@@ -1,10 +1,10 @@
 use ::BusinessUIComponents/ExampleBCs/ChileCustomerBC.bbj::ChileCustomerBC
 use ::BusinessUIComponents/BusinessGrid.bbj::BusinessGrid
-use ::BusinessUIComponents/prototypes/TestComponent.bbj::TestComponent
-use ::BusinessUIComponents/prototypes/NavigatorComponent.bbj::NavigatorComponent
-use ::BusinessUIComponents/prototypes/EditToolbarComponent.bbj::EditToolbarComponent
-use ::BusinessUIComponents/prototypes/SimpleFormComponent.bbj::SimpleFormComponent
-use ::BusinessUIComponents/prototypes/SearchBar.bbj::SearchBar
+use ::BusinessUIComponents/bound/TestComponent.bbj::TestComponent
+use ::BusinessUIComponents/bound/NavigatorComponent.bbj::NavigatorComponent
+use ::BusinessUIComponents/bound/EditToolbarComponent.bbj::EditToolbarComponent
+use ::BusinessUIComponents/bound/SimpleFormComponent.bbj::SimpleFormComponent
+use ::BusinessUIComponents/bound/SearchBar.bbj::SearchBar
 use ::BusinessUIComponents/unbound/HorizontalSplitter.bbj::HorizontalSplitter
 use com.basiscomponents.bc.BCBinder
 use com.basiscomponents.db.DataRow
