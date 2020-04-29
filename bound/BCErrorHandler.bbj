@@ -44,7 +44,8 @@ class public BCErrorHandler implements IBCBound
     methodend
     
     method public void onSignal(int signal!, Object payload!)
-        if signal!=BCBinder.SIGNAL_ERROR then
+        if signal!=906 then
+            rem BCBinder.SIGNAL_ERROR
             a = msgbox(cast(String, payload!))
         endif
     methodend
