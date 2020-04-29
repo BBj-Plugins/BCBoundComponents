@@ -5,6 +5,7 @@ use ::BusinessUIComponents/bound/NavigatorComponent.bbj::NavigatorComponent
 use ::BusinessUIComponents/bound/EditToolbarComponent.bbj::EditToolbarComponent
 use ::BusinessUIComponents/bound/SimpleFormComponent.bbj::SimpleFormComponent
 use ::BusinessUIComponents/bound/SearchBar.bbj::SearchBar
+use ::BusinessUIComponents/bound/BCErrorHandler.bbj::BCErrorHandler
 use ::BusinessUIComponents/unbound/HorizontalSplitter.bbj::HorizontalSplitter
 use com.basiscomponents.bc.BCBinder
 use com.basiscomponents.db.DataRow
@@ -48,6 +49,8 @@ splitter!.setTopCtrl(bgrid!)
 
 tabCtrl! = splitter!.getBottomCanvas().addTabCtrl(104, 0, 0, 500, 500)
 
+errorHandler! = new BCErrorHandler()
+
 cwIdStart = 200
 
 forms! = new BBjVector()
@@ -69,6 +72,7 @@ binder!.register(nav!)
 binder!.register(edittb!)
 binder!.register(bgrid!)
 binder!.register(searchBar!)
+binder!.register(errorHandler!)
 
 for i = 0 to forms!.size() - 1
     binder!.register(forms!.getItem(i))

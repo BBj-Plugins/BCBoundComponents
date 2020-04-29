@@ -1,0 +1,57 @@
+REM /**
+REM  * BCErrorHandler.bbj
+REM  * @author jcorea
+REM  *
+REM  * an error handler that reacts to the error signal from BCBinder
+REM  */
+
+use ::BusinessUIComponents/AbstractBCBoundWidget.bbj::AbstractBCBoundWidget
+use ::BBjGridExWidget/BBjGridExWidget.bbj::BBjGridExWidget
+use com.basiscomponents.bc.BCBound
+use com.basiscomponents.bc.IBCBound
+use com.basiscomponents.bc.BCBinder
+
+
+use com.basiscomponents.db.ResultSet
+use com.basiscomponents.db.DataRow
+
+class public BCErrorHandler implements IBCBound
+
+    
+    field private BCBinder binder!
+
+    method public BCErrorHandler()
+    
+    methodend
+    
+    rem -------------------------BCBinder methods--------------------------------
+    method public void setBinder(BCBinder binder!)
+        #binder! = binder!
+    methodend    
+    
+    method public BCBinder getBinder()
+        methodret #binder!
+    methodend    
+    
+    method public void onSetData()
+    methodend
+   
+    method public void onSetSelection()
+    methodend
+    
+    method public Boolean canSetSelection()
+        methodret BBjAPI.TRUE
+    methodend
+    
+    method public void onSignal(int signal!, Object payload!)
+        if signal!=BCBinder.SIGNAL_ERROR then
+            a = msgbox(cast(String, payload!))
+        endif
+    methodend
+    
+    method public DataRow getFieldsForWrite()
+        methodret new DataRow()
+    methodend
+    
+
+classend

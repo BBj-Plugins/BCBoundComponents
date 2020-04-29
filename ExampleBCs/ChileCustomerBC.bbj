@@ -512,12 +512,14 @@ REM         endif
         dr! = #addCustNum(dr!)
         rsErrors! = #validateWrite(dr!)
         if rsErrors!.size() then
-            it! = rsErrors!.iterator()
-            while it!.hasNext()
-                currentMessage$ = cast(DataRow, it!.next()).getFieldAsString("MESSAGE")
-                errormsg$ = errormsg$ + currentMessage$ + $0a$
-            wend
-            errormsg$ = errormsg$(1,len(errormsg$)-1)
+REM             it! = rsErrors!.iterator()
+REM             while it!.hasNext()
+REM                 currentMessage$ = cast(DataRow, it!.next()).getFieldAsString("MESSAGE")
+REM                 errormsg$ = errormsg$ + currentMessage$ + $0a$
+REM             wend
+            rsErrors!.get(0).getFieldAsString("MESSAGE")
+            errormsg$ = rsErrors!.get(0).getFieldAsString("MESSAGE")
+REM             errormsg$ = errormsg$(1,len(errormsg$)-1)
             throw errormsg$,999
             methodret
         endif
@@ -672,12 +674,14 @@ REM                 endif
 
         rsErrors! = #validateRemove(dr!)
         if rsErrors!.size() then
-            it! = rsErrors!.iterator()
-            while it!.hasNext()
-                currentMessage$ = cast(DataRow, it!.next()).getFieldAsString("MESSAGE")
-                errormsg$ = errormsg$ + currentMessage$ + $0a$
-            wend
-            errormsg$ = errormsg$(1,len(errormsg$)-1)
+REM             it! = rsErrors!.iterator()
+REM             while it!.hasNext()
+REM                 currentMessage$ = cast(DataRow, it!.next()).getFieldAsString("MESSAGE")
+REM                 errormsg$ = errormsg$ + currentMessage$ + $0a$
+REM             wend
+REM             errormsg$ = errormsg$(1,len(errormsg$)-1)
+            rsErrors!.get(0).getFieldAsString("MESSAGE")
+            errormsg$ = rsErrors!.get(0).getFieldAsString("MESSAGE")
             throw errormsg$,999
         endif
 
