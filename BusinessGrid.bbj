@@ -8,6 +8,8 @@ use com.basiscomponents.bc.BCBinder
 
 use ::BBjGridExWidget/GxClientModels.bbj::GxClientRowModel
 use ::BBjGridExWidget/GxState.bbj::GxState
+use ::BBjGridExWidget/GxContextMenu.bbj::GxContextMenu
+use ::BBjGridExWidget/GxContextMenu.bbj::GxContextMenuItem
 
 use ::BusinessUIComponents/configurations/ConfigurationWidget.bbj::ConfigurationWidget
 use ::BusinessUIComponents/configurations/CustomConfigurationsBC.bbj::CustomConfigurationsBC
@@ -73,8 +75,13 @@ class public BusinessGrid extends AbstractBCBoundWidget implements IPersistentSt
             #grid!.getOptions().setNavigationBehavior(#grid!.GRID_NAVIGATION_BEHAVIOUR_NEXT_ROW())
             #grid!.setCallback(#grid!.ON_GRID_ROW_SELECT(),#this!,"onGridSelection")
             #cfgbc! = new CustomConfigurationsBC(info(3,2))
-
-            rem TODO: exportbutton
+            
+            options! = #grid!.getOptions()
+            menu! = new GxContextMenu()
+            menu!.addItem(GxContextMenuItem.AUTO_SIZE_ALL())
+            menu!.addItem(GxContextMenuItem.RESET_COLUMNS())
+            options!.setContextMenu(menu!)
+          
             #exportButton! = new ExportMenuButton(#getCanvas(), 202, 0, 5, 43, 23)
             #exportButton!.setGrid(#this!)
             #exportButton!.setBC(new CustomConfigurationsBC(info(3,2), "exportButtonConfigurations"))
