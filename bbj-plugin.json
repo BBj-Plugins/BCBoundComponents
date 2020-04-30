@@ -1,7 +1,7 @@
 {
 	"name":"BusinessUIComponents",
 	"description":"contains multiple databound UI components that work with BusinessComponents (BCs).",
-	"version":"0.0.2",
+	"version":"0.0.3",
 	"author":"Basis",
 	"bbj_dependency"     : "20.01"
 }

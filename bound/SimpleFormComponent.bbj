@@ -162,16 +162,17 @@ class public SimpleFormComponent extends AbstractBCBoundWidget
     method private void formatField(BBjControl c!)
         attributes! = #getBinder().getAttributesRecord()
         fieldAttributes! = attributes!.getFieldAttributes(c!.getName())
+REM             ? fieldAttributes!
+REM             escape
+        
         precision! = attributes!.getFieldPrecision(c!.getName())
         switch c!.getControlType()
         
             case BBjControl.INPUTE_TYPE
-                cast(BBjInputE, c!).setLength(precision!)
+REM                 cast(BBjInputE, c!).setLength(precision!)
                 break
                 
             case BBjControl.INPUTN_CONTROL
-REM             ? fieldAttributes!
-REM             escape
                 if fieldAttributes!.containsKey("MASK") then
                     mask! = fieldAttributes!.get("MASK")
                     cast(BBjInputN, c!).setMask(mask!)
@@ -234,7 +235,7 @@ REM             escape
                 c!.setCallback(BBjAPI.ON_EDIT_MODIFY,#this!,"onControlEditModify") 
                 break
             case default
-                c!.setCallback(BBjAPI.ON_GAINED_FOCUS,#this!,"onControlGainedFocus") 
+                c!.setCallback(BBjAPI.ON_GAINED_FOCUS,#this!,"onControlGainedFocus",err=*next) 
                 break
         swend
     methodend
@@ -265,9 +266,12 @@ REM             escape
         if !#cw!.isEnabled() then methodret new DataRow()
         dr! = new DataRow()
         it! = #fieldList!.iterator()
-        rem add all control values where control name = field name in attributes record
+        rem add all control values where control name = field name in attributes record and editable = 1 or 2
+        attributes! = #getBinder().getAttributesRecord()
         while it!.hasNext()
             field$ = it!.next() 
+            editable! = "0"; editable! = attributes!.getFieldAttribute(field$, "EDITABLE",err=*next)
+            if !editable!.equals("1") and !editable!.equals("2") then continue;rem only editable fields for to be added
             control! = #getControlFromControlList(field$)
             value! = control!.getText()
             dr!.setFieldValue(field$, value!)
@@ -275,6 +279,7 @@ REM             escape
 REM         escape
         methodret dr!
     methodend
+    
     
     method public void onSignal(int signal!, Object payload!)
         binder! = #getBinder()
