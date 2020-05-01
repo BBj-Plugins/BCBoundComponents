@@ -156,27 +156,36 @@ REM         dr!.setFieldValue("SHIP_METHOD",null())
 REM         dr!.setFieldValue("CURRENT_BAL",null())
         dr!.setFieldAttribute("CURRENT_BAL","EDITABLE","1")
         dr!.setFieldAttribute("CURRENT_BAL","LABEL","Current balance")
+        dr!.setFieldAttribute("CURRENT_BAL","MASK","###,##0.00-")
+        dr!.setFieldAttribute("CURRENT_BAL","PASSWORD","1")
 REM         dr!.setFieldValue("OVER_30",null())
         dr!.setFieldAttribute("OVER_30","EDITABLE","1")
         dr!.setFieldAttribute("OVER_30","LABEL","Past 30")
+        dr!.setFieldAttribute("OVER_30","MASK","###,##0.00-")
 REM         dr!.setFieldValue("OVER_60",null())
         dr!.setFieldAttribute("OVER_60","EDITABLE","1")
         dr!.setFieldAttribute("OVER_60","LABEL","Past 60")
+        dr!.setFieldAttribute("OVER_60","MASK","###,##0.00-")
 REM         dr!.setFieldValue("OVER_90",null())
         dr!.setFieldAttribute("OVER_90","EDITABLE","1")
         dr!.setFieldAttribute("OVER_90","LABEL","Past 90")
+        dr!.setFieldAttribute("OVER_90","MASK","###,##0.00-")
 REM         dr!.setFieldValue("OVER_120",null())
         dr!.setFieldAttribute("OVER_120","EDITABLE","1")
         dr!.setFieldAttribute("OVER_120","LABEL","Past 120")
+        dr!.setFieldAttribute("OVER_120","MASK","###,##0.00-")
 REM         dr!.setFieldValue("SALES_MTD",null())
         dr!.setFieldAttribute("SALES_MTD","EDITABLE","1")
         dr!.setFieldAttribute("SALES_MTD","LABEL","MTD Sales")
+        dr!.setFieldAttribute("SALES_MTD","MASK","###,##0.00-")
 REM         dr!.setFieldValue("SALES_YTD",null())
         dr!.setFieldAttribute("SALES_YTD","EDITABLE","1")
         dr!.setFieldAttribute("SALES_YTD","LABEL","YTD Sales")
+        dr!.setFieldAttribute("SALES_YTD","MASK","###,##0.00-")
 REM         dr!.setFieldValue("SALES_LY",null())
         dr!.setFieldAttribute("SALES_LY","EDITABLE","1")
         dr!.setFieldAttribute("SALES_LY","LABEL","LY Sales")
+        dr!.setFieldAttribute("SALES_LY","MASK","###,##0.00-")
 REM         dr!.setFieldValue("LAST_PURCH_DATE",null())
         dr!.setFieldAttribute("LAST_PURCH_DATE","EDITABLE","1")
         dr!.setFieldAttribute("LAST_PURCH_DATE","LABEL","Last Purchase")
@@ -188,6 +197,7 @@ REM         dr!.setFieldValue("LAST_PAY_DATE",null())
 REM         dr!.setFieldValue("CREDIT_CODE",null())
         dr!.setFieldAttribute("CREDIT_CODE","EDITABLE","1")
         dr!.setFieldAttribute("CREDIT_CODE","LABEL","Terms")
+        dr!.setFieldAttribute("CREDIT_CODE","HIDE","1")
 
         #AttributesRecord! = dr!
         methodret dr!
@@ -206,11 +216,11 @@ REM         dr!.setFieldValue("CREDIT_CODE",null())
     method public void setFilter(DataRow filter!)
 
 REM         equal = 0
-REM 
+REM
 REM         if #Filter! <> null() and filter! <> null() then
 REM             equal = filter!.equals(#Filter!)
 REM         endif
-REM 
+REM
 REM         if !equal then
             if filter! = null() then
                 #Filter! = filter!
@@ -221,7 +231,7 @@ REM         if !equal then
 REM         endif
 
     methodend
-    
+
     method public DataRow getFilter()
         methodret #Filter!
     methodend
@@ -261,7 +271,7 @@ REM         if #Scope$ <> scope$ then
 REM         endif
 
     methodend
-    
+
     rem /**
     rem  * Retrieves a ResultSet with customer DataRow's.
     rem  * If a filter is set, this will be applied to filter the result.
@@ -352,7 +362,7 @@ REM         endif
         rem Prepare the statement
         con! = BBjAPI().getJDBCConnection(#Database$)
         stmt! = con!.prepareStatement(sql$)
-        
+
         i%=1
         if search! <> null() then
             stmt!.setString(i%,search!)
@@ -443,21 +453,21 @@ REM         endif
             #addValidationError(rsErrors!,"LAST_NAME","LAST_NAME too long!")
             endif
         endif
-        
+
         fieldNames! = dr!.getFieldNames()
         it! = fieldNames!.iterator()
         while it!.hasNext()
             fieldName! = it!.next()
             #validateFieldContent( rsErrors!,  dr!,  fieldName!)
         wend
-        
+
 
         rem etc.
 
         methodret rsErrors!
 
     methodend
-    
+
     method protected void validateFieldContent(ResultSet rsErrors!, DataRow dr!, String fieldName!)
         attributes! = #getAttributesRecord()
         fieldAttributes! = attributes!.getFieldAttributes(fieldName!)
@@ -480,7 +490,7 @@ REM         endif
                 break
         swend
     methodend
-    
+
     method protected DataRow addCustNum(DataRow dr!)
         rem if cust_num is provided and not empty, then do NOT add it again
         if dr!.contains("CUST_NUM") and !dr!.getFieldAsString("CUST_NUM").trim().equals("") then methodret dr!
@@ -597,7 +607,7 @@ REM                 endif
         if !a.ROWS_AFFECTED then
             throw "Could not update record!",999
         endif
-        
+
         rem fetch the new record
         rem get fields for field selection
         if #FieldSelection! = null() or #FieldSelection!.isEmpty() then
@@ -654,7 +664,7 @@ REM                 endif
         methodret rsErrors!
 
     methodend
-    
+
     method protected void addValidationError(ResultSet rs!, String field!, String errorMessage!)
         dr! = new DataRow()
         dr!.setFieldValue("MESSAGE", errorMessage!)
