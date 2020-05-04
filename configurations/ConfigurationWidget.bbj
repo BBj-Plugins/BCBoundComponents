@@ -348,7 +348,7 @@ REM     methodend
             if !userID!.trim().equals("") then
                 description! = "(" + userID!.trim() + ")"
             else
-                description! = "(default)"
+                description! = "(" + #getUIPropertiesManager().getConfigWidgetDefaultConfigPrefix() + ")"
             endif
             description! = description! + " " + userSettingName!.trim()
             #listEditOptions!.addItem(description!)
@@ -498,14 +498,14 @@ REM         BBjAPI().setCustomEventCallback(#getOnStateChangeEventName(), #this!
             #adminModeEnabled! = Boolean.FALSE
 REM             #buttonAdmin!.setForeColor(#ADMIN_DISABLED_COLOR!)
             #buttonAdmin!.setImageFile( #getUIPropertiesManager().getConfigWidgetBtnAdminDisabledImage())
-            #buttonAdmin!.setImageFile( #getUIPropertiesManager().getConfigWidgetBtnAdminDisabledShortCue())
+            #buttonAdmin!.setShortCue( #getUIPropertiesManager().getConfigWidgetBtnAdminDisabledShortCue())
             #menuAdmin!.setSelected(Boolean.FALSE)
             #bc!.setUserName(#userName!)
         else
             #adminModeEnabled! = Boolean.TRUE
 REM             #buttonAdmin!.setForeColor(#ADMIN_ENABLED_COLOR!)
             #buttonAdmin!.setImageFile( #getUIPropertiesManager().getConfigWidgetBtnAdminEnabledImage())
-            #buttonAdmin!.setImageFile( #getUIPropertiesManager().getConfigWidgetBtnAdminEnabledShortCue())
+            #buttonAdmin!.setShortCue( #getUIPropertiesManager().getConfigWidgetBtnAdminEnabledShortCue())
             #menuAdmin!.setSelected(Boolean.TRUE)
             #bc!.setUserName(#bc!.getAdminUser())
         endif

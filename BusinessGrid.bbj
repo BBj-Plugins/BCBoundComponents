@@ -101,6 +101,7 @@ class public BusinessGrid extends AbstractBCBoundWidget implements IPersistentSt
             #cfgwidget!.setLocation(#getWidth()-155, 5)
         fi
     methodend
+    
 
     rem ---------------------- Event Handlers --------------------------------
 
@@ -112,6 +113,9 @@ class public BusinessGrid extends AbstractBCBoundWidget implements IPersistentSt
         methodret #grid!
     methodend
 
+    method public void setConfigurationWidgetUser(String user!)
+        #cfgbc!.setUserName(user!)
+    methodend
 
     rem ----------------------grid handling---------------------------------------------
 
