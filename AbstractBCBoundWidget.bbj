@@ -3,10 +3,12 @@ use com.basiscomponents.bc.IBCBound
 use com.basiscomponents.bc.BCBinder
 use com.basiscomponents.db.ResultSet
 use com.basiscomponents.db.DataRow
+use ::BusinessUIComponents/configurations/IUIPropertiesManager.bbj::IUIPropertiesManager
 
 class public AbstractBCBoundWidget extends BBjWidget implements IBCBound
 
     field private BCBinder binder!
+    field private IUIPropertiesManager uiPropertiesManager!
 
     method protected AbstractBCBoundWidget()
     methodend
@@ -37,6 +39,19 @@ class public AbstractBCBoundWidget extends BBjWidget implements IBCBound
     
     method public DataRow getFieldsForWrite()
         methodret new DataRow()
+    methodend
+    
+    method protected void updateProperties()
+        
+    methodend
+    rem ------------------properties manager--------------------------------------
+    method public void setUIPropertiesManager(IUIPropertiesManager uiPropertiesManager!)
+        #uiPropertiesManager! = uiPropertiesManager!
+        #updateProperties()
+    methodend
+    
+    method public IUIPropertiesManager getUIPropertiesManager()
+        methodret #uiPropertiesManager!
     methodend
 
 classend

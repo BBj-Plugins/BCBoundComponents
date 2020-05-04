@@ -1,4 +1,6 @@
 use ::BusinessUIComponents/AbstractBCBoundWidget.bbj::AbstractBCBoundWidget
+use ::BusinessUIComponents/configurations/IUIPropertiesManager.bbj::IUIPropertiesManager
+use ::BusinessUIComponents/configurations/UIPropertiesManager.bbj::UIPropertiesManager
 use ::BBjGridExWidget/BBjGridExWidget.bbj::BBjGridExWidget
 use com.basiscomponents.bc.BCBound
 use com.basiscomponents.bc.BCBinder
@@ -50,22 +52,35 @@ class public EditToolbarComponent extends AbstractBCBoundWidget
         if (f_init!) then
             #btn_new! = #getCanvas().addToolButton(100,0,0,20,20,"NEW")
             #btn_new!.setCallback(BBjAPI.ON_TOOL_BUTTON_PUSH,#this!,"onBtnNew")
-            #btn_new!.setImageFile("BusinessUIComponents\icon\ic_add_black_24dp.png")
-            #btn_new!.setImageSize(20, 20)
             
             #btn_save! = #getCanvas().addToolButton(101,20,0,20,20,"SAVE")
             #btn_save!.setCallback(BBjAPI.ON_TOOL_BUTTON_PUSH,#this!,"onBtnSave")
-            #btn_save!.setImageFile("BusinessUIComponents\icon\ic_save_black_24dp.png")
-            #btn_save!.setImageSize(20, 20)
             
             #btn_delete! = #getCanvas().addToolButton(102,40,0,20,20,"DELETE")
             #btn_delete!.setCallback(BBjAPI.ON_TOOL_BUTTON_PUSH,#this!,"onBtnDelete")
-            #btn_delete!.setImageFile("BusinessUIComponents\icon\ic_close_black_24dp.png")
-            #btn_delete!.setImageSize(20, 20)
             
             #enableControls()
+            if #getUIPropertiesManager() = null() then #setUIPropertiesManager(UIPropertiesManager.getInstance())
         FI
         
+    methodend
+    
+    rem /**
+    rem  * updating properties from properties manager
+    rem  */
+    method protected void updateProperties()
+            #btn_new!.setImageFile(#getUIPropertiesManager().getEditToolbarBtnNewImage())
+            size = num(#getUIPropertiesManager().getEditToolbarBtnNewSize())
+            #btn_new!.setImageSize(size, size)
+            
+            #btn_save!.setImageFile(#getUIPropertiesManager().getEditToolbarBtnSaveImage())
+            size = num(#getUIPropertiesManager().getEditToolbarBtnSaveSize())
+            #btn_save!.setImageSize(size, size)
+            
+            #btn_delete!.setImageFile(#getUIPropertiesManager().getEditToolbarBtnDeleteImage())
+            size = num(#getUIPropertiesManager().getEditToolbarBtnDeleteSize())
+            #btn_delete!.setImageSize(size, size)
+    
     methodend
 
 
@@ -113,7 +128,7 @@ class public EditToolbarComponent extends AbstractBCBoundWidget
     
     method public Boolean canSetSelection()
         if #dirty! then
-            action = msgbox("Save Data?", 3)
+            action = msgbox(#getUIPropertiesManager().getEditToolbarDialogSaveData(), 3)
             switch action
                 case 6
                     rem action = YES

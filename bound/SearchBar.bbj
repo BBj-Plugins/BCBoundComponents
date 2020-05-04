@@ -6,6 +6,8 @@ REM  */
 
 
 use ::BusinessUIComponents/AbstractBCBoundWidget.bbj::AbstractBCBoundWidget
+use ::BusinessUIComponents/configurations/IUIPropertiesManager.bbj::IUIPropertiesManager
+use ::BusinessUIComponents/configurations/UIPropertiesManager.bbj::UIPropertiesManager
 use ::BBjGridExWidget/BBjGridExWidget.bbj::BBjGridExWidget
 use com.basiscomponents.bc.BCBound
 use com.basiscomponents.bc.BCBinder
@@ -57,11 +59,18 @@ class public SearchBar extends AbstractBCBoundWidget
         if (f_init!) then
             #btn_retrieve! = #getCanvas().addToolButton(100,#getWidth() - 20,0,#getHeight(),#getHeight(),"")
             #btn_retrieve!.setCallback(BBjAPI.ON_TOOL_BUTTON_PUSH,#this!,"onBtnRetrieve")
-            #btn_retrieve!.setImageFile("BusinessUIComponents\icon\ic_search_black_24dp.png")
-            #btn_retrieve!.setImageSize(20, 20)
-            
             #searchField! = #getCanvas().addInputE(101,0,1,#getWidth() - 20,#getHeight() - 2)
+            if #getUIPropertiesManager() = null() then #setUIPropertiesManager(UIPropertiesManager.getInstance())
         FI
+    methodend
+    
+    rem /**
+    rem  * updating properties from properties manager
+    rem  */
+    method protected void updateProperties()
+            #btn_retrieve!.setImageFile(#getUIPropertiesManager().getSearchbarBtnRetrieveImage())
+            size = num(#getUIPropertiesManager().getSearchbarBtnRetrieveSize())
+            #btn_retrieve!.setImageSize(size, size)
     methodend
 
     rem /**

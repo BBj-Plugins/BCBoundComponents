@@ -1,5 +1,7 @@
 use ::BusinessUIComponents/AbstractBCBoundWidget.bbj::AbstractBCBoundWidget
 use ::BBjGridExWidget/BBjGridExWidget.bbj::BBjGridExWidget
+use ::BusinessUIComponents/configurations/IUIPropertiesManager.bbj::IUIPropertiesManager
+use ::BusinessUIComponents/configurations/UIPropertiesManager.bbj::UIPropertiesManager
 use com.basiscomponents.bc.BCBound
 use com.basiscomponents.bc.BCBinder
 
@@ -15,6 +17,7 @@ class public SimpleFormComponent extends AbstractBCBoundWidget
     field private BBjWindow cw!
     field private BBjVector fieldList!
     field private BBjVector controlList!
+    field private BBjVector calendarButtons! = new BBjVector()
 
     rem --------------------- constructors -------------------------------------
     
@@ -57,6 +60,18 @@ class public SimpleFormComponent extends AbstractBCBoundWidget
         if (#cw! <> null()) then 
             #cw!.setSize(#getWidth(),#getHeight())
         fi
+        if #getUIPropertiesManager() = null() then #setUIPropertiesManager(UIPropertiesManager.getInstance())
+    methodend
+    
+    rem /**
+    rem  * updating properties from properties manager
+    rem  */
+    method protected void updateProperties()
+            it! = #calendarButtons!.iterator()
+            while it!.hasNext()
+                calendarButton! = it!.next()
+                cast(BBjButton, calendarButton!).setImageFile(#getUIPropertiesManager().getSimpleFormBtnCalendar())
+            wend
     methodend
 
     method private void clearForm()
@@ -152,7 +167,7 @@ class public SimpleFormComponent extends AbstractBCBoundWidget
                 #formatField(c!)
             fi
         wend
-        
+        #updateProperties()
         #fieldList! = CAST(BBjVector,fieldList!)
     methodend
     
@@ -221,7 +236,8 @@ REM                 cast(BBjInputE, c!).setLength(precision!)
     
     method private void addCalendarButton(BBjInputD control!)
         calendarButton! = #getCanvas().addButton(#getCanvas().getAvailableControlID(), control!.getX() + control!.getWidth() - control!.getHeight() + 1, control!.getY() + 1, control!.getHeight() - 2, control!.getHeight() - 2, "")
-        calendarButton!.setImageFile("BusinessUIComponents/icon/ic_insert_invitation_black_24dp.png")
+        #calendarButtons!.add(calendarButton!)
+REM         calendarButton!.setImageFile("BusinessUIComponents/icon/ic_insert_invitation_black_24dp.png")
         calendarButton!.setImageSize(control!.getHeight() - 2,control!.getHeight() - 2)
         calendarButton!.setUserData(control!)
         calendarButton!.setCallback(BBjAPI.ON_BUTTON_PUSH,#this!,"onCalendarButtonPush") 
