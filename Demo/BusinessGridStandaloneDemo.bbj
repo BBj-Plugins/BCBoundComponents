@@ -3,12 +3,10 @@ use ::BusinessUIComponents/ExampleBCs/ChileCustomerBC.bbj::ChileCustomerBC
 
 use com.basiscomponents.bc.BCBinder
 
-
-? 'HIDE'
+? 'HIDE',
 wnd! = BBjAPI().openSysGui("X0").addWindow(10,10,900,600,"BBj Grid Ex Demo")
-wnd!        .setCallback(BBjAPI.ON_CLOSE,"byebye")
-wnd!        .setCallback(BBjAPI.ON_RESIZE,"resize")
-
+wnd!.setCallback(BBjAPI.ON_CLOSE,"byebye")
+wnd!.setCallback(BBjAPI.ON_RESIZE,"resize")
 
 REM init the grid
 declare BusinessGrid grid!
@@ -20,23 +18,20 @@ binder! = new BCBinder(bc!)
 binder!.register(grid!)
 binder!.retrieve()
 
-
 process_events
-
-
 
 rem /**
 rem  * Listen to the BBjTopLevelWindow resize events and
-rem  * resize the grid to fill the available space. 
+rem  * resize the grid to fill the available space.
 rem  */
 resize:
-  declare auto BBjResizeEvent ev!
-  ev! = BBjAPI().getLastEvent()
-  grid!.setSize(ev!.getWidth(),ev!.getHeight())
+    declare auto BBjResizeEvent ev!
+    ev! = BBjAPI().getLastEvent()
+    grid!.setSize(ev!.getWidth(),ev!.getHeight())
 return
 
 rem /**
 rem  * Close the demo
 rem  */
 byebye:
-bye
+    bye

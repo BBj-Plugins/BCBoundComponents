@@ -4,13 +4,12 @@ REM  * @author vkolarov,jcorea
 REM  *
 REM  */
 
+use com.basiscomponents.bc.BusinessComponent
 use com.basiscomponents.db.ResultSet
 use com.basiscomponents.db.DataRow
-use com.basiscomponents.bc.BusinessComponent
 use java.sql.Connection
 use java.sql.PreparedStatement
 use java.sql.Statement
-use java.sql.Types
 use java.util.HashMap
 use java.util.HashSet
 use java.text.SimpleDateFormat
@@ -71,7 +70,6 @@ class public ChileCustomerBC implements BusinessComponent
         rem Fill the attributes record
     methodend
 
-
     rem /**
     rem  * Returns an empty DataRow including all field attributes (like field name, editable, label etc.)
     rem  * @return the empty DataRow with the field attributes
@@ -87,14 +85,17 @@ class public ChileCustomerBC implements BusinessComponent
 
         dr! = new DataRow()
 
+        rem get a record for its result set metadata (only works if there is actually data)
         con! = BBjAPI().getJDBCConnection(#Database$)
         stmt! = con!.createStatement()
         rs! = new ResultSet(stmt!.executeQuery("SELECT TOP 1 * FROM "+#TableName$))
+        stmt!.close()
         con!.close()
 
-        if rs!.size() then
+        rem build starter set of attributes based on the result set metadata
+        if rs!<>null() and rs!.size() then
             dr! = rs!.get(0)
-            dr!.clear()
+            dr!.clear();rem remove data values from all fields
             it! = rs!.getColumnNames().iterator()
             while it!.hasNext()
                 field$ = it!.next()
@@ -107,103 +108,77 @@ class public ChileCustomerBC implements BusinessComponent
             wend
         endif
 
-
-REM         dr!.setFieldValue("CUST_NUM",null())
-        dr!.setFieldAttribute("CUST_NUM","EDITABLE","2")
+        rem set application specific attributes
+        dr!.setFieldAttribute("CUST_NUM","EDITABLE","2");rem 2 means a key field
         dr!.setFieldAttribute("CUST_NUM","LABEL","Cust No.")
-REM         dr!.setFieldValue("FIRST_NAME",null())
-        dr!.setFieldAttribute("FIRST_NAME","EDITABLE","1")
+        dr!.setFieldAttribute("FIRST_NAME","EDITABLE","1");rem 1 means an editable, non-key field
         dr!.setFieldAttribute("FIRST_NAME","LABEL","First name")
-REM         dr!.setFieldValue("LAST_NAME",null())
         dr!.setFieldAttribute("LAST_NAME","EDITABLE","1")
         dr!.setFieldAttribute("LAST_NAME","LABEL","Last name")
-REM         dr!.setFieldValue("COMPANY",null())
         dr!.setFieldAttribute("COMPANY","EDITABLE","1")
         dr!.setFieldAttribute("COMPANY","LABEL","Company")
-REM         dr!.setFieldValue("BILL_ADDR1",null())
         dr!.setFieldAttribute("BILL_ADDR1","EDITABLE","1")
         dr!.setFieldAttribute("BILL_ADDR1","LABEL","Billing Addr 1")
-REM         dr!.setFieldValue("BILL_ADDR2",null())
         dr!.setFieldAttribute("BILL_ADDR2","EDITABLE","1")
         dr!.setFieldAttribute("BILL_ADDR2","LABEL","Billing Addr 2")
-REM         dr!.setFieldValue("CITY",null())
         dr!.setFieldAttribute("CITY","EDITABLE","1")
         dr!.setFieldAttribute("CITY","LABEL","City")
-REM         dr!.setFieldValue("STATE",null())
         dr!.setFieldAttribute("STATE","EDITABLE","1")
         dr!.setFieldAttribute("STATE","LABEL","State")
-REM         dr!.setFieldValue("COUNTRY",null())
         dr!.setFieldAttribute("COUNTRY","EDITABLE","1")
         dr!.setFieldAttribute("COUNTRY","LABEL","Country")
-REM         dr!.setFieldValue("POST_CODE",null())
         dr!.setFieldAttribute("POST_CODE","EDITABLE","1")
         dr!.setFieldAttribute("POST_CODE","LABEL","Postal code")
-REM         dr!.setFieldValue("PHONE",null())
         dr!.setFieldAttribute("PHONE","EDITABLE","1")
         dr!.setFieldAttribute("PHONE","LABEL","Phone")
-REM         dr!.setFieldValue("FAX",null())
+        dr!.setFieldAttribute("PHONE","MASK","(XXX) XXX-XXXX");rem alpha mask
         dr!.setFieldAttribute("FAX","EDITABLE","1")
         dr!.setFieldAttribute("FAX","LABEL","Fax")
-REM         dr!.setFieldValue("SALESPERSON",null())
+        dr!.setFieldAttribute("FAX","MASK","(XXX) XXX-XXXX");rem alpha mask
         dr!.setFieldAttribute("SALESPERSON","EDITABLE","1")
         dr!.setFieldAttribute("SALESPERSON","LABEL","Sales person")
-REM         dr!.setFieldValue("SHIP_ZONE",null())
         dr!.setFieldAttribute("SHIP_ZONE","EDITABLE","1")
         dr!.setFieldAttribute("SHIP_ZONE","LABEL","Ship zone")
-REM         dr!.setFieldValue("SHIP_METHOD",null())
         dr!.setFieldAttribute("SHIP_METHOD","EDITABLE","1")
         dr!.setFieldAttribute("SHIP_METHOD","LABEL","Ship method")
-REM         dr!.setFieldValue("CURRENT_BAL",null())
         dr!.setFieldAttribute("CURRENT_BAL","EDITABLE","1")
         dr!.setFieldAttribute("CURRENT_BAL","LABEL","Current balance")
         dr!.setFieldAttribute("CURRENT_BAL","MASK","###,##0.00-")
-        dr!.setFieldAttribute("CURRENT_BAL","PASSWORD","1")
-REM         dr!.setFieldValue("OVER_30",null())
         dr!.setFieldAttribute("OVER_30","EDITABLE","1")
         dr!.setFieldAttribute("OVER_30","LABEL","Past 30")
         dr!.setFieldAttribute("OVER_30","MASK","###,##0.00-")
-REM         dr!.setFieldValue("OVER_60",null())
         dr!.setFieldAttribute("OVER_60","EDITABLE","1")
         dr!.setFieldAttribute("OVER_60","LABEL","Past 60")
         dr!.setFieldAttribute("OVER_60","MASK","###,##0.00-")
-REM         dr!.setFieldValue("OVER_90",null())
         dr!.setFieldAttribute("OVER_90","EDITABLE","1")
         dr!.setFieldAttribute("OVER_90","LABEL","Past 90")
         dr!.setFieldAttribute("OVER_90","MASK","###,##0.00-")
-REM         dr!.setFieldValue("OVER_120",null())
         dr!.setFieldAttribute("OVER_120","EDITABLE","1")
         dr!.setFieldAttribute("OVER_120","LABEL","Past 120")
         dr!.setFieldAttribute("OVER_120","MASK","###,##0.00-")
-REM         dr!.setFieldValue("SALES_MTD",null())
         dr!.setFieldAttribute("SALES_MTD","EDITABLE","1")
         dr!.setFieldAttribute("SALES_MTD","LABEL","MTD Sales")
         dr!.setFieldAttribute("SALES_MTD","MASK","###,##0.00-")
-REM         dr!.setFieldValue("SALES_YTD",null())
         dr!.setFieldAttribute("SALES_YTD","EDITABLE","1")
         dr!.setFieldAttribute("SALES_YTD","LABEL","YTD Sales")
         dr!.setFieldAttribute("SALES_YTD","MASK","###,##0.00-")
-REM         dr!.setFieldValue("SALES_LY",null())
         dr!.setFieldAttribute("SALES_LY","EDITABLE","1")
         dr!.setFieldAttribute("SALES_LY","LABEL","LY Sales")
         dr!.setFieldAttribute("SALES_LY","MASK","###,##0.00-")
-REM         dr!.setFieldValue("LAST_PURCH_DATE",null())
         dr!.setFieldAttribute("LAST_PURCH_DATE","EDITABLE","1")
         dr!.setFieldAttribute("LAST_PURCH_DATE","LABEL","Last Purchase")
-        dr!.setFieldAttribute("LAST_PURCH_DATE","MASK","%Yd-%Mz-%Dz")
-REM         dr!.setFieldValue("LAST_PAY_DATE",null())
+        dr!.setFieldAttribute("LAST_PURCH_DATE","MASK","%Yd-%Mz-%Dz");rem sql date mask
         dr!.setFieldAttribute("LAST_PAY_DATE","EDITABLE","1")
         dr!.setFieldAttribute("LAST_PAY_DATE","LABEL","Last Payment")
         dr!.setFieldAttribute("LAST_PAY_DATE","MASK","%Yd-%Mz-%Dz")
-REM         dr!.setFieldValue("CREDIT_CODE",null())
         dr!.setFieldAttribute("CREDIT_CODE","EDITABLE","1")
         dr!.setFieldAttribute("CREDIT_CODE","LABEL","Terms")
-        dr!.setFieldAttribute("CREDIT_CODE","HIDE","1")
+        dr!.setFieldAttribute("CREDIT_CODE","HIDE","1");rem set as hidden
 
         #AttributesRecord! = dr!
         methodret dr!
 
     methodend
-
 
     rem /**
     rem  * Set a filter to filter the search result.
@@ -236,7 +211,6 @@ REM         endif
         methodret #Filter!
     methodend
 
-
     rem /**
     rem  * Set a field selection to retrieve a custom set of fields.
     rem  * The default scope will be used if no field selection is set.
@@ -256,7 +230,6 @@ REM         endif
         #ResultSet! = null()
 
     methodend
-
 
     rem /**
     rem  * Set a field selection scope (A, B or D).
@@ -339,7 +312,7 @@ REM         endif
 
 
         rem Build the SQL query
-        rem if _search is given then make fulltext search
+        rem if _search is given then perform fulltext search
         if search! <> null() then
             sql$ = "SELECT " + fields$ + " FROM " + #TableName$ + " WHERE CUST_NUM IN (CALL BBJ_INDEX('" + #TableName$ + "', ?, 0))"
         else
@@ -384,13 +357,13 @@ REM         endif
 
         rem Execute
         rs! = new ResultSet(stmt!.executeQuery())
+        stmt!.close()
         con!.close()
 
         #ResultSet! = rs!
         methodret rs!
 
     methodend
-
 
     rem /**
     rem  * Retrieves a ResultSet with a subset of customer DataRow's.
@@ -417,7 +390,6 @@ REM         endif
         methodret rs!
 
     methodend
-
 
     rem /**
     rem  * Validates a customer DataRow object before it can be written.
@@ -499,6 +471,7 @@ REM         endif
         stmt! = con!.prepareStatement(sql$)
         rem Execute
         rs! = new ResultSet(stmt!.executeQuery())
+        stmt!.close()
         con!.close()
         if rs!.size() then
             custnum = rs!.get(0).getFieldAsNumber("CN")
@@ -510,7 +483,6 @@ REM         endif
         dr!.setFieldValue("CUST_NUM", custnum!)
         methodret dr!
     methodend
-
 
     rem /**
     rem  * Write/persist a customer.
@@ -627,12 +599,12 @@ REM                 endif
         stmt! = con!.prepareStatement(sql$)
         stmt!.setString(1,dr!.getFieldAsString("CUST_NUM"))
         rs! = new ResultSet(stmt!.executeQuery())
+        stmt!.close()
         con!.close()
         #ResultSet! = null()
         methodret rs!.get(0)
 
     methodend
-
 
     rem /**
     rem  * Validates a customer DataRow object before it can be removed.
@@ -672,7 +644,6 @@ REM                 endif
         dr!.setFieldValue("TYPE", "ERROR")
         rs!.add(dr!)
     methodend
-
 
     rem /**
     rem  * Remove a customer.
