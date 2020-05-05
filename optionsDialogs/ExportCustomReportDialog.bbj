@@ -45,8 +45,8 @@ class public ExportCustomReportDialog
     
     field private BBjButton btnReportLocation!
     field private BBjStaticText stReportLocation!
-    field private BBjButton btnSaveLocation!
-    field private BBjStaticText stSaveLocation!
+REM     field private BBjButton btnSaveLocation!
+REM     field private BBjStaticText stSaveLocation!
     
     field private BBjButton btnExport!
     field private BBjButton btnCancel!
@@ -93,8 +93,8 @@ REM         methodret #mainWindow!
         #btnReportLocation! = wnd!.addButton(2040, 8, 15, 150, 23, "Custom report")
         #stReportLocation! = wnd!.addStaticText(3040, 170, 15, 400, 23, "")
         
-        #btnSaveLocation! = wnd!.addButton(2050, 8, 40, 150, 23, "Choose save location")
-        #stSaveLocation! = wnd!.addStaticText(3050, 170, 40, 400, 23, "")
+REM         #btnSaveLocation! = wnd!.addButton(2050, 8, 40, 150, 23, "Choose save location")
+REM         #stSaveLocation! = wnd!.addStaticText(3050, 170, 40, 400, 23, "")
         
         methodret wnd!
     methodend
@@ -106,7 +106,7 @@ REM         methodret #mainWindow!
     methodend
     
     method private void setCallbacks()
-        #btnSaveLocation!.setCallback(BBjButton.ON_BUTTON_PUSH, #this!, "onSaveLocationButtonPush")
+REM         #btnSaveLocation!.setCallback(BBjButton.ON_BUTTON_PUSH, #this!, "onSaveLocationButtonPush")
         #btnReportLocation!.setCallback(BBjButton.ON_BUTTON_PUSH, #this!, "onCustomReportButtonPush")
     
         if !#embedded! then
@@ -122,39 +122,43 @@ REM         methodret #mainWindow!
         #fileChooserJasperReport! = new FileChooser(#PATH$, 10, 10, #pgmName$ + "_CUSTOM_JASPER_" + str(#embedded!), 1, dirOnly, 0, useSaveDialog)
     methodend
     
-    method public void onSaveLocationButtonPush(BBjButtonPushEvent ev!)
+REM     method public void onSaveLocationButtonPush(BBjButtonPushEvent ev!)
+REM         dirOnly = 0
+REM         useSaveDialog = 1
+REM         #fileChooser! = new FileChooser(#PATH$, 10, 10, #pgmName$ + "_CUSTOM_" + str(#embedded!), 1, dirOnly, 0, useSaveDialog)
+REM     methodend
+    
+    method public void onExportButtonPush(BBjButtonPushEvent ev!)
+REM         rs! = #grid!.getGrid().getRS()
+REM         if rs! = null() or rs!.isEmpty() then methodret
+REM         file! = #stSaveLocation!.getText()
+REM         if file!.trim().equals("") then methodret
+        report! = #stReportLocation!.getText()
+        if report!.trim().equals("") then methodret
+REM         
+REM         compiledReport! = JasperCompileManager.compileReport(report!)
+REM 
+REM         declare JRField field!
+REM 
+REM         fields! = compiledReport!.getFields()
+REM         dr! = new DataRow()
+REM         for i = 0 to fields!.length - 1
+REM             field! = cast(JRField, fields![i])
+REM             name$ = field!.getName()
+REM             dr!.setFieldValue(name$, "")
+REM         next i
+REM 
+REM         rem TODO: wie triggern wir das neue resultset, welches die felder des reports beinhaltet? kein controller vorhanden!
+REM         
+REM         rem exporting
+REM         declare File outputFile!
+REM         outputFile! = #exporter!.exportToPDFByCustomReport(file!, report!, rs!)
+REM         bbjapi().getThinClient().browse(outputFile!.getAbsolutePath().replace("\", "/"))
+REM         #mainWindow!.destroy()
+
         dirOnly = 0
         useSaveDialog = 1
         #fileChooser! = new FileChooser(#PATH$, 10, 10, #pgmName$ + "_CUSTOM_" + str(#embedded!), 1, dirOnly, 0, useSaveDialog)
-    methodend
-    
-    method public void onExportButtonPush(BBjButtonPushEvent ev!)
-        rs! = #grid!.getGrid().getRS()
-        if rs! = null() or rs!.isEmpty() then methodret
-        file! = #stSaveLocation!.getText()
-        if file!.trim().equals("") then methodret
-        report! = #stReportLocation!.getText()
-        if report!.trim().equals("") then methodret
-        
-        compiledReport! = JasperCompileManager.compileReport(report!)
-
-        declare JRField field!
-
-        fields! = compiledReport!.getFields()
-        dr! = new DataRow()
-        for i = 0 to fields!.length - 1
-            field! = cast(JRField, fields![i])
-            name$ = field!.getName()
-            dr!.setFieldValue(name$, "")
-        next i
-
-        rem TODO: wie triggern wir das neue resultset, welches die felder des reports beinhaltet? kein controller vorhanden!
-        
-        rem exporting
-        declare File outputFile!
-        outputFile! = #exporter!.exportToPDFByCustomReport(file!, report!, rs!)
-        bbjapi().getThinClient().browse(outputFile!.getAbsolutePath().replace("\", "/"))
-        #mainWindow!.destroy()
     methodend
     
     method public void onCancelButtonPush(BBjButtonPushEvent ev!)
@@ -184,7 +188,32 @@ REM         methodret #mainWindow!
         swend
         
         if !chosenDirOrFilePath!.toLowerCase().endsWith(".pdf") then chosenDirOrFilePath! = chosenDirOrFilePath! + ".pdf"
-        #stSaveLocation!.setText(chosenDirOrFilePath!)
+        
+        #disableDialogButtons()
+        
+        rs! = #grid!.getGrid().getRS()
+        if rs! = null() or rs!.isEmpty() then methodret
+        report! = #stReportLocation!.getText()
+        
+        compiledReport! = JasperCompileManager.compileReport(report!)
+
+        declare JRField field!
+
+        fields! = compiledReport!.getFields()
+        dr! = new DataRow()
+        for i = 0 to fields!.length - 1
+            field! = cast(JRField, fields![i])
+            name$ = field!.getName()
+            dr!.setFieldValue(name$, "")
+        next i
+
+        rem TODO: wie triggern wir das neue resultset, welches die felder des reports beinhaltet? kein controller vorhanden!
+        
+        rem exporting
+        declare File outputFile!
+        outputFile! = #exporter!.exportToPDFByCustomReport(file!, report!, rs!)
+        bbjapi().getThinClient().browse(outputFile!.getAbsolutePath().replace("\", "/"))
+        #mainWindow!.destroy()
     methodend
     
     method public void onFileChooserJasperReportFinish(BBjNamespaceEvent ev!)
@@ -202,6 +231,16 @@ REM         methodret #mainWindow!
         swend
         
         #stReportLocation!.setText(chosenDirOrFilePath$)
+    methodend
+    
+    method protected void disableDialogButtons()
+        #btnExport!.setEnabled(0)
+        #btnCancel!.setEnabled(0)
+    methodend
+    
+    method protected void enableDialogButtons()
+        #btnExport!.setEnabled(1)
+        #btnCancel!.setEnabled(1)
     methodend
 
 classend

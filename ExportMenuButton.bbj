@@ -16,6 +16,8 @@ use ::BusinessUIComponents/BusinessGrid.bbj::BusinessGrid
 
 use ::BusinessUIComponents/configurations/CustomConfigurationsBC.bbj::CustomConfigurationsBC
 
+use com.basiscomponents.db.ResultSetExporter
+
 class public ExportMenuButton
 
     field private BBjMenuButton menuButton!
@@ -49,8 +51,8 @@ class public ExportMenuButton
         popupMenu!.insertMenuItem(4, 1400, "Export TXT").setCallback(BBjPopupMenu.ON_POPUP_ITEM_SELECT, #this!, "exportTxt")
         popupMenu!.insertMenuItem(5, 1400, "Export CSV").setCallback(BBjPopupMenu.ON_POPUP_ITEM_SELECT, #this!, "exportCsv")
         popupMenu!.insertMenuItem(6, 1500, "Export custom report").setCallback(BBjPopupMenu.ON_POPUP_ITEM_SELECT, #this!, "exportCustomReport")
-        popupMenu!.insertSeparator(7)
-        popupMenu!.insertMenuItem(8, 1600, "Options ...").setCallback(BBjPopupMenu.ON_POPUP_ITEM_SELECT, #this!, "showOptions")
+REM         popupMenu!.insertSeparator(7)
+REM         popupMenu!.insertMenuItem(8, 1600, "Options ...").setCallback(BBjPopupMenu.ON_POPUP_ITEM_SELECT, #this!, "showOptions")
         
         #mainWindow! = wnd!
     methodend
@@ -63,13 +65,13 @@ class public ExportMenuButton
         #cfgBC! = cfgBC!
     methodend
     
-    method public void showOptions(BBjPopupSelectEvent ev!)
-        if #optionsDialog! = null() then
-            #optionsDialog! = new OptionsDialog(#pgmName$)
-            #optionsDialog!.setConfigurationsBC(#cfgBC!)
-        endif
-        #optionsDialog!.createDialogWindow()
-    methodend
+REM     method public void showOptions(BBjPopupSelectEvent ev!)
+REM         if #optionsDialog! = null() then
+REM             #optionsDialog! = new OptionsDialog(#pgmName$)
+REM             #optionsDialog!.setConfigurationsBC(#cfgBC!)
+REM         endif
+REM         #optionsDialog!.createDialogWindow()
+REM     methodend
     
     method public void exportExcel(BBjPopupSelectEvent ev!)
         if #exportXlsxDialog! = null() then
@@ -96,7 +98,42 @@ class public ExportMenuButton
         endif
     
         #exportHtmlDialog!.createDialogWindow()
+
+REM         dirOnly = 0
+REM         useSaveDialog = 1
+REM         if #getembedded() then dirOnly = 1, useSaveDialog = 0
+REM         path$ = #getPATH()
+REM         if #getcustomSaveLocation() <> "" then path$ = #getcustomSaveLocation()
+REM         #fileChooser! = new FileChooser(path$, 10, 10, #getpgmName() + "_HTML_" + str(#getembedded()), 1, dirOnly, 0, useSaveDialog) 
+REM          
+REM         ns! = BBjAPI().getGroupNamespace()
+REM         ns!.setCallbackForVariable(#pgmName$ + "_HTML_user_action", #this!, "onFileChooserHtmlFinish")
     methodend
+    
+REM     method public void onFileChooserHtmlFinish(BBjNamespaceEvent ev!)
+REM         val! = ev!.getNewValue()
+REM         
+REM         switch val!
+REM             case "::SAVE::"
+REM             case "::OPEN::"
+REM                 chosenDirOrFilePath! = #fileChooser!.getSelectedFile()
+REM                 break
+REM             case "::CANCEL::"
+REM                 rem do nothing
+REM                 methodret
+REM                 break
+REM         swend
+REM         
+REM         if chosenDirOrFilePath!.trim() <> "" then
+REM             if !chosenDirOrFilePath!.toLowerCase().trim().endsWith(".html") then chosenDirOrFilePath! = chosenDirOrFilePath! + ".html"
+REM             rs! = #grid!.getGrid().getRS()
+REM             if rs! = null() or rs!.isEmpty() then methodret
+REM             
+REM             writer! = new FileWriter(chosenDirOrFilePath!)
+REM             
+REM             ResultSetExporter.writeHTML(rs!, writer!)
+REM         endif
+REM     methodend
     
     method public void exportXml(BBjPopupSelectEvent ev!)
         if #exportXmlDialog! = null() then

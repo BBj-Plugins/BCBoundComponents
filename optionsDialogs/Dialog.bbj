@@ -136,4 +136,14 @@ class public Dialog
         #customSaveLocation$ = customSaveLocation$
     methodend
     
+    method protected void disableDialogButtons()
+        #btnExport!.setEnabled(0)
+        #btnCancel!.setEnabled(0)
+    methodend
+    
+    method protected void enableDialogButtons()
+        #btnExport!.setEnabled(1)
+        #btnCancel!.setEnabled(1)
+    methodend
+    
 classend

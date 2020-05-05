@@ -25,8 +25,8 @@ use java.io.File
 class public ExportXlsxDialog extends Dialog
 
     field private BBjCheckBox cbWriteHeader!
-    field private BBjButton btnSaveLocation!
-    field private BBjStaticText stSaveLocation!
+REM     field private BBjButton btnSaveLocation!
+REM     field private BBjStaticText stSaveLocation!
     
     field private FileChooser fileChooser!
     
@@ -58,8 +58,8 @@ class public ExportXlsxDialog extends Dialog
         wnd!.addStaticText(2010, 8, 15, 150, 23, "Write header")
         #cbWriteHeader! = wnd!.addCheckBox(3010, 170, 15, 23, 23, "")
         
-        #btnSaveLocation! = wnd!.addButton(2020, 8, 40, 150, 23, "Choose save location")
-        #stSaveLocation! = wnd!.addStaticText(3020, 170, 40, 400, 23, "")
+REM         #btnSaveLocation! = wnd!.addButton(2020, 8, 40, 150, 23, "Choose save location")
+REM         #stSaveLocation! = wnd!.addStaticText(3020, 170, 40, 400, 23, "")
         
         methodret wnd!
     methodend
@@ -73,47 +73,54 @@ class public ExportXlsxDialog extends Dialog
     
     method protected void setCallbacks()
         #super!.setCallbacks()
-        #btnSaveLocation!.setCallback(BBjButton.ON_BUTTON_PUSH, #this!, "onSaveLocationButtonPush")
+REM         #btnSaveLocation!.setCallback(BBjButton.ON_BUTTON_PUSH, #this!, "onSaveLocationButtonPush")
     methodend
     
-    method public void onSaveLocationButtonPush(BBjButtonPushEvent ev!)
+REM     method public void onSaveLocationButtonPush(BBjButtonPushEvent ev!)
+REM         dirOnly = 0
+REM         useSaveDialog = 1
+REM         if #getembedded() then dirOnly = 1, useSaveDialog = 0
+REM         path$ = #getPATH()
+REM         if #getcustomSaveLocation() <> "" then path$ = #getcustomSaveLocation()
+REM         #fileChooser! = new FileChooser(path$, 10, 10, #getpgmName() + "_XLSX_" + str(#getembedded()), 1, dirOnly, 0, useSaveDialog)
+REM     methodend
+    
+    method public void onExportButtonPush(BBjButtonPushEvent ev!)
+REM         rs! = #getgrid().getGrid().getRS()
+REM         if rs! = null() or rs!.isEmpty() then methodret
+REM         path$ = #stSaveLocation!.getText()
+REM         if cvs(path$,3) = "" then methodret
+REM         
+REM         dr! = rs!.get(0)
+REM         
+REM         rem creating SheetConfiguration
+REM         declare SheetConfiguration sheetConfiguration!
+REM         sheetConfiguration! = new SheetConfiguration()
+REM 
+REM         visibleRowsVec! = #getgrid().getGrid().getColumnState().getVisibleColumns()
+REM         for i = visibleRowsVec!.size() - 1 to 0 step - 1
+REM             fieldName$ = visibleRowsVec!.get(i)
+REM             header! = dr!.getDataField(fieldName$).getAttribute("LABEL")
+REM             if header! = null() then header! = fieldName$
+REM             width = 1000
+REM             sheetConfiguration!.insertColumn(header!, width, fieldName$, k)
+REM         next i
+REM         
+REM         rem exporting
+REM         declare File outputFile!
+REM         outputFile! = new File(path$)
+REM         
+REM         writeHeader! = #cbWriteHeader!.isSelected()
+REM         
+REM         #getexporter().writeXLSX(rs!, outputFile!, writeHeader!, sheetConfiguration!)
+REM         #getmainWindow().destroy()
+        
         dirOnly = 0
         useSaveDialog = 1
         if #getembedded() then dirOnly = 1, useSaveDialog = 0
         path$ = #getPATH()
         if #getcustomSaveLocation() <> "" then path$ = #getcustomSaveLocation()
         #fileChooser! = new FileChooser(path$, 10, 10, #getpgmName() + "_XLSX_" + str(#getembedded()), 1, dirOnly, 0, useSaveDialog)
-    methodend
-    
-    method public void onExportButtonPush(BBjButtonPushEvent ev!)
-        rs! = #getgrid().getGrid().getRS()
-        if rs! = null() or rs!.isEmpty() then methodret
-        path$ = #stSaveLocation!.getText()
-        if cvs(path$,3) = "" then methodret
-        
-        dr! = rs!.get(0)
-        
-        rem creating SheetConfiguration
-        declare SheetConfiguration sheetConfiguration!
-        sheetConfiguration! = new SheetConfiguration()
-
-        visibleRowsVec! = #getgrid().getGrid().getColumnState().getVisibleColumns()
-        for i = visibleRowsVec!.size() - 1 to 0 step - 1
-            fieldName$ = visibleRowsVec!.get(i)
-            header! = dr!.getDataField(fieldName$).getAttribute("LABEL")
-            if header! = null() then header! = fieldName$
-            width = 1000
-            sheetConfiguration!.insertColumn(header!, width, fieldName$, k)
-        next i
-        
-        rem exporting
-        declare File outputFile!
-        outputFile! = new File(path$)
-        
-        writeHeader! = #cbWriteHeader!.isSelected()
-        
-        #getexporter().writeXLSX(rs!, outputFile!, writeHeader!, sheetConfiguration!)
-        #getmainWindow().destroy()
     methodend
     
     method public Boolean isWriteHeaderChecked()
@@ -137,13 +144,13 @@ class public ExportXlsxDialog extends Dialog
         #cbWriteHeader!.setSelected(dr!.getFieldAsNumber("writeHeader").intValue())
         #setCustomSaveLocation(dr!.getFieldAsString("path"))
         
-        if #getembedded() then
-            if #getcustomSaveLocation() = "" then
-                #stSaveLocation!.setText(#getPATH())
-            else
-                #stSaveLocation!.setText(dr!.getFieldAsString("path"))
-            endif
-        endif
+REM         if #getembedded() then
+REM             if #getcustomSaveLocation() = "" then
+REM                 #stSaveLocation!.setText(#getPATH())
+REM             else
+REM                 #stSaveLocation!.setText(dr!.getFieldAsString("path"))
+REM             endif
+REM         endif
     methodend
     
     method public void onFileChooserFinish(BBjNamespaceEvent ev!)
@@ -161,7 +168,35 @@ class public ExportXlsxDialog extends Dialog
         swend
         
         if !chosenDirOrFilePath!.toLowerCase().endsWith(".xlsx") then chosenDirOrFilePath! = chosenDirOrFilePath! + ".xlsx"
-        #stSaveLocation!.setText(chosenDirOrFilePath!)
+
+        #disableDialogButtons()
+            
+        rs! = #getgrid().getGrid().getRS()
+REM         if rs! = null() or rs!.isEmpty() then methodret
+        
+        dr! = rs!.get(0)
+        
+        rem creating SheetConfiguration
+        declare SheetConfiguration sheetConfiguration!
+        sheetConfiguration! = new SheetConfiguration()
+
+        visibleRowsVec! = #getgrid().getGrid().getColumnState().getVisibleColumns()
+        for i = visibleRowsVec!.size() - 1 to 0 step - 1
+            fieldName$ = visibleRowsVec!.get(i)
+            header! = dr!.getDataField(fieldName$).getAttribute("LABEL")
+            if header! = null() then header! = fieldName$
+            width = 1000
+            sheetConfiguration!.insertColumn(header!, width, fieldName$, k)
+        next i
+        
+        rem exporting
+        declare File outputFile!
+        outputFile! = new File(chosenDirOrFilePath!)
+        
+        writeHeader! = #cbWriteHeader!.isSelected()
+        
+        #getexporter().writeXLSX(rs!, outputFile!, writeHeader!, sheetConfiguration!)
+        #getmainWindow().destroy()
     methodend
 
 classend

@@ -20,8 +20,8 @@ class public ExportXmlDialog extends Dialog
 
     field private BBjInputE ieRootTagName!
     field private BBjInputE ieEntityName!
-    field private BBjButton btnSaveLocation!
-    field private BBjStaticText stSaveLocation!
+REM     field private BBjButton btnSaveLocation!
+REM     field private BBjStaticText stSaveLocation!
     
     field private FileChooser fileChooser!
     
@@ -54,8 +54,8 @@ class public ExportXmlDialog extends Dialog
         wnd!.addStaticText(2020, 8, 40, 150, 23, "Entity name")
         #ieEntityName! = wnd!.addInputE(3020, 170, 40, 90, 23)
         
-        #btnSaveLocation! = wnd!.addButton(2040, 8, 65, 150, 23, "Choose save location")
-        #stSaveLocation! = wnd!.addStaticText(3040, 170, 65, 400, 23, "")
+REM         #btnSaveLocation! = wnd!.addButton(2040, 8, 65, 150, 23, "Choose save location")
+REM         #stSaveLocation! = wnd!.addStaticText(3040, 170, 65, 400, 23, "")
         
         methodret wnd!
     methodend
@@ -69,33 +69,40 @@ class public ExportXmlDialog extends Dialog
     
     method protected void setCallbacks()
         #super!.setCallbacks()
-        #btnSaveLocation!.setCallback(BBjButton.ON_BUTTON_PUSH, #this!, "onSaveLocationButtonPush")
+REM         #btnSaveLocation!.setCallback(BBjButton.ON_BUTTON_PUSH, #this!, "onSaveLocationButtonPush")
     methodend
     
-    method public void onSaveLocationButtonPush(BBjButtonPushEvent ev!)
+REM     method public void onSaveLocationButtonPush(BBjButtonPushEvent ev!)
+REM         dirOnly = 0
+REM         useSaveDialog = 1
+REM         if #getembedded() then dirOnly = 1, useSaveDialog = 0
+REM         path$ = #getPATH()
+REM         if #getcustomSaveLocation() <> "" then path$ = #getcustomSaveLocation()
+REM         #fileChooser! = new FileChooser(path$, 10, 10, #getpgmName() + "_XML_" + str(#getembedded()), 1, dirOnly, 0, useSaveDialog)
+REM     methodend
+    
+    method public void onExportButtonPush(BBjButtonPushEvent ev!)
+REM         rs! = #getgrid().getGrid().getRS()
+REM         if rs! = null() or rs!.isEmpty() then methodret
+REM         path$ = #stSaveLocation!.getText()
+REM         if cvs(path$,3) = "" then methodret
+REM         
+REM         rootTagName! = #ieRootTagName!.getText()
+REM         entityName! = #ieEntityName!.getText()
+REM         
+REM         if rootTagName!.trim().equals("") or entityName!.trim().equals("") then methodret
+REM         
+REM         writer! = new FileWriter(path$)
+REM         
+REM         #getexporter().writeXML(rs!, rootTagName!, entityName!, writer!)
+REM         #getmainWindow().destroy()
+
         dirOnly = 0
         useSaveDialog = 1
         if #getembedded() then dirOnly = 1, useSaveDialog = 0
         path$ = #getPATH()
         if #getcustomSaveLocation() <> "" then path$ = #getcustomSaveLocation()
         #fileChooser! = new FileChooser(path$, 10, 10, #getpgmName() + "_XML_" + str(#getembedded()), 1, dirOnly, 0, useSaveDialog)
-    methodend
-    
-    method public void onExportButtonPush(BBjButtonPushEvent ev!)
-        rs! = #getgrid().getGrid().getRS()
-        if rs! = null() or rs!.isEmpty() then methodret
-        path$ = #stSaveLocation!.getText()
-        if cvs(path$,3) = "" then methodret
-        
-        rootTagName! = #ieRootTagName!.getText()
-        entityName! = #ieEntityName!.getText()
-        
-        if rootTagName!.trim().equals("") or entityName!.trim().equals("") then methodret
-        
-        writer! = new FileWriter(path$)
-        
-        #getexporter().writeXML(rs!, rootTagName!, entityName!, writer!)
-        #getmainWindow().destroy()
     methodend
     
     method public BBjString getRootTagName()
@@ -128,13 +135,13 @@ class public ExportXmlDialog extends Dialog
         #ieEntityName!.setText(dr!.getFieldAsString("entityName"))
         #setCustomSaveLocation(dr!.getFieldAsString("path"))
         
-        if #getembedded() then
-            if #getcustomSaveLocation() = "" then
-                #stSaveLocation!.setText(#getPATH())
-            else
-                #stSaveLocation!.setText(dr!.getFieldAsString("path"))
-            endif
-        endif
+REM         if #getembedded() then
+REM             if #getcustomSaveLocation() = "" then
+REM                 #stSaveLocation!.setText(#getPATH())
+REM             else
+REM                 #stSaveLocation!.setText(dr!.getFieldAsString("path"))
+REM             endif
+REM         endif
     methodend
     
     method public void onFileChooserFinish(BBjNamespaceEvent ev!)
@@ -152,7 +159,21 @@ class public ExportXmlDialog extends Dialog
         swend
         
         if !chosenDirOrFilePath!.toLowerCase().endsWith(".xml") then chosenDirOrFilePath! = chosenDirOrFilePath! + ".xml"
-        #stSaveLocation!.setText(chosenDirOrFilePath!)
+        
+        #disableDialogButtons()
+        
+        rs! = #getgrid().getGrid().getRS()
+REM         if rs! = null() or rs!.isEmpty() then methodret
+        
+        rootTagName! = #ieRootTagName!.getText()
+        entityName! = #ieEntityName!.getText()
+        
+        if rootTagName!.trim().equals("") or entityName!.trim().equals("") then methodret
+        
+        writer! = new FileWriter(chosenDirOrFilePath!)
+        
+        #getexporter().writeXML(rs!, rootTagName!, entityName!, writer!)
+        #getmainWindow().destroy()
     methodend
 
 classend
