@@ -16,6 +16,10 @@ use com.basiscomponents.db.util.DataRowJsonMapper
 
 use java.io.FileWriter
 
+use com.google.gson.Gson
+use com.google.gson.JsonElement
+use com.google.gson.JsonObject
+
 class public ExportXmlDialog extends Dialog
 
     field private BBjInputE ieRootTagName!
@@ -126,14 +130,14 @@ REM         #getmainWindow().destroy()
     methodend
     
     method protected void fillFormWithConfigurations()
-        config$ = #getConfigurations()
+        config$ = #getConfigurations("xml")
         if config$ = "" then methodret
         
         dr! = DataRowJsonMapper.fromJson(config$)
         dr! = cast(DataRow, dr!.getField("xml").getValue())
         #ieRootTagName!.setText(dr!.getFieldAsString("rootTagName"))
         #ieEntityName!.setText(dr!.getFieldAsString("entityName"))
-        #setCustomSaveLocation(dr!.getFieldAsString("path"))
+REM         #setCustomSaveLocation(dr!.getFieldAsString("path"))
         
 REM         if #getembedded() then
 REM             if #getcustomSaveLocation() = "" then
@@ -173,7 +177,19 @@ REM         if rs! = null() or rs!.isEmpty() then methodret
         writer! = new FileWriter(chosenDirOrFilePath!)
         
         #getexporter().writeXML(rs!, rootTagName!, entityName!, writer!)
+        #saveConfiguration()
         #getmainWindow().destroy()
+    methodend
+    
+    method private void saveConfiguration()
+        json! = new JsonObject()
+        json!.add("xml", new JsonObject())
+        
+        xml! = json!.getAsJsonObject("xml")
+        xml!.addProperty("rootTagName", #getRootTagName())
+        xml!.addProperty("entityName", #getEntityName())
+        
+        #saveConfiguration(new Gson().toJson(json!), "xml")
     methodend
 
 classend

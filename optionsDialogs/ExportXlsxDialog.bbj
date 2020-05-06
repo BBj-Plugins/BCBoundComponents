@@ -22,6 +22,10 @@ use com.basiscomponents.db.ResultSetExporter
 
 use java.io.File
 
+use com.google.gson.Gson
+use com.google.gson.JsonElement
+use com.google.gson.JsonObject
+
 class public ExportXlsxDialog extends Dialog
 
     field private BBjCheckBox cbWriteHeader!
@@ -136,13 +140,13 @@ REM         #getmainWindow().destroy()
     methodend
     
     method protected void fillFormWithConfigurations()
-        config$ = #getConfigurations()
+        config$ = #getConfigurations("xlsx")
         if config$ = "" then methodret
         
         dr! = DataRowJsonMapper.fromJson(config$)
         dr! = cast(DataRow, dr!.getField("xlsx").getValue())
         #cbWriteHeader!.setSelected(dr!.getFieldAsNumber("writeHeader").intValue())
-        #setCustomSaveLocation(dr!.getFieldAsString("path"))
+REM         #setCustomSaveLocation(dr!.getFieldAsString("path"))
         
 REM         if #getembedded() then
 REM             if #getcustomSaveLocation() = "" then
@@ -196,7 +200,18 @@ REM         if rs! = null() or rs!.isEmpty() then methodret
         writeHeader! = #cbWriteHeader!.isSelected()
         
         #getexporter().writeXLSX(rs!, outputFile!, writeHeader!, sheetConfiguration!)
+        #saveConfiguration()
         #getmainWindow().destroy()
+    methodend
+    
+    method private void saveConfiguration()
+        json! = new JsonObject()
+        json!.add("xlsx", new JsonObject())
+        
+        xlsx! = json!.getAsJsonObject("xlsx")
+        xlsx!.addProperty("writeHeader", #isWriteHeaderChecked())
+        
+        #saveConfiguration(new Gson().toJson(json!), "xlsx")
     methodend
 
 classend

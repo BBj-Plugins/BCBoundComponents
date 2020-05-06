@@ -114,10 +114,10 @@ class public Dialog
         #cfgBC! = cfgBC!
     methodend
     
-    method protected BBjString getConfigurations()
+    method protected BBjString getConfigurations(BBjString key$)
         filter! = new DataRow()
         filter!.setFieldValue("USERID", #cfgBC!.getUserName())
-        filter!.setFieldValue("KEYX", "")
+        filter!.setFieldValue("KEYX", key$)
         filter!.setFieldValue("REALM", "std")
         filter!.setFieldValue("SETTING", "std")
         #cfgBC!.setFilter(filter!)
@@ -144,6 +144,16 @@ class public Dialog
     method protected void enableDialogButtons()
         #btnExport!.setEnabled(1)
         #btnCancel!.setEnabled(1)
+    methodend
+    
+    method protected void saveConfiguration(BBjString data!, BBjString key$)
+        selectedConfig! = new DataRow()
+        selectedConfig!.setFieldValue(#cfgBC!.getFieldNameKeyx(), key$)
+        selectedConfig!.setFieldValue(#cfgBC!.getFieldNameRealm(), "std")
+        selectedConfig!.setFieldValue(#cfgBC!.getFieldNameSetting(), "std")
+        selectedConfig!.setFieldValue(#cfgBC!.getFieldNameConfig(), data!) ; rem JSON
+        selectedConfig!.setFieldValue(#cfgBC!.getFieldNameUserid(), #cfgBC!.getUserName())
+        #cfgBC!.write(selectedConfig!)
     methodend
     
 classend

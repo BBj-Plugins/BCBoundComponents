@@ -25,6 +25,10 @@ use java.io.File
 use java.nio.file.Paths
 use java.nio.file.Path
 
+use com.google.gson.Gson
+use com.google.gson.JsonElement
+use com.google.gson.JsonObject
+
 class public ExportPdfDialog extends Dialog
 
     field private BBjListButton lbPageFittingOptions!
@@ -186,7 +190,7 @@ REM         #getmainWindow().destroy()
     methodend
     
     method protected void fillFormWithConfigurations()
-        config$ = #getConfigurations()
+        config$ = #getConfigurations("pdf")
         if config$ = "" then methodret
         
         dr! = DataRowJsonMapper.fromJson(config$)
@@ -194,7 +198,7 @@ REM         #getmainWindow().destroy()
         #lbPageFittingOptions!.selectIndex(dr!.getFieldAsNumber("fitting").intValue())
         #inFontSize!.setValue(dr!.getFieldAsNumber("fontSize"))
         #lbPageLayout!.selectIndex(dr!.getFieldAsNumber("pageLayout").intValue())
-        #setCustomSaveLocation(dr!.getFieldAsString("path"))
+REM         #setCustomSaveLocation(dr!.getFieldAsString("path"))
         
 REM         if #getembedded() then
 REM             if #getcustomSaveLocation() = "" then
@@ -256,7 +260,20 @@ REM         if rs! = null() or rs!.isEmpty() then methodret
         declare File outputFile!
         outputFile! = #getexporter().exportToPDF(outputFilename$, path$, rs!, sheetConfiguration!, #showsBaristaHeader!, fitTo, #lbPageLayout!.getSelectedIndex())
         bbjapi().getThinClient().browse(outputFile!.getAbsolutePath().replace("\", "/"))
+        #saveConfiguration()
         #getmainWindow().destroy()
+    methodend
+    
+    method private void saveConfiguration()
+        json! = new JsonObject()
+        json!.add("pdf", new JsonObject())
+        
+        pdf! = json!.getAsJsonObject("pdf")
+        pdf!.addProperty("fitting", str(#getSelectedFittingOption()))
+        pdf!.addProperty("fontSize", str(#getFontSize()))
+        pdf!.addProperty("pageLayout", str(#getSelectedPageLayout()))
+        
+        #saveConfiguration(new Gson().toJson(json!), "pdf")
     methodend
     
 classend
