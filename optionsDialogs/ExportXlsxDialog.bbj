@@ -195,11 +195,24 @@ REM         if rs! = null() or rs!.isEmpty() then methodret
         
         rem exporting
         declare File outputFile!
-        outputFile! = new File(chosenDirOrFilePath!)
+        rem outputFile! = new File(chosenDirOrFilePath!)
+		if info(3,6) = "5" then
+			outputFile! = java.io.File.createTempFile("tempFile", ".xlsx")
+			outputFile!.createNewFile()
+		else
+			outputFile! = new File(chosenDirOrFilePath!)
+		endif
         
         writeHeader! = #cbWriteHeader!.isSelected()
-        
+		
         #getexporter().writeXLSX(rs!, outputFile!, writeHeader!, sheetConfiguration!)
+		
+		if info(3,6) = "5" then
+			fs! = bbjapi().getThinClient().getClientFileSystem() 
+			cf! = fs!.getClientFile(chosenDirOrFilePath!) 
+			cf!.copyToClient(outputFile!.getAbsolutePath())
+		endif
+		
         #saveConfiguration()
         #getmainWindow().destroy()
     methodend

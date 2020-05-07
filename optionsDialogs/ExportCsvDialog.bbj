@@ -141,10 +141,23 @@ REM     methodend
         if rs! = null() or rs!.isEmpty() then methodret
         
         rem exporting
-        declare File outputFile!
-        outputFile! = new File(chosenDirOrFilePath!)
+        declare File outputFile!     
         
-        #getexporter().exportToCSV(outputFile!, rs!)
+		if info(3,6) = "5" then
+			outputFile! = java.io.File.createTempFile("tempFile", ".csv")
+			outputFile!.createNewFile()
+			writer! = new FileWriter(tempFile!)
+		else
+			outputFile! = new File(chosenDirOrFilePath!)
+		endif
+		
+		#getexporter().exportToCSV(outputFile!, rs!)
+		
+		if info(3,6) = "5" then
+			fs! = bbjapi().getThinClient().getClientFileSystem() 
+			cf! = fs!.getClientFile(chosenDirOrFilePath!) 
+			cf!.copyToClient(outputFile!.getAbsolutePath())
+		endif
     methodend
 
 classend

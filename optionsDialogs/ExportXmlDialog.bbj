@@ -174,9 +174,24 @@ REM         if rs! = null() or rs!.isEmpty() then methodret
         
         if rootTagName!.trim().equals("") or entityName!.trim().equals("") then methodret
         
-        writer! = new FileWriter(chosenDirOrFilePath!)
+        if info(3,6) = "5" then
+			tempFile! = java.io.File.createTempFile("tempFile", ".xml")
+			tempFile!.createNewFile()
+			writer! = new FileWriter(tempFile!)
+		else
+			writer! = new FileWriter(chosenDirOrFilePath!)
+		endif
         
         #getexporter().writeXML(rs!, rootTagName!, entityName!, writer!)
+		writer!.flush()
+		writer!.close()
+		
+		if info(3,6) = "5" then
+			fs! = bbjapi().getThinClient().getClientFileSystem() 
+			cf! = fs!.getClientFile(chosenDirOrFilePath!) 
+			cf!.copyToClient(tempFile!.getAbsolutePath())
+		endif
+		
         #saveConfiguration()
         #getmainWindow().destroy()
     methodend

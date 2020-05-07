@@ -136,9 +136,24 @@ REM     methodend
         rs! = #getgrid().getGrid().getRS()
         if rs! = null() or rs!.isEmpty() then methodret
         
-        writer! = new FileWriter(chosenDirOrFilePath!)
-        
+        if info(3,6) = "5" then
+			tempFile! = java.io.File.createTempFile("tempFile", ".html")
+			tempFile!.createNewFile()
+			writer! = new FileWriter(tempFile!)
+		else
+			writer! = new FileWriter(chosenDirOrFilePath!)
+		endif
+		
         #getexporter().writeHTML(rs!, writer!)
+		writer!.flush()
+		writer!.close()
+		
+		if info(3,6) = "5" then
+			fs! = bbjapi().getThinClient().getClientFileSystem() 
+			cf! = fs!.getClientFile(chosenDirOrFilePath!) 
+			cf!.copyToClient(tempFile!.getAbsolutePath())
+		endif
+		
     methodend
 
 classend
