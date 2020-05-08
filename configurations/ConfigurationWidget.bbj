@@ -8,8 +8,9 @@ REM  */
 use ::BBjGridExWidget/BBjGridExWidget.bbj::BBjGridExWidget
 use ::BBjWidget/BBjWidget.bbj::BBjWidget
 use ::BBjGridExWidget/BBjGridExWidgetState.bbj::BBjGridExWidgetState
-use ::BusinessUIComponents/configurations/IUIPropertiesManager.bbj::IUIPropertiesManager
-use ::BusinessUIComponents/configurations/UIPropertiesManager.bbj::UIPropertiesManager
+use ::BusinessUIComponents/configurations/IPropertiesManager.bbj::IPropertiesManager
+use ::BusinessUIComponents/configurations/PropertiesManager.bbj::PropertiesManager
+use ::BusinessUIComponents/configurations/LocalizedPropertiesManager.bbj::LocalizedPropertiesManager
 use ::BusinessUIComponents/configurations/CustomConfigurationsBC.bbj::CustomConfigurationsBC
 use ::BusinessUIComponents/configurations/ConfigurationStateHandler.bbj::ConfigurationStateHandler
 use ::BusinessUIComponents/configurations/IPersistentState.bbj::IPersistentState
@@ -21,7 +22,8 @@ use java.io.File
 
 class public ConfigurationWidget extends BBjWidget
 
-    field private IUIPropertiesManager uiPropertiesManager!
+    field private IPropertiesManager uiPropertiesManager!
+    field private IPropertiesManager textPropertiesManager!
 
     field protected BBjWindow container!
     field protected BBjButton buttonDelete!
@@ -212,8 +214,7 @@ REM                 #buttonAdmin!.setShortCue("Admin mode (currently disabled)")
             endif
             #createPopupButton()
             #toggleSaveButton(Boolean.FALSE)
-            if #getUIPropertiesManager() = null() then #setUIPropertiesManager(UIPropertiesManager.getInstance())
-REM             #togglePopupMode(Boolean.FALSE)
+            #updateProperties()
         FI
         if !#bcInitialized! and #bc!<> null() then
             #init()
@@ -230,44 +231,41 @@ REM             #togglePopupMode(Boolean.FALSE)
         buttonsY = 0
         #getCanvas().setLocation(xStart,#getY())
         #listEditOptions!.setLocation(0,1)
-REM         #listEditOptions!.setSize(100,100)
         #buttonDelete!.setLocation(buttonsX,buttonsY)
-REM         #buttonDelete!.setSize(20,20)
         #buttonSave!.setLocation(buttonsX + 20,buttonsY)
-REM         #buttonSave!.setSize(20,20)
         if #allowAdmin! then
             #buttonAdmin!.setLocation(buttonsX + 40,buttonsY)
-REM             #buttonAdmin!.setSize(20,20)
         endif
         if totalLength < 160 then
             #togglePopupMode(Boolean.TRUE)
-REM             buttonsX = 0
-REM             buttonsY = 20
-REM             #getCanvas().setSize(#getCanvas().getWidth(),40)
         else
             #togglePopupMode(Boolean.FALSE)
-REM             buttonsX = 100
-REM             buttonsY = 0
-REM             #getCanvas().setSize(#getCanvas().getWidth(),20)
         endif
         
     methodend
     
     method protected void updateProperties()
-    
-        #listEditOptions!.setSize(num(#getUIPropertiesManager().getConfigWidgetListeditWidth()),num(#getUIPropertiesManager().getConfigWidgetListeditHeight()))
-        #buttonDelete!.setImageFile(#getUIPropertiesManager().getConfigWidgetBtnDeleteImage())
-        size = num(#getUIPropertiesManager().getConfigWidgetBtnDeleteSize())
+        if #getUIPropertiesManager() = null() then #setUIPropertiesManager(PropertiesManager.getInstance())
+        if #getTextPropertiesManager() = null() then #setTextPropertiesManager(LocalizedPropertiesManager.getInstance())
+        uiProperties! = #getUIPropertiesManager()
+        textProperties! = #getTextPropertiesManager()
+        #listEditOptions!.setSize(uiProperties!.getPropertyAsNumber("CONFIG_WIDGET_LISTEDIT_WIDTH"), uiProperties!.getPropertyAsNumber("CONFIG_WIDGET_LISTEDIT_HEIGHT"))
+        #buttonDelete!.setImageFile(uiProperties!.getProperty("CONFIG_WIDGET_BTN_DELETE_IMAGE"))
+        size = uiProperties!.getPropertyAsNumber("CONFIG_WIDGET_HEIGHT")
         #buttonDelete!.setImageSize(size,size)
-        #buttonDelete!.setShortCue(#getUIPropertiesManager().getConfigWidgetBtnDeleteShortCue())
-        #buttonSave!.setImageFile(#getUIPropertiesManager().getConfigWidgetBtnSaveImage())
-        size = num(#getUIPropertiesManager().getConfigWidgetBtnSaveSize())
+        #buttonDelete!.setShortCue(textProperties!.getProperty("CONFIG_WIDGET_BTN_DELETE_SHORT_CUE"))
+        #buttonSave!.setImageFile(uiProperties!.getProperty("CONFIG_WIDGET_BTN_SAVE_IMAGE"))
         #buttonSave!.setImageSize(size,size)
-        #buttonSave!.setShortCue(#getUIPropertiesManager().getConfigWidgetBtnSaveShortCue())
+        #buttonSave!.setShortCue(textProperties!.getProperty("CONFIG_WIDGET_BTN_SAVE_SHORT_CUE"))
         if #allowAdmin! then
-            #buttonAdmin!.setImageFile( #getUIPropertiesManager().getConfigWidgetBtnAdminDisabledImage())
-            size = num(#getUIPropertiesManager().getConfigWidgetBtnAdminSize())
             #buttonAdmin!.setImageSize(size,size)
+            if #adminModeEnabled! then
+                #buttonAdmin!.setImageFile( uiProperties!.getProperty("CONFIG_WIDGET_BTN_ADMIN_ENABLED_IMAGE"))
+                #buttonAdmin!.setShortCue( textProperties!.getProperty("CONFIG_WIDGET_BTN_ADMIN_ENABLED_SHORT_CUE"))
+            else
+                #buttonAdmin!.setImageFile( uiProperties!.getProperty("CONFIG_WIDGET_BTN_ADMIN_DISABLED_IMAGE"))
+                #buttonAdmin!.setShortCue( textProperties!.getProperty("CONFIG_WIDGET_BTN_ADMIN_DISABLED_SHORT_CUE"))
+            endif
         endif
     methodend
     
@@ -305,20 +303,6 @@ REM         #setIcons()
         methodret #widgetID! + #ON_CONFIGURATION_CHANGE!
     methodend
     
-REM     rem /**
-REM     rem  * sets the images for the buttons
-REM     rem  */
-REM     method protected void setIcons()
-REM         #buttonDelete!.setImageFile(    #iconButtonDelete!)
-REM         #buttonDelete!.setImageSize(20,20)
-REM         #buttonSave!.setImageFile(      #iconButtonSave!)
-REM         #buttonSave!.setImageSize(20,20)
-REM         if #allowAdmin! then
-REM             #buttonAdmin!.setImageFile( #iconButtonAdminDisabled!)
-REM             #buttonAdmin!.setImageSize(20,20)
-REM         endif
-REM     methodend
-    
     rem /**
     rem  * fetches the available configs from the bc and updates the options list-edit
     rem  */
@@ -348,7 +332,7 @@ REM     methodend
             if !userID!.trim().equals("") then
                 description! = "(" + userID!.trim() + ")"
             else
-                description! = "(" + #getUIPropertiesManager().getConfigWidgetDefaultConfigPrefix() + ")"
+                description! = "(" + #getTextPropertiesManager().getProperty("CONFIG_WIDGET_DEFAULT_CONFIG_DESCRIPTION") + ")"
             endif
             description! = description! + " " + userSettingName!.trim()
             #listEditOptions!.addItem(description!)
@@ -496,16 +480,14 @@ REM         BBjAPI().setCustomEventCallback(#getOnStateChangeEventName(), #this!
     method public void adminButtonPush(BBjEvent ev!)
         if #adminModeEnabled! then
             #adminModeEnabled! = Boolean.FALSE
-REM             #buttonAdmin!.setForeColor(#ADMIN_DISABLED_COLOR!)
-            #buttonAdmin!.setImageFile( #getUIPropertiesManager().getConfigWidgetBtnAdminDisabledImage())
-            #buttonAdmin!.setShortCue( #getUIPropertiesManager().getConfigWidgetBtnAdminDisabledShortCue())
+            #buttonAdmin!.setImageFile( #getUIPropertiesManager().getProperty("CONFIG_WIDGET_BTN_ADMIN_DISABLED_IMAGE"))
+            #buttonAdmin!.setShortCue( #getTextPropertiesManager().getProperty("CONFIG_WIDGET_BTN_ADMIN_DISABLED_SHORT_CUE"))
             #menuAdmin!.setSelected(Boolean.FALSE)
             #bc!.setUserName(#userName!)
         else
             #adminModeEnabled! = Boolean.TRUE
-REM             #buttonAdmin!.setForeColor(#ADMIN_ENABLED_COLOR!)
-            #buttonAdmin!.setImageFile( #getUIPropertiesManager().getConfigWidgetBtnAdminEnabledImage())
-            #buttonAdmin!.setShortCue( #getUIPropertiesManager().getConfigWidgetBtnAdminEnabledShortCue())
+            #buttonAdmin!.setImageFile( #getUIPropertiesManager().getProperty("CONFIG_WIDGET_BTN_ADMIN_ENABLED_IMAGE"))
+            #buttonAdmin!.setShortCue( #getUIPropertiesManager().getProperty("CONFIG_WIDGET_BTN_ADMIN_ENABLED_SHORT_CUE"))
             #menuAdmin!.setSelected(Boolean.TRUE)
             #bc!.setUserName(#bc!.getAdminUser())
         endif
@@ -647,13 +629,22 @@ REM         #currentConfig! = ""
     
 
      rem ------------------properties manager--------------------------------------
-    method public void setUIPropertiesManager(IUIPropertiesManager uiPropertiesManager!)
-        #uiPropertiesManager! = uiPropertiesManager!
+    method public void setUIPropertiesManager(IPropertiesManager propertiesManager!)
+        #uiPropertiesManager! = propertiesManager!
         #updateProperties()
     methodend
     
-    method public IUIPropertiesManager getUIPropertiesManager()
+    method public IPropertiesManager getUIPropertiesManager()
         methodret #uiPropertiesManager!
+    methodend
+    
+    method public void setTextPropertiesManager(IPropertiesManager propertiesManager!)
+        #textPropertiesManager! = propertiesManager!
+        #updateProperties()
+    methodend
+    
+    method public IPropertiesManager getTextPropertiesManager()
+        methodret #textPropertiesManager!
     methodend
 
 classend

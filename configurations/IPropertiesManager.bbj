@@ -1,0 +1,53 @@
+REM /**
+REM  * IPropertiesManager.bbj
+REM  * @author jcorea
+REM  *
+REM  */
+
+interface public IPropertiesManager
+
+    method public String getProperty(String property!)
+    method public BBjNumber getPropertyAsNumber(String property!)
+REM     method public String getEditToolbarBtnNewImage()
+REM     method public String getEditToolbarBtnNewSize()
+REM     method public String getEditToolbarBtnSaveImage()
+REM     method public String getEditToolbarBtnSaveSize()
+REM     method public String getEditToolbarBtnDeleteImage()
+REM     method public String getEditToolbarBtnDeleteSize()
+REM     method public String getEditToolbarDialogSaveData()
+REM     
+REM     
+REM     method public String getNavigatorBtnFirstImage()
+REM     method public String getNavigatorBtnFirstSize()
+REM     method public String getNavigatorBtnPreviousImage()
+REM     method public String getNavigatorBtnPreviousSize()
+REM     method public String getNavigatorBtnLastImage()
+REM     method public String getNavigatorBtnLastSize()
+REM     method public String getNavigatorBtnNextImage()
+REM     method public String getNavigatorBtnNextSize()
+REM     
+REM     
+REM     method public String getSearchbarBtnRetrieveImage()
+REM     method public String getSearchbarBtnRetrieveSize()
+REM     
+REM     
+REM     method public String getSimpleFormBtnCalendar()
+REM 
+REM 
+REM     rem ------------ConfigurationsWidget
+REM     method public String getConfigWidgetListeditWidth()
+REM     method public String getConfigWidgetListeditHeight()
+REM     method public String getConfigWidgetBtnDeleteImage()
+REM     method public String getConfigWidgetBtnDeleteShortCue()
+REM     method public String getConfigWidgetBtnDeleteSize()
+REM     method public String getConfigWidgetBtnSaveImage()
+REM     method public String getConfigWidgetBtnSaveShortCue()
+REM     method public String getConfigWidgetBtnSaveSize()
+REM     method public String getConfigWidgetBtnAdminEnabledImage()
+REM     method public String getConfigWidgetBtnAdminEnabledShortCue()
+REM     method public String getConfigWidgetBtnAdminDisabledImage()
+REM     method public String getConfigWidgetBtnAdminDisabledShortCue()
+REM     method public String getConfigWidgetBtnAdminSize()
+REM     method public String getConfigWidgetDefaultConfigPrefix()
+
+interfaceend

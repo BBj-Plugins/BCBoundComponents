@@ -9,7 +9,7 @@ BEGIN
     EVENTMASK 0
     KEYBOARDNAVIGATION
     NAME "Child Window100"
-    STATICTEXT 100, "Shipping Zone:", 50, 56, 90, 25
+    STATICTEXT 100, "Shipping Zone:", 50, 61, 90, 25
     BEGIN
         NAME "Static Text100"
         NOT WORDWRAP
@@ -23,7 +23,7 @@ BEGIN
         NOT DRAGENABLED
     END
 
-    STATICTEXT 102, "Shipping Method:", 50, 87, 90, 25
+    STATICTEXT 102, "Shipping Method:", 50, 92, 90, 25
     BEGIN
         NAME "Static Text102"
         NOT WORDWRAP
@@ -37,49 +37,49 @@ BEGIN
         NOT DRAGENABLED
     END
 
-    STATICTEXT 104, "Last Purchase:", 50, 117, 90, 25
+    STATICTEXT 104, "Last Purchase:", 50, 122, 90, 25
     BEGIN
         NAME "Static Text104"
         NOT WORDWRAP
     END
 
-    STATICTEXT 107, "Last Payment:", 50, 148, 90, 25
+    STATICTEXT 107, "Last Payment:", 50, 153, 90, 25
     BEGIN
         NAME "Static Text107"
         NOT WORDWRAP
     END
 
-    STATICTEXT 109, "Over 30:", 410, 25, 90, 25
+    STATICTEXT 109, "Over 30:", 410, 30, 90, 25
     BEGIN
         NAME "Static Text109"
         NOT WORDWRAP
     END
 
-    STATICTEXT 106, "Over 60:", 410, 56, 90, 25
+    STATICTEXT 106, "Over 60:", 410, 61, 90, 25
     BEGIN
         NAME "Static Text106"
         NOT WORDWRAP
     END
 
-    STATICTEXT 110, "Over 90", 410, 86, 90, 25
+    STATICTEXT 110, "Over 90", 410, 91, 90, 25
     BEGIN
         NAME "Static Text110"
         NOT WORDWRAP
     END
 
-    STATICTEXT 111, "Over 120:", 410, 118, 90, 25
+    STATICTEXT 111, "Over 120:", 410, 123, 90, 25
     BEGIN
         NAME "Static Text111"
         NOT WORDWRAP
     END
 
-    STATICTEXT 112, "Sales MTD:", 410, 149, 90, 25
+    STATICTEXT 112, "Sales MTD:", 410, 154, 90, 25
     BEGIN
         NAME "Static Text112"
         NOT WORDWRAP
     END
 
-    STATICTEXT 113, "Sales YTD:", 410, 180, 90, 25
+    STATICTEXT 113, "Sales YTD:", 410, 185, 90, 25
     BEGIN
         NAME "Static Text113"
         NOT WORDWRAP
@@ -102,7 +102,7 @@ BEGIN
         NOT INSERTMODE
     END
 
-    INPUTN 116, "0", 498, 56, 206, 25
+    INPUTN 116, "", 498, 56, 206, 25
     BEGIN
         MASK "-########."
         NAME "OVER_60"
@@ -111,7 +111,7 @@ BEGIN
         NOT INSERTMODE
     END
 
-    INPUTN 117, "0", 498, 87, 206, 25
+    INPUTN 117, "", 498, 87, 206, 25
     BEGIN
         MASK "-########."
         NAME "OVER_90"
@@ -120,7 +120,7 @@ BEGIN
         NOT INSERTMODE
     END
 
-    INPUTN 118, "0", 498, 118, 206, 25
+    INPUTN 118, "", 498, 118, 206, 25
     BEGIN
         MASK "-########."
         NAME "OVER_120"
@@ -155,19 +155,19 @@ BEGIN
         NOT DRAGENABLED
     END
 
-    STATICTEXT 122, "Sales Person:", 50, 25, 90, 25
+    STATICTEXT 122, "Sales Person:", 50, 30, 90, 25
     BEGIN
         NAME "Static Text122"
         NOT WORDWRAP
     END
 
-    STATICTEXT 123, "Credit Code:", 50, 180, 90, 25
+    STATICTEXT 123, "Credit Code:", 50, 185, 90, 25
     BEGIN
         NAME "Static Text123"
         NOT WORDWRAP
     END
 
-    STATICTEXT 124, "Current Balance:", 50, 211, 90, 25
+    STATICTEXT 124, "Current Balance:", 50, 216, 90, 25
     BEGIN
         NAME "Static Text124"
         NOT WORDWRAP
@@ -182,7 +182,7 @@ BEGIN
         NOT INSERTMODE
     END
 
-    STATICTEXT 126, "Sales LY:", 410, 211, 90, 25
+    STATICTEXT 126, "Sales LY:", 410, 216, 90, 25
     BEGIN
         NAME "Static Text126"
         NOT WORDWRAP

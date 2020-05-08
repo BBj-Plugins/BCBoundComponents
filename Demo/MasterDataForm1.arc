@@ -9,7 +9,7 @@ BEGIN
     EVENTMASK 0
     KEYBOARDNAVIGATION
     NAME "Child Window100"
-    STATICTEXT 100, "Company:", 50, 56, 90, 25
+    STATICTEXT 100, "Company:", 50, 61, 90, 25
     BEGIN
         NAME "Static Text100"
         NOT WORDWRAP
@@ -23,7 +23,7 @@ BEGIN
         NOT DRAGENABLED
     END
 
-    STATICTEXT 102, "Firstname:", 50, 87, 90, 25
+    STATICTEXT 102, "Firstname:", 50, 92, 90, 25
     BEGIN
         NAME "Static Text102"
         NOT WORDWRAP
@@ -37,7 +37,7 @@ BEGIN
         NOT DRAGENABLED
     END
 
-    STATICTEXT 104, "Lastname:", 50, 117, 90, 25
+    STATICTEXT 104, "Lastname:", 50, 122, 90, 25
     BEGIN
         NAME "Static Text104"
         NOT WORDWRAP
@@ -51,43 +51,43 @@ BEGIN
         NOT DRAGENABLED
     END
 
-    STATICTEXT 107, "Billing Address:", 50, 148, 90, 25
+    STATICTEXT 107, "Billing Address:", 50, 153, 90, 25
     BEGIN
         NAME "Static Text107"
         NOT WORDWRAP
     END
 
-    STATICTEXT 109, "City:", 410, 25, 90, 25
+    STATICTEXT 109, "City:", 410, 30, 90, 25
     BEGIN
         NAME "Static Text109"
         NOT WORDWRAP
     END
 
-    STATICTEXT 106, "State:", 410, 56, 90, 25
+    STATICTEXT 106, "State:", 410, 61, 90, 25
     BEGIN
         NAME "Static Text106"
         NOT WORDWRAP
     END
 
-    STATICTEXT 110, "Country:", 410, 86, 90, 25
+    STATICTEXT 110, "Country:", 410, 91, 90, 25
     BEGIN
         NAME "Static Text110"
         NOT WORDWRAP
     END
 
-    STATICTEXT 111, "Post Code:", 410, 118, 90, 25
+    STATICTEXT 111, "Post Code:", 410, 123, 90, 25
     BEGIN
         NAME "Static Text111"
         NOT WORDWRAP
     END
 
-    STATICTEXT 112, "Phone:", 410, 149, 90, 25
+    STATICTEXT 112, "Phone:", 410, 154, 90, 25
     BEGIN
         NAME "Static Text112"
         NOT WORDWRAP
     END
 
-    STATICTEXT 113, "Fax:", 410, 180, 90, 25
+    STATICTEXT 113, "Fax:", 410, 185, 90, 25
     BEGIN
         NAME "Static Text113"
         NOT WORDWRAP
@@ -166,7 +166,7 @@ BEGIN
         NOT DRAGENABLED
     END
 
-    STATICTEXT 122, "Customer Nr:", 50, 25, 90, 25
+    STATICTEXT 122, "Customer Nr:", 50, 30, 90, 25
     BEGIN
         NAME "Static Text122"
         NOT WORDWRAP
