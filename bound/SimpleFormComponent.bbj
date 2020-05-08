@@ -188,7 +188,7 @@ REM             escape
 REM                 cast(BBjInputE, c!).setLength(precision!)
                 break
                 
-            case BBjControl.INPUTN_CONTROL
+            case BBjControl.INPUTN_TYPE
                 if fieldAttributes!.containsKey("MASK") then
                     mask! = fieldAttributes!.get("MASK")
                     cast(BBjInputN, c!).setMask(mask!)
@@ -220,7 +220,7 @@ REM                 cast(BBjInputE, c!).setLength(precision!)
                 endif
                 break
                 
-            case BBjControl.INPUTD_CONTROL
+            case BBjControl.INPUTD_TYPE
                 if fieldAttributes!.containsKey("MASK") then
                     mask! = fieldAttributes!.get("MASK")
                 else
@@ -229,7 +229,9 @@ REM                 cast(BBjInputE, c!).setLength(precision!)
                 cast(BBjInputD, c!).setMask(mask!)
                 #addCalendarButton(cast(BBjInputD, c!))
                 break
+            case BBjControl.LISTEDIT_TYPE
             
+                break
             case default
                 break
         swend

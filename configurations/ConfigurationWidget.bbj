@@ -73,7 +73,10 @@ REM     field protected String iconButtonAdminDisabled! =   "BusinessUIComponent
     field protected ConfigurationStateHandler stateHandler!
     
     field protected BBjNumber minPaddingLeft = 0
-    
+    field protected BBjNumber widgetWidth = 0
+    field protected BBjNumber widgetHeight = 0
+    field protected BBjNumber listEditPopupHeight = 0
+    field protected BBjNumber optionsListeditWidth = 0
     rem /**
     rem  * default constructor disabled
     rem  */
@@ -221,22 +224,33 @@ REM                 #buttonAdmin!.setShortCue("Admin mode (currently disabled)")
             #bcInitialized! = Boolean.TRUE
         endif
         
-        xEnd = #getX() + 160 
+REM     field protected BBjNumber widgetWidth = 0
+REM     field protected BBjNumber widgetHeight = 0
+REM     field protected BBjNumber listEditPopupHeight = 0
+        
+        xEnd = #getX() + #widgetWidth 
         if xEnd > #container!.getWidth() then xEnd = #container!.getWidth()
-        xStart = xEnd - 160
+        xStart = xEnd - #widgetWidth
         if xStart < #minPaddingLeft then xStart = #minPaddingLeft
         totalLength = xEnd - xStart
-        if totalLength < 100 then totalLength = 100
-        buttonsX = 100
+        
+        
+        if totalLength < #optionsListeditWidth then totalLength = #optionsListeditWidth
+        buttonsX = #optionsListeditWidth
         buttonsY = 0
         #getCanvas().setLocation(xStart,#getY())
         #listEditOptions!.setLocation(0,1)
+        #listEditOptions!.setSize(#optionsListeditWidth, #listEditPopupHeight)
+        #listEditOptions!.setFieldHeight(#widgetHeight - 2)
         #buttonDelete!.setLocation(buttonsX,buttonsY)
-        #buttonSave!.setLocation(buttonsX + 20,buttonsY)
+        #buttonSave!.setLocation(buttonsX + #widgetHeight,buttonsY)
         if #allowAdmin! then
-            #buttonAdmin!.setLocation(buttonsX + 40,buttonsY)
+            #buttonAdmin!.setLocation(buttonsX + (2 * #widgetHeight),buttonsY)
         endif
-        if totalLength < 160 then
+        if totalLength < #widgetWidth then
+REM         ?xStart
+REM         ?xEnd
+REM         escape
             #togglePopupMode(Boolean.TRUE)
         else
             #togglePopupMode(Boolean.FALSE)
@@ -249,14 +263,18 @@ REM                 #buttonAdmin!.setShortCue("Admin mode (currently disabled)")
         if #getTextPropertiesManager() = null() then #setTextPropertiesManager(LocalizedPropertiesManager.getInstance())
         uiProperties! = #getUIPropertiesManager()
         textProperties! = #getTextPropertiesManager()
-        #listEditOptions!.setSize(uiProperties!.getPropertyAsNumber("CONFIG_WIDGET_LISTEDIT_WIDTH"), uiProperties!.getPropertyAsNumber("CONFIG_WIDGET_LISTEDIT_HEIGHT"))
+        #widgetWidth = cast(BBjNumber, uiProperties!.getPropertyAsNumber("CONFIG_WIDGET_WIDTH"))
+        #widgetHeight = cast(BBjNumber, uiProperties!.getPropertyAsNumber("CONFIG_WIDGET_HEIGHT"))
+        #optionsListeditWidth = #widgetWidth - (3 * #widgetHeight);REM list edit is widget width minus the 3 buttons
+        #listEditPopupHeight = cast(BBjNumber, uiProperties!.getPropertyAsNumber("CONFIG_WIDGET_LISTEDIT_POPUP_HEIGHT"))
         #buttonDelete!.setImageFile(uiProperties!.getProperty("CONFIG_WIDGET_BTN_DELETE_IMAGE"))
-        size = uiProperties!.getPropertyAsNumber("CONFIG_WIDGET_HEIGHT")
+        size = uiProperties!.getPropertyAsNumber("CONFIG_WIDGET_HEIGHT") - 4
         #buttonDelete!.setImageSize(size,size)
         #buttonDelete!.setShortCue(textProperties!.getProperty("CONFIG_WIDGET_BTN_DELETE_SHORT_CUE"))
         #buttonSave!.setImageFile(uiProperties!.getProperty("CONFIG_WIDGET_BTN_SAVE_IMAGE"))
         #buttonSave!.setImageSize(size,size)
         #buttonSave!.setShortCue(textProperties!.getProperty("CONFIG_WIDGET_BTN_SAVE_SHORT_CUE"))
+        #popupButton!.setLocation(#optionsListeditWidth, 0)
         if #allowAdmin! then
             #buttonAdmin!.setImageSize(size,size)
             if #adminModeEnabled! then
