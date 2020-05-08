@@ -211,7 +211,6 @@ REM         endif
     
     method public void onFileChooserFinish(BBjNamespaceEvent ev!)
         val! = ev!.getNewValue()
-        
         switch val!
             case "::SAVE::"
             case "::OPEN::"
@@ -232,7 +231,11 @@ REM         if rs! = null() or rs!.isEmpty() then methodret
         
         path! = Paths.get(chosenDirOrFilePath!)
         outputFilename$ = path!.getFileName().toString()
-        path$ = path!.getParent().toString() + "/"
+		if path!.getParent() <> null() then
+			path$ = path!.getParent().toString() + "/"
+		else
+			path$ = ""
+		endif
         
         dr! = rs!.get(0)
         
@@ -259,7 +262,14 @@ REM         if rs! = null() or rs!.isEmpty() then methodret
         rem exporting
         declare File outputFile!
         outputFile! = #getexporter().exportToPDF(outputFilename$, path$, rs!, sheetConfiguration!, #showsBaristaHeader!, fitTo, #lbPageLayout!.getSelectedIndex())
-        bbjapi().getThinClient().browse(outputFile!.getAbsolutePath().replace("\", "/"))
+        
+		if info(3,6) = "5" then
+			fs! = bbjapi().getThinClient().getClientFileSystem() 
+			cf! = fs!.getClientFile(chosenDirOrFilePath!) 
+			cf!.copyToClient(outputFile!.getAbsolutePath())
+		endif
+		
+		bbjapi().getThinClient().browse(outputFile!.getAbsolutePath().replace("\", "/"))
         #saveConfiguration()
         #getmainWindow().destroy()
     methodend

@@ -194,8 +194,17 @@ REM         #mainWindow!.destroy()
         rs! = #grid!.getGrid().getRS()
         if rs! = null() or rs!.isEmpty() then methodret
         report! = #stReportLocation!.getText()
+		
+		if info(3,6) = "5" then
+			fs! = bbjapi().getThinClient().getClientFileSystem() 
+			cf! = fs!.getClientFile(report!) 
+			reportPath$ = cf!.copyFromClient("tempFile.jrxml")
+			compiledReport! = JasperCompileManager.compileReport(reportPath$)
+		else
+			compiledReport! = JasperCompileManager.compileReport(report!)
+		endif
         
-        compiledReport! = JasperCompileManager.compileReport(report!)
+        rem compiledReport! = JasperCompileManager.compileReport(report!)
 
         declare JRField field!
 
@@ -211,7 +220,15 @@ REM         #mainWindow!.destroy()
         
         rem exporting
         declare File outputFile!
-        outputFile! = #exporter!.exportToPDFByCustomReport(file!, report!, rs!)
+        outputFile! = #exporter!.exportToPDFByCustomReport(chosenDirOrFilePath!, report!, rs!)
+		
+		if info(3,6) = "5" then
+			fs! = bbjapi().getThinClient().getClientFileSystem() 
+			cf! = fs!.getClientFile(chosenDirOrFilePath!) 
+			cf!.copyToClient(outputFile!.getAbsolutePath())
+			cf!.delete!
+		endif
+		
         bbjapi().getThinClient().browse(outputFile!.getAbsolutePath().replace("\", "/"))
         #mainWindow!.destroy()
     methodend
