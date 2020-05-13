@@ -35,6 +35,7 @@ class public BusinessGrid extends AbstractBCBoundWidget implements IPersistentSt
     field private ConfigurationWidget    cfgwidget!
     field private CustomConfigurationsBC cfgbc!
     field private ExportMenuButton       exportButton!
+    field private BBjMenuButton          fitToGridButton!
 
     field private Boolean columnConfigurationSet! = Boolean.FALSE
 
@@ -88,10 +89,16 @@ class public BusinessGrid extends AbstractBCBoundWidget implements IPersistentSt
             menu!.addItem(GxContextMenuItem.RESET_COLUMNS())
             options!.setContextMenu(menu!)
 
-            #exportButton! = new ExportMenuButton(#getCanvas(), 202, 0, 5, 43, 23)
+            #exportButton! = new ExportMenuButton(#getCanvas(), 202, 0, 5, 43, 20)
             #exportButton!.setGrid(#this!)
             #exportButton!.setBC(new CustomConfigurationsBC(info(3,2), "exportButtonConfigurations"))
             #exportButton!.setProgramName(pgm(-2,0))
+            
+            #fitToGridButton! = #getCanvas().addMenuButton(203, 48, 5, 20, 20, "")
+            #fitToGridButton!.setImageSize(23, 23)
+            #fitToGridButton!.setCallback(#fitToGridButton!.ON_BUTTON_PUSH, #this!, "fitToGrid")
+            
+            #updateProperties()
         fi
 
         #grid!.setSize(#getWidth(),#getHeight()-30)
@@ -101,7 +108,21 @@ class public BusinessGrid extends AbstractBCBoundWidget implements IPersistentSt
             #cfgwidget!.setLocation(#getWidth()-155, 5)
         fi
     methodend
-
+    
+    method protected void updateProperties()
+        #super!.updateProperties()
+        uiProperties! = #getUIPropertiesManager()
+        #exportButton!.setImageFile(uiProperties!.getProperty("EXPORT_BTN_IMAGE"))
+        #fitToGridButton!.setImageFile(uiProperties!.getProperty("FIT_TO_GRID_IMAGE"))
+        
+        height = uiProperties!.getPropertyAsNumber("CONFIG_WIDGET_HEIGHT")
+        if height > 0 then 
+            #exportButton!.setSize(height*2, height)
+            #exportButton!.setImageSize(height-4, height-4)
+            #fitToGridButton!.setSize(height, height)
+            #fitToGridButton!.setImageSize(height-4, height-4)
+        endif
+    methodend
 
     rem ---------------------- Event Handlers --------------------------------
 
@@ -297,6 +318,16 @@ class public BusinessGrid extends AbstractBCBoundWidget implements IPersistentSt
             x$=X$(pos("::"=x$)+2)
         wend
         #cfgwidget! = new ConfigurationWidget(#getCanvas(),201, #getWidth()-155, 5 , #this!, Boolean.TRUE, "GRD", x$, #cfgbc! )
+    methodend
+    
+    method public void fitToGrid(BBjEvent ev!)
+        #fitToGrid()
+    methodend
+    
+    method private void fitToGrid()
+        if #grid!<>null() then
+            #grid!.setFitToGrid()
+        fi
     methodend
 
 classend

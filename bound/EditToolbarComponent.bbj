@@ -77,11 +77,13 @@ class public EditToolbarComponent extends AbstractBCBoundWidget
             
             height = uiProperties!.getPropertyAsNumber("EDIT_TOOLBAR_HEIGHT")
             if height > 0 then 
-                #btn_new!.setImageSize(height, height)
-                #btn_save!.setImageSize(height, height)
-                #btn_delete!.setImageSize(height, height)
+                #btn_new!.setSize(height, height)
+                #btn_new!.setImageSize(height-4, height-4)
+                #btn_save!.setSize(height, height)
+                #btn_save!.setImageSize(height-4, height-4)
+                #btn_delete!.setSize(height, height)
+                #btn_delete!.setImageSize(height-4, height-4)
             endif
-    
     methodend
 
 
