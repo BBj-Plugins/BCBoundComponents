@@ -1,0 +1,92 @@
+REM /**
+REM  * LocalizedPropertiesManager.bbj
+REM  * @author jcorea
+REM  *
+REM  */
+
+use java.io.FileInputStream
+use java.io.File
+use java.io.IOException
+use java.io.InputStream
+use java.util.Properties
+use java.util.Locale
+use ::BusinessUIComponents/configurations/IPropertiesManager.bbj::IPropertiesManager
+use ::BusinessUIComponents/configurations/PropertiesManager.bbj::PropertiesManager
+
+class public LocalizedPropertiesManager implements IPropertiesManager
+
+    field protected String folder!
+    field protected String propertiesFilesPostfix! = ".properties"
+    
+    field protected IPropertiesManager activePropertiesManager!
+    
+    field protected Locale locale!
+    field protected Locale defaultLocale! = new Locale("de")
+    
+    field protected static BBjVector localizedPropertyManagers! = new BBjVector()
+
+    method private LocalizedPropertiesManager(String folder!)
+        #folder! = folder!
+        #updateLocale()
+        #localizedPropertyManagers!.add(#this!)
+    methodend
+    
+    method public static LocalizedPropertiesManager getInstance()
+        methodret LocalizedPropertiesManager.getInstance("BusinessUIComponents/configurations/textProperties/")
+    methodend
+    
+    method public static LocalizedPropertiesManager getInstance(String folder!)
+        rem only one PropertiesManager instance for a given path can exist
+        it! = #localizedPropertyManagers!.iterator()
+        while it!.hasNext()
+            current! = cast(LocalizedPropertiesManager, it!.next())
+            if current!.getFolder().equals(folder!) then 
+                methodret current!
+            endif
+        wend
+        methodret new LocalizedPropertiesManager(folder!)
+    methodend
+    
+    method public String getFolder()
+        methodret #folder!
+    methodend
+    
+    
+    method public void setLocale(Locale locale!)
+        if #locale!<> null() and #locale!.getLanguage().equals(locale!.getLanguage()) then methodret
+        #locale!= locale!
+        #updateLocale()
+    methodend
+    
+    
+    method protected void updateLocale()
+        if #folder! = null() then methodret
+        if #locale! = null() then #locale! = #defaultLocale!
+        path! = #folder! + #locale!.getLanguage() + #propertiesFilesPostfix!
+        file! = new File(BBjAPI().getFileSystem().resolvePath(path!))
+        if file!.exists() then
+            #activePropertiesManager! = PropertiesManager.getInstance(path!)
+            methodret
+        endif
+        rem if no file for this locale exist: get default
+        path! = #folder! + #defaultLocale!.getLanguage() + #propertiesFilesPostfix!
+        file! = new File(BBjAPI().getFileSystem().resolvePath(path!))
+        if file!.exists() then
+            #activePropertiesManager! = PropertiesManager.getInstance(path!)
+            methodret
+        endif
+    methodend
+    
+    method public String getProperty(String property!)
+        if #activePropertiesManager! = null() then methodret ""
+        methodret #activePropertiesManager!.getProperty(property!)
+    methodend
+    
+    method public BBjNumber getPropertyAsNumber(String property!)
+        seterr parseerr
+        methodret num(#getProperty(property!).trim())
+        parseerr:
+            methodret 0
+    methodend
+
+classend

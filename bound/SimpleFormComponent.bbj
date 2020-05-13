@@ -1,7 +1,7 @@
 use ::BusinessUIComponents/AbstractBCBoundWidget.bbj::AbstractBCBoundWidget
 use ::BBjGridExWidget/BBjGridExWidget.bbj::BBjGridExWidget
-use ::BusinessUIComponents/configurations/IUIPropertiesManager.bbj::IUIPropertiesManager
-use ::BusinessUIComponents/configurations/UIPropertiesManager.bbj::UIPropertiesManager
+use ::BusinessUIComponents/configurations/IPropertiesManager.bbj::IPropertiesManager
+use ::BusinessUIComponents/configurations/PropertiesManager.bbj::PropertiesManager
 use com.basiscomponents.bc.BCBound
 use com.basiscomponents.bc.BCBinder
 use com.basiscomponents.db.ResultSet
@@ -65,18 +65,19 @@ class public SimpleFormComponent extends AbstractBCBoundWidget
         if (#cw! <> null()) then 
             #cw!.setSize(#getWidth(),#getHeight())
         fi
-        if #getUIPropertiesManager() = null() then #setUIPropertiesManager(UIPropertiesManager.getInstance())
+        #updateProperties()
     methodend
     
     rem /**
     rem  * updating properties from properties manager
     rem  */
     method protected void updateProperties()
-            it! = #calendarButtons!.iterator()
-            while it!.hasNext()
-                calendarButton! = it!.next()
-                cast(BBjButton, calendarButton!).setImageFile(#getUIPropertiesManager().getSimpleFormBtnCalendar())
-            wend
+        #super!.updateProperties()
+        it! = #calendarButtons!.iterator()
+        while it!.hasNext()
+            calendarButton! = it!.next()
+            cast(BBjButton, calendarButton!).setImageFile(#getUIPropertiesManager().getProperty("SIMPLE_FORM_BTN_CALENDAR"))
+        wend
     methodend
     
     method public void setControlMap(BiMap controlMap!)
@@ -252,7 +253,7 @@ REM             escape
 REM                 cast(BBjInputE, c!).setLength(precision!)
                 break
                 
-            case BBjControl.INPUTN_CONTROL
+            case BBjControl.INPUTN_TYPE
                 if fieldAttributes!.containsKey("MASK") then
                     mask! = fieldAttributes!.get("MASK")
                     cast(BBjInputN, c!).setMask(mask!)
@@ -284,7 +285,7 @@ REM                 cast(BBjInputE, c!).setLength(precision!)
                 endif
                 break
                 
-            case BBjControl.INPUTD_CONTROL
+            case BBjControl.INPUTD_TYPE
                 if fieldAttributes!.containsKey("MASK") then
                     mask! = fieldAttributes!.get("MASK")
                 else
@@ -293,7 +294,9 @@ REM                 cast(BBjInputE, c!).setLength(precision!)
                 cast(BBjInputD, c!).setMask(mask!)
                 #addCalendarButton(cast(BBjInputD, c!))
                 break
+            case BBjControl.LISTEDIT_TYPE
             
+                break
             case default
                 break
         swend
@@ -303,7 +306,7 @@ REM                 cast(BBjInputE, c!).setLength(precision!)
         calendarButton! = #getCanvas().addButton(#getCanvas().getAvailableControlID(), control!.getX() + control!.getWidth() - control!.getHeight() + 1, control!.getY() + 1, control!.getHeight() - 2, control!.getHeight() - 2, "")
         #calendarButtons!.add(calendarButton!)
 REM         calendarButton!.setImageFile("BusinessUIComponents/icon/ic_insert_invitation_black_24dp.png")
-        calendarButton!.setImageSize(control!.getHeight() - 2,control!.getHeight() - 2)
+        calendarButton!.setImageSize(control!.getHeight() - 6,control!.getHeight() - 6)
         calendarButton!.setUserData(control!)
         calendarButton!.setCallback(BBjAPI.ON_BUTTON_PUSH,#this!,"onCalendarButtonPush") 
     methodend

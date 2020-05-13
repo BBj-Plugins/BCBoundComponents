@@ -48,6 +48,7 @@ splitter! = new HorizontalSplitter(wnd!,102,5,30,900,800)
 searchBar! = new SearchBar(wnd!,103,510, 10, 285, 20)
 
 bgrid! = new BusinessGrid(splitter!.getTopCanvas(),100,0,0,300,200)
+bgrid!.getGrid().getOptions().setMultipleSelection(1)
 bgrid!.setConfigurationWidgetUser("MyUser")
 splitter!.setTopCtrl(bgrid!)
 

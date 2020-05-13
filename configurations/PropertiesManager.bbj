@@ -1,0 +1,207 @@
+REM /**
+REM  * PropertiesManager.bbj
+REM  * @author jcorea
+REM  *
+REM  */
+
+use java.io.FileInputStream
+use java.io.File
+use java.io.IOException
+use java.io.InputStream
+use java.util.Properties
+use ::BusinessUIComponents/configurations/IPropertiesManager.bbj::IPropertiesManager
+
+class public PropertiesManager implements IPropertiesManager
+
+    field protected Properties prop!
+    field protected String path!
+    field public static BBjVector propertyManagers! = new BBjVector()
+
+    method private PropertiesManager(String path!)
+        #path! = path!
+        is! = new FileInputStream(new File(BBjAPI().getFileSystem().resolvePath(path!)))
+        #prop! = new Properties()
+        #prop!.load(is!)
+        #propertyManagers!.add(#this!)
+    methodend
+    
+    method public static PropertiesManager getInstance()
+        methodret #getInstance("BusinessUIComponents/configurations/ui.properties")
+    methodend
+    
+    method public static PropertiesManager getInstance(String path!)
+        rem only one PropertiesManager instance for a given path can exist
+        it! = #propertyManagers!.iterator()
+        while it!.hasNext()
+            current! = cast(PropertiesManager, it!.next())
+            if current!.getPath().equals(path!) then 
+                methodret current!
+            endif
+        wend
+        methodret new PropertiesManager(path!)
+    methodend
+    
+    method public String getPath()
+        methodret #path!
+    methodend
+    
+    method public String getProperty(String property!)
+        property! = #prop!.getProperty(property!)
+        if property! = null() then property! = ""
+        methodret property!
+    methodend
+    
+    
+    method public BBjNumber getPropertyAsNumber(String property!)
+        seterr parseerr
+        methodret num(#getProperty(property!).trim())
+        parseerr:
+            methodret 0
+    methodend
+    
+REM     rem -------------EditToolbarComponent
+REM     method public String getEditToolbarBtnNewImage()
+REM         methodret #prop!.getProperty("EDIT_TOOLBAR_BTN_NEW_IMAGE")
+REM     methodend
+REM     
+REM     method public String getEditToolbarBtnNewSize()
+REM         methodret #prop!.getProperty("EDIT_TOOLBAR_BTN_NEW_SIZE")
+REM     methodend
+REM     
+REM     method public String getEditToolbarBtnSaveImage()
+REM         methodret #prop!.getProperty("EDIT_TOOLBAR_BTN_SAVE_IMAGE")
+REM     methodend
+REM     
+REM     method public String getEditToolbarBtnSaveSize()
+REM         methodret #prop!.getProperty("EDIT_TOOLBAR_BTN_SAVE_SIZE")
+REM     methodend
+REM     
+REM     method public String getEditToolbarBtnDeleteImage()
+REM         methodret #prop!.getProperty("EDIT_TOOLBAR_BTN_DELETE_IMAGE")
+REM     methodend
+REM     
+REM     method public String getEditToolbarBtnDeleteSize()
+REM         methodret #prop!.getProperty("EDIT_TOOLBAR_BTN_DELETE_SIZE")
+REM     methodend
+REM     
+REM     method public String getEditToolbarDialogSaveData()
+REM         methodret #prop!.getProperty("EDIT_TOOLBAR_DIALOG_SAVE_DATA")
+REM     methodend
+REM     
+REM     
+REM     
+REM     
+REM     rem ------------NavigatorComponent
+REM     method public String getNavigatorBtnFirstImage()
+REM         methodret #prop!.getProperty("NAVIGATOR_BTN_FIRST_IMAGE")
+REM     methodend
+REM     
+REM     method public String getNavigatorBtnFirstSize()
+REM         methodret #prop!.getProperty("NAVIGATOR_BTN_FIRST_SIZE")
+REM     methodend
+REM     
+REM     method public String getNavigatorBtnPreviousImage()
+REM         methodret #prop!.getProperty("NAVIGATOR_BTN_PREVIOUS_IMAGE")
+REM     methodend
+REM     
+REM     method public String getNavigatorBtnPreviousSize()
+REM         methodret #prop!.getProperty("NAVIGATOR_BTN_PREVIOUS_SIZE")
+REM     methodend
+REM     
+REM     method public String getNavigatorBtnLastImage()
+REM         methodret #prop!.getProperty("NAVIGATOR_BTN_LAST_IMAGE")
+REM     methodend
+REM     
+REM     method public String getNavigatorBtnLastSize()
+REM         methodret #prop!.getProperty("NAVIGATOR_BTN_LAST_SIZE")
+REM     methodend
+REM     
+REM     method public String getNavigatorBtnNextImage()
+REM         methodret #prop!.getProperty("NAVIGATOR_BTN_NEXT_IMAGE")
+REM     methodend
+REM     
+REM     method public String getNavigatorBtnNextSize()
+REM         methodret #prop!.getProperty("NAVIGATOR_BTN_NEXT_SIZE")
+REM     methodend
+REM     
+REM     
+REM     
+REM     
+REM     rem ------------SearchBar
+REM     method public String getSearchbarBtnRetrieveImage()
+REM         methodret #prop!.getProperty("SEARCHBAR_BTN_RETRIEVE_IMAGE")
+REM     methodend
+REM     
+REM     method public String getSearchbarBtnRetrieveSize()
+REM         methodret #prop!.getProperty("SEARCHBAR_BTN_RETRIEVE_SIZE")
+REM     methodend
+REM     
+REM     
+REM     
+REM     
+REM     rem ------------SimpleFormComponent
+REM     method public String getSimpleFormBtnCalendar()
+REM         methodret #prop!.getProperty("SIMPLE_FORM_BTN_CALENDAR")
+REM     methodend
+REM     
+REM     
+REM     
+REM     
+REM     rem ------------ConfigurationsWidget
+REM     method public String getConfigWidgetListeditWidth()
+REM         methodret #prop!.getProperty("CONFIG_WIDGET_LISTEDIT_WIDTH")
+REM     methodend
+REM     
+REM     method public String getConfigWidgetListeditHeight()
+REM         methodret #prop!.getProperty("CONFIG_WIDGET_LISTEDIT_HEIGHT")
+REM     methodend
+REM     
+REM     method public String getConfigWidgetBtnDeleteImage()
+REM         methodret #prop!.getProperty("CONFIG_WIDGET_BTN_DELETE_IMAGE")
+REM     methodend
+REM     
+REM     method public String getConfigWidgetBtnDeleteShortCue()
+REM         methodret #prop!.getProperty("CONFIG_WIDGET_BTN_DELETE_SHORT_CUE")
+REM     methodend
+REM     
+REM     method public String getConfigWidgetBtnDeleteSize()
+REM         methodret #prop!.getProperty("CONFIG_WIDGET_BTN_DELETE_SIZE")
+REM     methodend
+REM     
+REM     method public String getConfigWidgetBtnSaveImage()
+REM         methodret #prop!.getProperty("CONFIG_WIDGET_BTN_SAVE_IMAGE")
+REM     methodend
+REM     
+REM     method public String getConfigWidgetBtnSaveShortCue()
+REM         methodret #prop!.getProperty("CONFIG_WIDGET_BTN_SAVE_SHORT_CUE")
+REM     methodend
+REM     
+REM     method public String getConfigWidgetBtnSaveSize()
+REM         methodret #prop!.getProperty("CONFIG_WIDGET_BTN_SAVE_SIZE")
+REM     methodend
+REM     
+REM     method public String getConfigWidgetBtnAdminEnabledImage()
+REM         methodret #prop!.getProperty("CONFIG_WIDGET_BTN_ADMIN_ENABLED_IMAGE")
+REM     methodend
+REM     
+REM     method public String getConfigWidgetBtnAdminEnabledShortCue()
+REM         methodret #prop!.getProperty("CONFIG_WIDGET_BTN_ADMIN_ENABLED_SHORT_CUE")
+REM     methodend
+REM     
+REM     method public String getConfigWidgetBtnAdminDisabledImage()
+REM         methodret #prop!.getProperty("CONFIG_WIDGET_BTN_ADMIN_DISABLED_IMAGE")
+REM     methodend
+REM     
+REM     method public String getConfigWidgetBtnAdminDisabledShortCue()
+REM         methodret #prop!.getProperty("CONFIG_WIDGET_BTN_ADMIN_DISABLED_SHORT_CUE")
+REM     methodend
+REM     
+REM     method public String getConfigWidgetBtnAdminSize()
+REM         methodret #prop!.getProperty("CONFIG_WIDGET_BTN_ADMIN_SIZE")
+REM     methodend
+REM     
+REM     method public String getConfigWidgetDefaultConfigPrefix()
+REM         methodret #prop!.getProperty("CONFIG_WIDGET_DEFAULT_CONFIG_PREFIX")
+REM     methodend
+
+classend

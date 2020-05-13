@@ -1,6 +1,6 @@
 use ::BusinessUIComponents/AbstractBCBoundWidget.bbj::AbstractBCBoundWidget
-use ::BusinessUIComponents/configurations/IUIPropertiesManager.bbj::IUIPropertiesManager
-use ::BusinessUIComponents/configurations/UIPropertiesManager.bbj::UIPropertiesManager
+use ::BusinessUIComponents/configurations/IPropertiesManager.bbj::IPropertiesManager
+use ::BusinessUIComponents/configurations/PropertiesManager.bbj::PropertiesManager
 use ::BBjGridExWidget/BBjGridExWidget.bbj::BBjGridExWidget
 use com.basiscomponents.bc.BCBound
 use com.basiscomponents.bc.BCBinder
@@ -59,27 +59,35 @@ REM     field private BBjNavigator nav!
             #btn_last!.setCallback(BBjAPI.ON_TOOL_BUTTON_PUSH,#this!,"onNavLast")
             #btn_previous!.setCallback(BBjAPI.ON_TOOL_BUTTON_PUSH,#this!,"onNavPrev")
             #btn_next!.setCallback(BBjAPI.ON_TOOL_BUTTON_PUSH,#this!,"onNavNext")
-            if #getUIPropertiesManager() = null() then #setUIPropertiesManager(UIPropertiesManager.getInstance())
+            #updateProperties()
         FI
-        #resizeComponents(#getWidth(),#getHeight())
+        uiProperties! = #getUIPropertiesManager()
+        width = uiProperties!.getPropertyAsNumber("NAVIGATOR_WIDTH")
+        height = uiProperties!.getPropertyAsNumber("NAVIGATOR_HEIGHT")
+        #resizeComponents(width, height)
+REM         #resizeComponents(#getWidth(), #getHeight())
     methodend
     
     rem /**
     rem  * updating properties from properties manager
     rem  */
     method protected void updateProperties()
-            #btn_first!.setImageFile(#getUIPropertiesManager().getNavigatorBtnFirstImage())
-            #btn_previous!.setImageFile(#getUIPropertiesManager().getNavigatorBtnPreviousImage())
-            #btn_last!.setImageFile(#getUIPropertiesManager().getNavigatorBtnLastImage())
-            #btn_next!.setImageFile(#getUIPropertiesManager().getNavigatorBtnNextImage())
-            size = num(#getUIPropertiesManager().getNavigatorBtnFirstSize())
-            #btn_first!.setImageSize(size, size)
-            size = num(#getUIPropertiesManager().getNavigatorBtnPreviousSize())
-            #btn_previous!.setImageSize(size, size)
-            size = num(#getUIPropertiesManager().getNavigatorBtnLastSize())
-            #btn_last!.setImageSize(size, size)
-            size = num(#getUIPropertiesManager().getNavigatorBtnNextSize())
-            #btn_next!.setImageSize(size, size)
+            #super!.updateProperties()
+            uiProperties! = #getUIPropertiesManager()
+            
+            #btn_first!.setImageFile(uiProperties!.getProperty("NAVIGATOR_BTN_FIRST_IMAGE"))
+            #btn_previous!.setImageFile(uiProperties!.getProperty("NAVIGATOR_BTN_PREVIOUS_IMAGE"))
+            #btn_last!.setImageFile(uiProperties!.getProperty("NAVIGATOR_BTN_LAST_IMAGE"))
+            #btn_next!.setImageFile(uiProperties!.getProperty("NAVIGATOR_BTN_NEXT_IMAGE"))
+            
+            
+            height = uiProperties!.getPropertyAsNumber("NAVIGATOR_HEIGHT")
+            if height > 0 then 
+                #btn_first!.setImageSize(height, height)
+                #btn_previous!.setImageSize(height, height)
+                #btn_last!.setImageSize(height, height)
+                #btn_next!.setImageSize(height, height)
+            endif
     methodend
     
     method private void generateNavigator(BBjNumber ID, BBjNumber x, BBjNumber y, BBjNumber width, BBjNumber height, String title!)
@@ -108,10 +116,6 @@ REM     field private BBjNavigator nav!
         #input_display!.setLocation(x + (2 * height!),y + 1)
         displayWidth!   = #btn_next!.getX() - #btn_previous!.getX() - height!
         #input_display!.setSize(displayWidth!, height! - 2)
-REM         #btn_first!.setImageSize(height!, height!)
-REM         #btn_previous!.setImageSize(height!, height!)
-REM         #btn_last!.setImageSize(height!, height!)
-REM         #btn_next!.setImageSize(height!, height!)
     methodend
 
     method private void updateScreen()

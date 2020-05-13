@@ -3,12 +3,15 @@ use com.basiscomponents.bc.IBCBound
 use com.basiscomponents.bc.BCBinder
 use com.basiscomponents.db.ResultSet
 use com.basiscomponents.db.DataRow
-use ::BusinessUIComponents/configurations/IUIPropertiesManager.bbj::IUIPropertiesManager
+use ::BusinessUIComponents/configurations/IPropertiesManager.bbj::IPropertiesManager
+use ::BusinessUIComponents/configurations/PropertiesManager.bbj::PropertiesManager
+use ::BusinessUIComponents/configurations/LocalizedPropertiesManager.bbj::LocalizedPropertiesManager
 
 class public AbstractBCBoundWidget extends BBjWidget implements IBCBound
 
     field private BCBinder binder!
-    field private IUIPropertiesManager uiPropertiesManager!
+    field private IPropertiesManager uiPropertiesManager!
+    field private IPropertiesManager textPropertiesManager!
 
     method protected AbstractBCBoundWidget()
     methodend
@@ -42,16 +45,26 @@ class public AbstractBCBoundWidget extends BBjWidget implements IBCBound
     methodend
     
     method protected void updateProperties()
-        
+        if #getUIPropertiesManager() = null() then #setUIPropertiesManager(PropertiesManager.getInstance())
+        if #getTextPropertiesManager() = null() then #setTextPropertiesManager(LocalizedPropertiesManager.getInstance())
     methodend
     rem ------------------properties manager--------------------------------------
-    method public void setUIPropertiesManager(IUIPropertiesManager uiPropertiesManager!)
+    method public void setUIPropertiesManager(IPropertiesManager uiPropertiesManager!)
         #uiPropertiesManager! = uiPropertiesManager!
         #updateProperties()
     methodend
     
-    method public IUIPropertiesManager getUIPropertiesManager()
+    method public IPropertiesManager getUIPropertiesManager()
         methodret #uiPropertiesManager!
+    methodend
+    
+    method public void setTextPropertiesManager(IPropertiesManager textPropertiesManager!)
+        #textPropertiesManager! = textPropertiesManager!
+        #updateProperties()
+    methodend
+    
+    method public IPropertiesManager getTextPropertiesManager()
+        methodret #textPropertiesManager!
     methodend
 
 classend
