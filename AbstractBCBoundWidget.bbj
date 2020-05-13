@@ -16,6 +16,10 @@ class public AbstractBCBoundWidget extends BBjWidget implements IBCBound
     method protected AbstractBCBoundWidget()
     methodend
     
+    method public BBjChildWindow getChildWindow()
+        methodret #getCanvas()
+    methodend
+    
     rem -------------------------BCBinder methods--------------------------------
     method public void setBinder(BCBinder binder!)
         #binder! = binder!
