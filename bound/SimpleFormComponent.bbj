@@ -291,15 +291,15 @@ REM                 cast(BBjInputE, c!).setLength(precision!)
                 cast(BBjInputD, c!).setMask(mask!)
                 #addCalendarButton(cast(BBjInputD, c!))
                 break
-            case BBjControl.LISTEDIT_TYPE
-                #applyLookupForListEdit(cast(BBjListEdit, c!),fieldAttributes!)
+            case BBjControl.LISTBUTTON_TYPE
+                #applyLookupForListEdit(cast(BBjListButton, c!),fieldAttributes!)
                 break
             case default
                 break
         swend
     methodend
     
-    method private void applyLookupForListEdit(BBjListEdit control!, DataRow fieldAttributes!)
+    method private void applyLookupForListEdit(BBjListButton control!, DataRow fieldAttributes!)
         if !fieldAttributes!.containsKey("LOOKUP") or !fieldAttributes!.get("LOOKUP").equals("1") then methodret
         fieldName! = #getFieldNameForControl(control!)
         if fieldName! = "" then methodret
@@ -342,6 +342,9 @@ REM         calendarButton!.setImageFile("BusinessUIComponents/icon/ic_insert_in
             case BBjControl.INPUTD_TYPE
                 c!.setCallback(BBjAPI.ON_EDIT_MODIFY,#this!,"onControlEditModify") 
                 break
+            case BBjControl.LISTBUTTON_TYPE
+                c!.setCallback(BBjAPI.ON_LIST_SELECT,#this!,"onControlListSelect") 
+                break
             case default
                 c!.setCallback(BBjAPI.ON_GAINED_FOCUS,#this!,"onControlGainedFocus",err=*next) 
                 break
@@ -363,6 +366,10 @@ REM         calendarButton!.setImageFile("BusinessUIComponents/icon/ic_insert_in
     methodend
     
     method public void onControlEditModify(BBjEditModifyEvent ev!)
+        #getBinder().sendSignal(BCBinder.SIGNAL_DIRTY)
+    methodend
+    
+    method public void onControlListSelect(BBjListSelectEvent ev!)
         #getBinder().sendSignal(BCBinder.SIGNAL_DIRTY)
     methodend
     
@@ -406,8 +413,8 @@ REM         escape
     method protected String getValueFromControl(BBjControl control!)
         controlType = control!.getControlType()
         switch controlType
-            case BBjControl.LISTEDIT_TYPE
-                listEdit! = cast(BBjListEdit, control!)
+            case BBjControl.LISTBUTTON_TYPE
+                listEdit! = cast(BBjListButton, control!)
                 selIndex = listEdit!.getSelectedIndex()
                 if listEdit!.getUserData() = null() then
                     methodret listEdit!.getItemAt(selIndex)
