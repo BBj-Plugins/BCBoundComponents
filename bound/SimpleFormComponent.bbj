@@ -293,7 +293,7 @@ REM                 cast(BBjInputE, c!).setLength(precision!)
                 #addCalendarButton(cast(BBjInputD, c!))
                 break
             case BBjControl.LISTBUTTON_TYPE
-                #applyLookupForListEdit(cast(BBjListButton, c!),fieldAttributes!)
+REM                 #applyLookupForListEdit(cast(BBjListButton, c!),fieldAttributes!)
                 break
             case default
                 break
