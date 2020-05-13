@@ -14,9 +14,22 @@ use ::BusinessUIComponents/optionsDialogs/ExportCustomReportDialog.bbj::ExportCu
 use ::BusinessUIComponents/optionsDialogs/OptionsDialog.bbj::OptionsDialog
 use ::BusinessUIComponents/BusinessGrid.bbj::BusinessGrid
 
+use ::FileChooser/FileChooser.bbj::FileChooser
+
+use java.io.File
+use java.nio.file.Paths
+use java.nio.file.Path
+
 use ::BusinessUIComponents/configurations/CustomConfigurationsBC.bbj::CustomConfigurationsBC
 
 use com.basiscomponents.db.ResultSetExporter
+use com.basiscomponents.db.DataRow
+use com.basiscomponents.db.ResultSet
+use com.basiscomponents.db.util.DataRowJsonMapper
+use com.basiscomponents.db.export.SheetConfiguration
+use com.basiscomponents.db.export.ReportDetails
+use com.basiscomponents.db.export.ColumnWidthCalculator
+use com.basiscomponents.db.BBArrayList
 
 class public ExportMenuButton
 
@@ -33,6 +46,7 @@ class public ExportMenuButton
     field private ExportXmlDialog exportXmlDialog!
     field private ExportCustomReportDialog exportCustomReportDialog!
     field private OptionsDialog optionsDialog!
+    field private FileChooser fileChooser!
     
     field private BBjWindow mainWindow!
     
@@ -42,6 +56,8 @@ class public ExportMenuButton
         #menuButton! = wnd!.addMenuButton(id, x, y, width, height, "")
         #menuButton!.setImageFile("BusinessUIComponents/icon/print.png")
         #menuButton!.setImageSize(23, 23)
+        
+        #menuButton!.setCallback(BBjMenuButton.ON_BUTTON_PUSH, #this!, "onMenuButtonPush")
         
         popupMenu! = #menuButton!.addDropdownMenu()
         popupMenu!.insertMenuItem(0, 1000, "Export XLSX").setCallback(BBjPopupMenu.ON_POPUP_ITEM_SELECT, #this!, "exportExcel")
@@ -55,6 +71,99 @@ REM         popupMenu!.insertSeparator(7)
 REM         popupMenu!.insertMenuItem(8, 1600, "Options ...").setCallback(BBjPopupMenu.ON_POPUP_ITEM_SELECT, #this!, "showOptions")
         
         #mainWindow! = wnd!
+    methodend
+    
+    method public void onMenuButtonPush(BBjEvent ev!)
+        dirOnly = 0
+        useSaveDialog = 1
+        path$ = java.lang.System.getProperty("user.home") + "/documents/"
+        #fileChooser! = new FileChooser(path$, 10, 10, #pgmName$ + "_PDF_exportMenuButton", 1, dirOnly, 0, useSaveDialog)
+    methodend
+    
+    method public void onFileChooserFinish(BBjNamespaceEvent ev!)
+        val! = ev!.getNewValue()
+        switch val!
+            case "::SAVE::"
+            case "::OPEN::"
+                chosenDirOrFilePath! = #fileChooser!.getSelectedFile()
+                break
+            case "::CANCEL::"
+                rem do nothing
+                methodret
+                break
+        swend
+        
+        if !chosenDirOrFilePath!.toLowerCase().endsWith(".pdf") then chosenDirOrFilePath! = chosenDirOrFilePath! + ".pdf"
+        
+        filter! = new DataRow()
+        filter!.setFieldValue("USERID", #cfgBC!.getUserName())
+        filter!.setFieldValue("KEYX", "pdf")
+        filter!.setFieldValue("REALM", "std")
+        filter!.setFieldValue("SETTING", "std")
+        #cfgBC!.setFilter(filter!)
+        rs! = #cfgBC!.retrieve()
+        config$ = rs!.get(0).getFieldAsString("CONFIG")
+        dr! = DataRowJsonMapper.fromJson(config$)
+        dr! = cast(DataRow, dr!.getField("pdf").getValue())
+        pageFittingOptions! = dr!.getFieldAsNumber("fitting").intValue()
+        fontSize! = dr!.getFieldAsNumber("fontSize")
+        pageLayout! = dr!.getFieldAsNumber("pageLayout").intValue()
+        
+        rs! = #grid!.getGrid().getRS()
+        
+        path! = Paths.get(chosenDirOrFilePath!)
+        outputFilename$ = path!.getFileName().toString()
+        if path!.getParent() <> null() then
+            path$ = path!.getParent().toString() + "/"
+        else
+            path$ = ""
+        endif
+        
+        dr! = rs!.get(0)
+        
+        rem creating SheetConfiguration
+        declare SheetConfiguration sheetConfiguration!
+        sheetConfiguration! = new SheetConfiguration()
+        
+        fieldWidths! = ColumnWidthCalculator.calculateColumnWidths(rs!, fontSize!.intValue())
+
+        visibleRowsVec! = #grid!.getGrid().getColumnState().getVisibleColumns()
+        for i = visibleRowsVec!.size() - 1 to 0 step - 1
+            fieldName$ = visibleRowsVec!.get(i)
+            header! = dr!.getDataField(fieldName$).getAttribute("LABEL")
+            if header! = null() then header! = fieldName$
+            width = fieldWidths!.getFieldAsNumber(fieldName$)
+            sheetConfiguration!.insertColumn(header!, width, fieldName$, k)
+        next i
+        
+        sheetConfiguration!.setReportDetails(new ReportDetails(0, "reportName", "tableName", "0000000000000000000001"))
+        sheetConfiguration!.setFontSize(fontSize!.intValue())
+        
+        fitTo = pageFittingOptions!
+        
+        rem exporting
+        declare File outputFile!
+        outputFile! = ResultSetExporter.exportToPDF(outputFilename$, path$, rs!, sheetConfiguration!, Boolean.FALSE, fitTo, pageLayout!)
+        
+        if info(3,6) = "5" then
+            fs! = bbjapi().getThinClient().getClientFileSystem() 
+            cf! = fs!.getClientFile(chosenDirOrFilePath!) 
+            cf!.copyToClient(outputFile!.getAbsolutePath())
+        endif
+        
+        bbjapi().getThinClient().browse(outputFile!.getAbsolutePath().replace("\", "/"))
+    methodend
+    
+    method private void saveConfiguration()
+        json! = new JsonObject()
+        json!.add("pdf", new JsonObject())
+        
+        pdf! = json!.getAsJsonObject("pdf")
+        pdf!.addProperty("fitting", str(#getSelectedFittingOption()))
+        pdf!.addProperty("fontSize", str(#getFontSize()))
+        pdf!.addProperty("pageLayout", str(#getSelectedPageLayout()))
+        
+        #saveConfiguration(new Gson().toJson(json!), "pdf")
     methodend
     
     method public void setGrid(BusinessGrid grid!)
@@ -182,6 +291,8 @@ REM     methodend
     
     method public void setProgramName(BBjString pgmName$)
         #pgmName$ = pgmName$
+        ns! = BBjAPI().getGroupNamespace()
+        ns!.setCallbackForVariable(#pgmName$ + "_PDF_exportMenuButton_user_action", #this!, "onFileChooserFinish")
     methodend
 
 classend

@@ -10,6 +10,9 @@ use ::BusinessUIComponents/unbound/HorizontalSplitter.bbj::HorizontalSplitter
 use com.basiscomponents.bc.BCBinder
 use com.basiscomponents.db.DataRow
 use com.basiscomponents.db.ResultSet
+use com.google.common.collect.BiMap
+use com.google.common.collect.HashBiMap
+use java.util.HashMap
 
 BBjAPI().getAdmin("guest", "").getEnvironment().reloadClasspath("uicomponents")
 
@@ -63,6 +66,50 @@ for i = 0 to rs!.size() - 1
     form!.setForm(dr!.getFieldAsString("ARC"), dr!.getFieldAsNumber("CWID"))
     forms!.addItem(form!)
 next i
+
+map! = HashBiMap.create()
+map!.put("CUST_NUM", "CUST_NUM")
+map!.put("COMPANY", "COMPANY")
+map!.put("FIRST_NAME", "FIRST_NAME")
+map!.put("LAST_NAME", "LAST_NAME")
+map!.put("BILL_ADDR1", "BILL_ADDR1")
+map!.put("BILL_ADDR2", "BILL_ADDR2")
+map!.put("CITY", "CITY")
+map!.put("STATE", "STATE")
+map!.put("COUNTRY", "COUNTRY")
+map!.put("POST_CODE", "POST_CODE")
+map!.put("PHONE", "PHONE")
+map!.put("FAX", "FAX")
+REM forms!.getItem(0).setControlMap(map!)
+
+map! = HashBiMap.create()
+map!.put("SALESPERSON", "SALESPERSON")
+map!.put("SHIP_ZONE", "SHIP_ZONE")
+map!.put("SHIP_METHOD", "SHIP_METHOD")
+map!.put("LAST_PURCH_DATE", "LAST_PURCH_DATE")
+map!.put("LAST_PAY_DATE", "LAST_PAY_DATE")
+map!.put("CREDIT_CODE", "CREDIT_CODE")
+map!.put("CURRENT_BAL", "CURRENT_BAL")
+map!.put("OVER_30", "OVER_30")
+map!.put("OVER_60", "OVER_60")
+map!.put("OVER_90", "OVER_90")
+map!.put("OVER_120", "OVER_120")
+map!.put("SALES_MTD", "SALES_MTD")
+map!.put("SALES_YTD", "SALES_YTD")
+map!.put("SALES_LY", "SALES_LY")
+REM forms!.getItem(1).setControlMap(map!)
+
+map! = new HashMap()
+map!.put(str(BBjControl.CHECKBOX_CONTROL), "cb1")
+map!.put(str(BBjControl.LISTBOX_CONTROL), "lb")
+map!.put(str(BBjControl.MENUBUTTON_CONTROL), "mb")
+map!.put(str(BBjControl.INPUTE_CONTROL), "ie")
+map!.put(str(BBjControl.CHECKBOX_CONTROL), "in")
+map!.put(str(BBjControl.TAB_CONTROL), "tc")
+map!.put(str(BBjControl.INPUTD_CONTROL), "id")
+map!.put(str(BBjControl.TEXT_CONTROL), "tx")
+REM forms!.getItem(0).setControlPrefixMap(map!)
+REM forms!.getItem(1).setControlPrefixMap(map!)
 
 splitter!.setBottomCtrl(tabCtrl!)
 

@@ -58,7 +58,7 @@ class public Dialog
     method public void createDialogWindow(BBjString windowTitle$, BBjNumber windowHeight)
         sysGui! = BBjAPI().getSysGui()
         declare BBjTopLevelWindow wnd!
-        wnd! = cast(BBjTopLevelWindow, sysGui!.addWindow(sysGui!.getAvailableContext(),10,10,600,windowHeight,windowTitle$))
+        wnd! = cast(BBjTopLevelWindow, sysGui!.addWindow(sysGui!.getAvailableContext(),10,10,600,windowHeight,windowTitle$, $40000000$))
         wnd!.setCallback(BBjAPI.ON_CLOSE, #this!, "onClose")
         wnd!.setResizable(0)
         #mainWindow! = wnd!
