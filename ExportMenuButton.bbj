@@ -294,5 +294,17 @@ REM     methodend
         ns! = BBjAPI().getGroupNamespace()
         ns!.setCallbackForVariable(#pgmName$ + "_PDF_exportMenuButton_user_action", #this!, "onFileChooserFinish")
     methodend
-
+    
+    method public void setImageFile(BBjString imageFilePath$)
+        #menuButton!.setImageFile(imageFilePath$)
+    methodend
+    
+    method public void setSize(BBjNumber width, BBjNumber height)
+        #menuButton!.setSize(width, height)
+    methodend
+    
+    method public void setImageSize(BBjNumber width, BBjNumber height)
+        #menuButton!.setImageSize(width, height)
+    methodend
+    
 classend
