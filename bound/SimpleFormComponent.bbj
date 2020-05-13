@@ -243,9 +243,6 @@ REM         it! = #fieldList!.iterator()
     method private void formatField(BBjControl c!)
         attributes! = #getBinder().getAttributesRecord()
         fieldAttributes! = attributes!.getFieldAttributes(c!.getName())
-REM             ? fieldAttributes!
-REM             escape
-        
         precision! = attributes!.getFieldPrecision(c!.getName())
         switch c!.getControlType()
         
@@ -295,11 +292,38 @@ REM                 cast(BBjInputE, c!).setLength(precision!)
                 #addCalendarButton(cast(BBjInputD, c!))
                 break
             case BBjControl.LISTEDIT_TYPE
-            
+                #applyLookupForListEdit(cast(BBjListEdit, c!),fieldAttributes!)
                 break
             case default
                 break
         swend
+    methodend
+    
+    method private void applyLookupForListEdit(BBjListEdit control!, DataRow fieldAttributes!)
+        if !fieldAttributes!.containsKey("LOOKUP") or !fieldAttributes!.get("LOOKUP").equals("1") then methodret
+        fieldName! = #getFieldNameForControl(control!)
+        if fieldName! = "" then methodret
+        control!.removeAllItems()
+        lookup! = #getBinder().getBC().getLookup()
+        rs! = lookup!.retrieve()
+        if rs!.isEmpty() then methodret
+        ids! = rs!.get(0).getFieldsHavingAttributeValue("EDITABLE", "2")
+        idField! = ids!.getColumnName(0)
+        if rs!.getColumnIndex("DESC") >= 0 then
+            descField! = "DESC"
+        else
+            descField! = idField!
+        endif
+        vectorKeys! = new BBjVector()
+        vectorValues! = new BBjVector()
+        it! = rs!.iterator()
+        while it!.hasNext()
+            dr! = it!.next()
+            vectorKeys!.add(dr!.getFieldAsString(idField!))
+            vectorValues!.add(dr!.getFieldAsString(descField!))
+        wend
+        control!.setUserData(vectorKeys!)
+        control!.insertItems(0, vectorValues!)
     methodend
     
     method private void addCalendarButton(BBjInputD control!)
@@ -342,6 +366,18 @@ REM         calendarButton!.setImageFile("BusinessUIComponents/icon/ic_insert_in
         #getBinder().sendSignal(BCBinder.SIGNAL_DIRTY)
     methodend
     
+    rem returns the bc-fieldname linked to the control or "" when unlinked
+    method public String getFieldNameForControl(BBjControl control!)
+        controlName! = control!.getName()
+        if #getControlMap().containsKey(controlName!) then
+            methodret #getControlMap().get(controlName!)
+        endif
+        if #fieldList!.contains(controlName!) then
+            methodret controlName!
+        endif
+        methodret ""
+    methodend
+    
     rem /**
     rem  * returns the fields of the form with its values as a datarow, if the controlnames correlate to fields in the atributes record
     rem  */
@@ -359,12 +395,30 @@ REM         it! = #fieldList!.iterator()
             editable! = "0"; editable! = attributes!.getFieldAttribute(field$, "EDITABLE",err=*next)
             if !editable!.equals("1") and !editable!.equals("2") then continue;rem only editable fields for to be added
             control! = #getControlFromControlList(field$)
-            value! = control!.getText()
+            value! = #getValueFromControl(control!)
             bcField$ = controlMap!.get(field$)
             dr!.setFieldValue(bcField$, value!)
         wend
 REM         escape
         methodret dr!
+    methodend
+    
+    method protected String getValueFromControl(BBjControl control!)
+        controlType = control!.getControlType()
+        switch controlType
+            case BBjControl.LISTEDIT_TYPE
+                listEdit! = cast(BBjListEdit, control!)
+                selIndex = listEdit!.getSelectedIndex()
+                if listEdit!.getUserData() = null() then
+                    methodret listEdit!.getItemAt(selIndex)
+                endif
+                vectorKeys! = listEdit!.getUserData()
+                methodret vectorKeys!.get(selIndex)
+                break
+            case default
+                methodret control!.getText()
+                break
+        swend
     methodend
     
     method public void onSignal(int signal!, Object payload!)
