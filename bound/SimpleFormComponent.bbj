@@ -299,7 +299,7 @@ REM                 cast(BBjInputE, c!).setLength(precision!)
         swend
     methodend
     
-    method private void applyLookupForListEdit(BBjListButton control!, DataRow fieldAttributes!)
+    method private void applyLookupForListEdit(BBjListButton control!, HashMap fieldAttributes!)
         if !fieldAttributes!.containsKey("LOOKUP") or !fieldAttributes!.get("LOOKUP").equals("1") then methodret
         fieldName! = #getFieldNameForControl(control!)
         if fieldName! = "" then methodret
