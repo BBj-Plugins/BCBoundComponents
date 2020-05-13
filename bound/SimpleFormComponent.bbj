@@ -305,8 +305,8 @@ REM                 cast(BBjInputE, c!).setLength(precision!)
         fieldName! = #getFieldNameForControl(control!)
         if fieldName! = "" then methodret
         control!.removeAllItems()
-        lookup! = cast(BusinessComponent, #getBinder().getBC()).getLookup(fieldName!)
-        rs! = lookup!.retrieve()
+        rs! = cast(BusinessComponent, #getBinder().getBC()).retrieveLookup(fieldName!)
+REM         rs! = lookup!.retrieve()
         if rs!.isEmpty() then methodret
         ids! = rs!.get(0).getFieldsHavingAttributeValue("EDITABLE", "2")
         idField! = ids!.getColumnName(0)
