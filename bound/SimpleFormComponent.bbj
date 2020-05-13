@@ -144,7 +144,7 @@ class public SimpleFormComponent extends AbstractBCBoundWidget
         while it!.hasNext()
             n$=it!.next()
             control! = #getControlFromControlList(n$)
-            if control!.getContolType = BBjControl.LISTBUTTON_TYPE then continue
+            if control!.getContolType() = BBjControl.LISTBUTTON_TYPE then continue
             control!.getContolType.setText("")
         wend
         #cw!.setEnabled(1)
