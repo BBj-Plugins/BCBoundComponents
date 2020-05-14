@@ -182,7 +182,7 @@ REM         it! = #fieldList!.iterator()
                     if vecKeys! <> null() and vecKeys!.size() then
                         for i = 0 to vecKeys!.size() - 1
                             currentKey! = vecKeys!.get(i)
-                            if currentKey!.equals(val!) then
+                            if currentKey!.trim().equals(val!.trim()) then
                                 cast(BBjListButton, control!).selectIndex(i)
                                 break
                             endif
@@ -317,7 +317,7 @@ REM                 cast(BBjInputE, c!).setLength(precision!)
                 #addCalendarButton(cast(BBjInputD, c!))
                 break
             case BBjControl.LISTBUTTON_TYPE
-REM                 #applyLookupForListEdit(cast(BBjListButton, c!),fieldAttributes!)
+                #applyLookupForListEdit(cast(BBjListButton, c!),fieldAttributes!)
                 break
             case default
                 break
