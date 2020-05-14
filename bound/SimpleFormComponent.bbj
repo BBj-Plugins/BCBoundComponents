@@ -144,13 +144,23 @@ class public SimpleFormComponent extends AbstractBCBoundWidget
         while it!.hasNext()
             n$=it!.next()
             control! = #getControlFromControlList(n$)
-            if control!.getControlType() = BBjControl.LISTBUTTON_TYPE then
-                cast(BBjListButton, control!).deselect()
-            else
-                control!.setText("")
-            endif
+            #clearControl(control!)
         wend
         #cw!.setEnabled(1)
+    methodend
+    
+    method private void clearControl(BBjControl control!)
+        switch control!.getControlType()
+            case BBjControl.LISTBUTTON_TYPE
+                cast(BBjListButton, control!).deselect()
+                break
+            case BBjControl.CHECKBOX_TYPE
+                cast(BBjCheckBox, control!).setSelected(0)
+                break
+            case default
+                control!.setText("")
+                break
+        swend
     methodend
 
     method private void updateScreen()
@@ -176,30 +186,37 @@ REM         it! = #fieldList!.iterator()
             bcFieldName$ = controlMap!.get(n$)
             control! = #getControlFromControlList(n$)
             if rec!.contains(bcFieldName$) then
-                if control!.getControlType() = BBjControl.LISTBUTTON_TYPE then
-                    vecKeys! = control!.getUserData()
-                    val! = rec!.getFieldAsString(bcFieldName$)
-                    if vecKeys! <> null() and vecKeys!.size() then
-                        for i = 0 to vecKeys!.size() - 1
-                            currentKey! = vecKeys!.get(i)
-                            if currentKey!.trim().equals(val!.trim()) then
-                                cast(BBjListButton, control!).selectIndex(i)
-                                break
-                            endif
-                        next i
-                    endif
-                else
-                    control!.setText(rec!.getFieldAsString(bcFieldName$))
-                endif
+                #fillControl(control!, rec!.getFieldAsString(bcFieldName$))
             else
-                if control!.getControlType() = BBjControl.LISTBUTTON_TYPE then
-                    cast(BBjListButton, control!).deselect()
-                else
-                    control!.setText("")
-                endif
+                #clearControl(control!)
             endif
         wend
         #cw!.setEnabled(1)
+    methodend
+    
+    method protected void fillControl(BBjControl control!, String value!)
+        switch control!.getControlType()
+            case BBjControl.LISTBUTTON_TYPE
+                vecKeys! = control!.getUserData()
+                value! = value!.trim()
+                if vecKeys! <> null() and vecKeys!.size() then
+                    for i = 0 to vecKeys!.size() - 1
+                        currentKey! = vecKeys!.get(i)
+                        if currentKey!.trim().equals(value!) then
+                            cast(BBjListButton, control!).selectIndex(i)
+                            break
+                        endif
+                    next i
+                endif
+                break
+            case BBjControl.CHECKBOX_TYPE
+                selected! = Boolean.parseBoolean(value!)
+                cast(BBjCheckBox, control!).setSelected(selected!)
+                break
+            case default
+                control!.setText(value!)
+                break
+        swend
     methodend
     
     method public void onSetData()
@@ -446,6 +463,14 @@ REM         escape
                 endif
                 vectorKeys! = listEdit!.getUserData()
                 methodret vectorKeys!.get(selIndex)
+                break
+            case BBjControl.CHECKBOX_TYPE
+                selected! = cast(BBjCheckBox, control!).isSelected()
+                if selected! then
+                    methodret "True"
+                else
+                    methodret "False"
+                endif
                 break
             case default
                 methodret control!.getText()
