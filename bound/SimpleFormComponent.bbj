@@ -144,8 +144,11 @@ class public SimpleFormComponent extends AbstractBCBoundWidget
         while it!.hasNext()
             n$=it!.next()
             control! = #getControlFromControlList(n$)
-            if control!.getControlType() = BBjControl.LISTBUTTON_TYPE then continue
-            control!.setText("")
+            if control!.getControlType() = BBjControl.LISTBUTTON_TYPE then
+                cast(BBjListButton, control!).deselect()
+            else
+                control!.setText("")
+            endif
         wend
         #cw!.setEnabled(1)
     methodend
@@ -171,10 +174,29 @@ REM         it! = #fieldList!.iterator()
         while it!.hasNext()
             n$=it!.next()
             bcFieldName$ = controlMap!.get(n$)
+            control! = #getControlFromControlList(n$)
             if rec!.contains(bcFieldName$) then
-                #getControlFromControlList(n$).setText(rec!.getFieldAsString(bcFieldName$))
+                if control!.getControlType() = BBjControl.LISTBUTTON_TYPE then
+                    vecKeys! = control!.getUserData()
+                    val! = rec!.getFieldAsString(bcFieldName$)
+                    if vecKeys! <> null() and vecKeys!.size() then
+                        for i = 0 to vecKeys!.size() - 1
+                            currentKey! = vecKeys!.get(i)
+                            if currentKey!.equals(val!) then
+                                cast(BBjListButton, control!).selectIndex(i)
+                                break
+                            endif
+                        next i
+                    endif
+                else
+                    control!.setText(rec!.getFieldAsString(bcFieldName$))
+                endif
             else
-                #getControlFromControlList(n$).setText("")
+                if control!.getControlType() = BBjControl.LISTBUTTON_TYPE then
+                    cast(BBjListButton, control!).deselect()
+                else
+                    control!.setText("")
+                endif
             endif
         wend
         #cw!.setEnabled(1)
