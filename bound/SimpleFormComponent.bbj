@@ -62,11 +62,11 @@ class public SimpleFormComponent extends AbstractBCBoundWidget
     rem  */
     method public void redraw(Boolean f_init!)
         if (f_init!) then
+            #updateProperties()
         FI
         if (#cw! <> null()) then 
             #cw!.setSize(#getWidth(),#getHeight())
         fi
-        #updateProperties()
     methodend
     
     rem /**
