@@ -50,7 +50,7 @@ class public SimpleFormComponent extends AbstractBCBoundWidget
     method public void setForm(BBjString res_name$, BBjNumber id)
         res = BBjAPI().getSysGui().resOpen(res_name$)
         #cw! = #getCanvas().createChildWindow(res, id, 100, 0, 0)
-        
+		#cw!.setVisible(Boolean.TRUE)
     methodend
 
     rem ---------------------- methods from BBjWidget -------------------------------- 
