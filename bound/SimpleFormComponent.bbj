@@ -226,6 +226,9 @@ REM         it! = #fieldList!.iterator()
         while it!.hasNext()
             c! = it!.next() 
             n$=c!.getName()
+            if #controlMap!.contains(n$) then
+                n$ = #controlMap!.get(n$)
+            endif
             if l!.contains(n$) then
                 fieldList!.addItem(n$)
                 
