@@ -256,25 +256,29 @@ REM         it! = #fieldList!.iterator()
 
     method private void buildFieldList()
         attributes! = #getBinder().getAttributesRecord()
-        l! = attributes!.getFieldNames()
+        attrList! = attributes!.getFieldNames()
         
         #controlList! = #getAllControlsRecursive(new BBjVector(), #cw!)
-        formfields! = #controlList!
         fieldList! = new BBjVector()
         
-        it! = formfields!.iterator()
+        it! = #controlList!.iterator()
         
         while it!.hasNext()
             c! = it!.next() 
-            n$=c!.getName()
-            if #controlMap!.contains(n$) then
-                n$ = #controlMap!.get(n$)
+            controlName$=c!.getName()
+
+            controlMap! = #getControlMap()
+
+            if !(controlMap!.get(controlName$) = null()) then
+                fieldName$ = controlMap!.get(controlName$)
+            else
+                fieldName$ = ""
             endif
-            if l!.contains(n$) then
-                fieldList!.addItem(n$)
-                
+            
+            if attrList!.contains(fieldName$) then
+                fieldList!.addItem(fieldName$)
                 #registerCallbacks(c!)
-                precision! = attributes!.getFieldPrecision(n$)
+                precision! = attributes!.getFieldPrecision(fieldName$)
                 #formatField(c!)
             fi
         wend
@@ -287,8 +291,12 @@ REM         it! = #fieldList!.iterator()
     rem  */
     method private void formatField(BBjControl c!)
         attributes! = #getBinder().getAttributesRecord()
-        fieldAttributes! = attributes!.getFieldAttributes(c!.getName())
-        precision! = attributes!.getFieldPrecision(c!.getName())
+
+        controlMap! = #getControlMap()
+        fieldName$ = controlMap!.get(c!.getName())
+
+        fieldAttributes! = attributes!.getFieldAttributes(fieldName$)
+        precision! = attributes!.getFieldPrecision(fieldName$)
         switch c!.getControlType()
         
             case BBjControl.INPUTE_TYPE
@@ -439,19 +447,18 @@ REM         calendarButton!.setImageFile("BusinessUIComponents/icon/ic_insert_in
         dr! = new DataRow()
 REM         it! = #fieldList!.iterator()
         controlMap! = #getControlMap()
-        it! = controlMap!.inverse().values().iterator()
+        it! = controlMap!.values().iterator()
         rem add all control values where control name = field name in attributes record and editable = 1 or 2
         attributes! = #getBinder().getAttributesRecord()
         while it!.hasNext()
             field$ = it!.next() 
             editable! = "0"; editable! = attributes!.getFieldAttribute(field$, "EDITABLE",err=*next)
             if !editable!.equals("1") and !editable!.equals("2") then continue;rem only editable fields for to be added
-            control! = #getControlFromControlList(field$)
+            control! = #getControlFromControlList(controlMap!.inverse().get(field$))
             value! = #getValueFromControl(control!)
-            bcField$ = controlMap!.get(field$)
-            dr!.setFieldValue(bcField$, value!)
+            dr!.setFieldValue(field$, value!)
         wend
-REM         escape
+         escape
         methodret dr!
     methodend
     
