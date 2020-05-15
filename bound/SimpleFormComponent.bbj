@@ -210,6 +210,8 @@ REM         it! = #fieldList!.iterator()
                 endif
                 break
             case BBjControl.CHECKBOX_TYPE
+                value! = value!.trim()
+                if value!.equals("1") then value! = "true"
                 selected! = Boolean.parseBoolean(value!)
                 cast(BBjCheckBox, control!).setSelected(selected!)
                 break
@@ -477,9 +479,9 @@ REM         it! = #fieldList!.iterator()
             case BBjControl.CHECKBOX_TYPE
                 selected! = cast(BBjCheckBox, control!).isSelected()
                 if selected! then
-                    methodret "True"
+                    methodret "1"
                 else
-                    methodret "False"
+                    methodret "0"
                 endif
                 break
             case default
