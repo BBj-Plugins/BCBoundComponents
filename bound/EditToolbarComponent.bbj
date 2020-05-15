@@ -76,14 +76,18 @@ class public EditToolbarComponent extends AbstractBCBoundWidget
             #btn_delete!.setImageFile(uiProperties!.getProperty("EDIT_TOOLBAR_BTN_DELETE_IMAGE"))
             
             height = uiProperties!.getPropertyAsNumber("EDIT_TOOLBAR_HEIGHT")
+            imageSize = height - 4
             if height > 0 then 
+                #btn_new!.setImageSize(imageSize, imageSize)
                 #btn_new!.setSize(height, height)
-                #btn_new!.setImageSize(height-4, height-4)
+                #btn_save!.setImageSize(imageSize, imageSize)
                 #btn_save!.setSize(height, height)
-                #btn_save!.setImageSize(height-4, height-4)
+                #btn_save!.setLocation(height, 0)
+                #btn_delete!.setImageSize(imageSize, imageSize)
                 #btn_delete!.setSize(height, height)
-                #btn_delete!.setImageSize(height-4, height-4)
+                #btn_delete!.setLocation(height * 2, 0)
             endif
+    
     methodend
 
 

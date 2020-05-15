@@ -50,7 +50,7 @@ class public SimpleFormComponent extends AbstractBCBoundWidget
     method public void setForm(BBjString res_name$, BBjNumber id)
         res = BBjAPI().getSysGui().resOpen(res_name$)
         #cw! = #getCanvas().createChildWindow(res, id, 100, 0, 0)
-        
+		#cw!.setVisible(Boolean.TRUE)
     methodend
 
     rem ---------------------- methods from BBjWidget -------------------------------- 
@@ -62,11 +62,11 @@ class public SimpleFormComponent extends AbstractBCBoundWidget
     rem  */
     method public void redraw(Boolean f_init!)
         if (f_init!) then
+            #updateProperties()
         FI
         if (#cw! <> null()) then 
             #cw!.setSize(#getWidth(),#getHeight())
         fi
-        #updateProperties()
     methodend
     
     rem /**
@@ -143,9 +143,24 @@ class public SimpleFormComponent extends AbstractBCBoundWidget
         it! = controlMap!.inverse().values().iterator()
         while it!.hasNext()
             n$=it!.next()
-            #getControlFromControlList(n$).setText("")
+            control! = #getControlFromControlList(n$)
+            #clearControl(control!)
         wend
         #cw!.setEnabled(1)
+    methodend
+    
+    method private void clearControl(BBjControl control!)
+        switch control!.getControlType()
+            case BBjControl.LISTBUTTON_TYPE
+                cast(BBjListButton, control!).deselect()
+                break
+            case BBjControl.CHECKBOX_TYPE
+                cast(BBjCheckBox, control!).setSelected(0)
+                break
+            case default
+                control!.setText("")
+                break
+        swend
     methodend
 
     method private void updateScreen()
@@ -169,13 +184,39 @@ REM         it! = #fieldList!.iterator()
         while it!.hasNext()
             n$=it!.next()
             bcFieldName$ = controlMap!.get(n$)
+            control! = #getControlFromControlList(n$)
             if rec!.contains(bcFieldName$) then
-                #getControlFromControlList(n$).setText(rec!.getFieldAsString(bcFieldName$))
+                #fillControl(control!, rec!.getFieldAsString(bcFieldName$))
             else
-                #getControlFromControlList(n$).setText("")
+                #clearControl(control!)
             endif
         wend
         #cw!.setEnabled(1)
+    methodend
+    
+    method protected void fillControl(BBjControl control!, String value!)
+        switch control!.getControlType()
+            case BBjControl.LISTBUTTON_TYPE
+                vecKeys! = control!.getUserData()
+                value! = value!.trim()
+                if vecKeys! <> null() and vecKeys!.size() then
+                    for i = 0 to vecKeys!.size() - 1
+                        currentKey! = vecKeys!.get(i)
+                        if currentKey!.trim().equals(value!) then
+                            cast(BBjListButton, control!).selectIndex(i)
+                            break
+                        endif
+                    next i
+                endif
+                break
+            case BBjControl.CHECKBOX_TYPE
+                selected! = Boolean.parseBoolean(value!)
+                cast(BBjCheckBox, control!).setSelected(selected!)
+                break
+            case default
+                control!.setText(value!)
+                break
+        swend
     methodend
     
     method public void onSetData()
@@ -308,8 +349,8 @@ REM                 cast(BBjInputE, c!).setLength(precision!)
         fieldName! = #getFieldNameForControl(control!)
         if fieldName! = "" then methodret
         control!.removeAllItems()
-        lookup! = cast(BusinessComponent, #getBinder().getBC()).getLookup(fieldName!)
-        rs! = lookup!.retrieve()
+        rs! = cast(BusinessComponent, #getBinder().getBC()).retrieveLookup(fieldName!)
+REM         rs! = lookup!.retrieve()
         if rs!.isEmpty() then methodret
         ids! = rs!.get(0).getFieldsHavingAttributeValue("EDITABLE", "2")
         idField! = ids!.getColumnName(0)
@@ -425,6 +466,14 @@ REM         escape
                 endif
                 vectorKeys! = listEdit!.getUserData()
                 methodret vectorKeys!.get(selIndex)
+                break
+            case BBjControl.CHECKBOX_TYPE
+                selected! = cast(BBjCheckBox, control!).isSelected()
+                if selected! then
+                    methodret "True"
+                else
+                    methodret "False"
+                endif
                 break
             case default
                 methodret control!.getText()
