@@ -354,13 +354,15 @@ REM                 cast(BBjInputE, c!).setLength(precision!)
         swend
     methodend
     
+    rem /**
+    rem  * calls retrieveLookup and tries to apply resultset to listbutton
+    rem  */
     method private void applyLookupForListEdit(BBjListButton control!, HashMap fieldAttributes!)
         if !fieldAttributes!.containsKey("LOOKUP") or !fieldAttributes!.get("LOOKUP").equals("1") then methodret
         fieldName! = #getFieldNameForControl(control!)
         if fieldName! = "" then methodret
         control!.removeAllItems()
         rs! = cast(BusinessComponent, #getBinder().getBC()).retrieveLookup(fieldName!)
-REM         rs! = lookup!.retrieve()
         if rs!.isEmpty() then methodret
         ids! = rs!.get(0).getFieldsHavingAttributeValue("EDITABLE", "2")
         if !ids!.isEmpty() then
@@ -369,14 +371,6 @@ REM         rs! = lookup!.retrieve()
             idNames! = new BBjVector()
             idNames!.add(rs!.get(0).getColumnName(0))
         endif
-REM             idField! = new StringBuilder()
-REM             it! = idNames!.iterator()
-REM             while it!.hasNext()
-REM                 idName! = it!.next()
-REM                 idField!.append(idName!)
-REM                 if it!.hasNext() then idField!.append($00$)
-REM             wend 
-REM             idField! = idField!.toString()
         if rs!.getColumnIndex("DESC") >= 0 then
             hasDesc! = Boolean.TRUE
         else
@@ -387,7 +381,6 @@ REM             idField! = idField!.toString()
         itResultSet! = rs!.iterator()
         while itResultSet!.hasNext()
             dr! = itResultSet!.next()
-REM             vectorKeys!.add(dr!.getFieldAsString(idField!))
             idField! = new StringBuilder()
             itIDNames! = idNames!.iterator()
             while itIDNames!.hasNext()
@@ -486,7 +479,6 @@ REM         it! = #fieldList!.iterator()
             value! = #getValueFromControl(control!)
             dr!.setFieldValue(field$, value!)
         wend
-         escape
         methodret dr!
     methodend
     

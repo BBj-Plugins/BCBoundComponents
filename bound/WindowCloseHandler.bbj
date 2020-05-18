@@ -15,13 +15,15 @@ use com.basiscomponents.bc.BCBinder
 use com.basiscomponents.db.ResultSet
 use com.basiscomponents.db.DataRow
 
-class public BCErrorHandler implements IBCBound
+class public WindowCloseHandler implements IBCBound
 
     
     field private BCBinder binder!
+    field private BBjWindow wnd!
 
-    method public BCErrorHandler()
-    
+    method public WindowCloseHandler(BBjWindow wnd!)
+        #wnd! = wnd!
+        wnd!.setCallback(BBjAPI.ON_CLOSE, #this!,"onClose")
     methodend
     
     rem -------------------------BCBinder methods--------------------------------
@@ -48,14 +50,20 @@ class public BCErrorHandler implements IBCBound
     methodend
     
     method public void onSignal(int signal!, Object payload!)
-        if signal!=BCBinder.SIGNAL_ERROR then
-            rem BCBinder.SIGNAL_ERROR
-            a = msgbox(cast(String, payload!))
+        if signal!=BCBinder.SIGNAL_DESTROY then
+            release
         endif
     methodend
     
     method public DataRow getFieldsForWrite()
         methodret new DataRow()
+    methodend
+    
+    rem -------------------------custom methods--------------------------------
+    
+    method public void onClose(BBjCloseEvent ev!)
+        if #binder! = null() then methodret
+        #binder!.sendSignal(BCBinder.SIGNAL_INITIATE_TERMINATE)
     methodend
     
 

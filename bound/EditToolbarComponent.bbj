@@ -133,6 +133,10 @@ class public EditToolbarComponent extends AbstractBCBoundWidget
         #enableControls()
     methodend
     
+    method public Boolean canTerminate()
+        methodret #canSetSelection()
+    methodend
+    
     method public Boolean canSetSelection()
         if #dirty! then
             action = msgbox(#getTextPropertiesManager().getProperty("EDIT_TOOLBAR_DIALOG_SAVE_DATA"), 3)

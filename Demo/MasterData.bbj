@@ -4,6 +4,7 @@ use ::BusinessUIComponents/bound/TestComponent.bbj::TestComponent
 use ::BusinessUIComponents/bound/NavigatorComponent.bbj::NavigatorComponent
 use ::BusinessUIComponents/bound/EditToolbarComponent.bbj::EditToolbarComponent
 use ::BusinessUIComponents/bound/SimpleFormComponent.bbj::SimpleFormComponent
+use ::BusinessUIComponents/bound/WindowCloseHandler.bbj::WindowCloseHandler
 use ::BusinessUIComponents/bound/SearchBar.bbj::SearchBar
 use ::BusinessUIComponents/bound/BCErrorHandler.bbj::BCErrorHandler
 use ::BusinessUIComponents/unbound/HorizontalSplitter.bbj::HorizontalSplitter
@@ -37,7 +38,7 @@ BC$="ChileCustomerBC"
 sysgui! = BBjAPI().openSysGui("X0")
 sysgui!.setRepaintEnabled(0)
 wnd! = BBjAPI().openSysGui("X0").addWindow(10,10,800,600,"BBj Grid Ex Demo")
-wnd!        .setCallback(BBjAPI.ON_CLOSE,"byebye")
+REM wnd!        .setCallback(BBjAPI.ON_CLOSE,"byebye")
 wnd!        .setCallback(BBjAPI.ON_RESIZE,"resize")
 
 nav! = new NavigatorComponent(wnd!,100,85,10,200,20)
@@ -55,6 +56,7 @@ splitter!.setTopCtrl(bgrid!)
 tabCtrl! = splitter!.getBottomCanvas().addTabCtrl(104, 0, 0, 500, 500)
 
 errorHandler! = new BCErrorHandler()
+windowCloseHandler! = new WindowCloseHandler(wnd!)
 
 cwIdStart = 200
 
@@ -122,6 +124,7 @@ binder!.register(edittb!)
 binder!.register(bgrid!)
 binder!.register(searchBar!)
 binder!.register(errorHandler!)
+binder!.register(windowCloseHandler!)
 
 for i = 0 to forms!.size() - 1
     binder!.register(forms!.getItem(i))
@@ -165,5 +168,5 @@ REM   if searchBarX < 100 then escape
   searchBar!.setLocation(searchBarX, searchBar!.getY())
 return
 
-byebye:
-    bye
+REM byebye:
+REM     bye

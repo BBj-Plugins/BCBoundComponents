@@ -40,6 +40,10 @@ class public AbstractBCBoundWidget extends BBjWidget implements IBCBound
         methodret BBjAPI.TRUE
     methodend
     
+    method public Boolean canTerminate()
+        methodret BBjAPI.TRUE
+    methodend
+    
     method public void onSignal(int signal!, Object payload!)
     
     methodend
