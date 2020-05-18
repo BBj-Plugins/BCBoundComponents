@@ -364,22 +364,44 @@ REM         rs! = lookup!.retrieve()
         if rs!.isEmpty() then methodret
         ids! = rs!.get(0).getFieldsHavingAttributeValue("EDITABLE", "2")
         if !ids!.isEmpty() then
-            idField! = ids!.getColumnName(0)
+            idNames! = ids!.getFieldNames()
         else
-            idField! = rs!.get(0).getColumnName(0)
+            idNames! = new BBjVector()
+            idNames!.add(rs!.get(0).getColumnName(0))
         endif
+REM             idField! = new StringBuilder()
+REM             it! = idNames!.iterator()
+REM             while it!.hasNext()
+REM                 idName! = it!.next()
+REM                 idField!.append(idName!)
+REM                 if it!.hasNext() then idField!.append($00$)
+REM             wend 
+REM             idField! = idField!.toString()
         if rs!.getColumnIndex("DESC") >= 0 then
-            descField! = "DESC"
+            hasDesc! = Boolean.TRUE
         else
-            descField! = idField!
+            hasDesc! = Boolean.FALSE
         endif
         vectorKeys! = new BBjVector()
         vectorValues! = new BBjVector()
-        it! = rs!.iterator()
-        while it!.hasNext()
-            dr! = it!.next()
-            vectorKeys!.add(dr!.getFieldAsString(idField!))
-            vectorValues!.add(dr!.getFieldAsString(descField!))
+        itResultSet! = rs!.iterator()
+        while itResultSet!.hasNext()
+            dr! = itResultSet!.next()
+REM             vectorKeys!.add(dr!.getFieldAsString(idField!))
+            idField! = new StringBuilder()
+            itIDNames! = idNames!.iterator()
+            while itIDNames!.hasNext()
+                idName! = itIDNames!.next()
+                idField!.append(dr!.getFieldAsString(idName!))
+                if itIDNames!.hasNext() then idField!.append($00$)
+            wend
+            idField! = idField!.toString()
+            vectorKeys!.add(idField!)
+            if hasDesc! then
+                vectorValues!.add(dr!.getFieldAsString("DESC"))
+            else
+                vectorValues!.add(idField! + ": no DESC")
+            endif
         wend
         control!.setUserData(vectorKeys!)
         control!.insertItems(0, vectorValues!)
