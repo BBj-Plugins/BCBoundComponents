@@ -681,6 +681,16 @@ REM             errormsg$ = errormsg$(1,len(errormsg$)-1)
         endif
 
     methodend
+    
+    rem override
+    method public BusinessComponent getLookup(String fieldName!, DataRow dr!)
+        methodret null()
+    methodend
+    
+    rem override
+    method public ResultSet getLookupData(String fieldName!, DataRow dr!)
+        methodret null()
+    methodend
 
 classend
 

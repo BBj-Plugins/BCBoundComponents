@@ -362,7 +362,17 @@ REM                 cast(BBjInputE, c!).setLength(precision!)
         fieldName! = #getFieldNameForControl(control!)
         if fieldName! = "" then methodret
         control!.removeAllItems()
-        rs! = cast(BusinessComponent, #getBinder().getBC()).retrieveLookup(fieldName!)
+        rem get selected row for lookup when one item is selected
+        sel! = #getBinder().getSelection()
+        if (sel!.size() = 1) then
+            rs! = #getBinder().getRS()
+            rowkey$ = sel!.get(0)
+            selDr! = rs!.get(rowkey$)
+        else
+            selDr! = null()
+        fi
+        
+        rs! = cast(BusinessComponent, #getBinder().getBC()).getLookupData(fieldName!, selDr!)
         if rs!.isEmpty() then methodret
         ids! = rs!.get(0).getFieldsHavingAttributeValue("EDITABLE", "2")
         if !ids!.isEmpty() then
