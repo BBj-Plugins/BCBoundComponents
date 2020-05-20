@@ -310,6 +310,7 @@ REM                 cast(BBjInputE, c!).setLength(precision!)
                     mask! = fieldAttributes!.get("MASK")
                     cast(BBjInputN, c!).setMask(mask!)
                 else
+                    if num(precision!) < 1 then break
                     scale = 0
                     if fieldAttributes!.containsKey("Scale") then
                         scale = num(fieldAttributes!.get("Scale"))
@@ -365,9 +366,9 @@ REM                 cast(BBjInputE, c!).setLength(precision!)
         rem get selected row for lookup when one item is selected
         sel! = #getBinder().getSelection()
         if (sel!.size() = 1) then
-            rs! = #getBinder().getRS()
+            rsBinder! = #getBinder().getRS()
             rowkey$ = sel!.get(0)
-            selDr! = rs!.get(rowkey$)
+            selDr! = rsBinder!.get(rowkey$)
         else
             selDr! = null()
         fi
