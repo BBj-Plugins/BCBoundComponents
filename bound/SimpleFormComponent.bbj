@@ -372,6 +372,7 @@ REM                 cast(BBjInputE, c!).setLength(precision!)
         else
             selDr! = null()
         fi
+        rem try to call getLookup(). when it does not work or is empty, try to call getLookupData. if neither brings results, methodret.
         lookup! = cast(BusinessComponent, #getBinder().getBC()).getLookup(fieldName!, selDr!, err=*next)
         if lookup! = null() then 
             rs! = cast(BusinessComponent, #getBinder().getBC()).getLookupData(fieldName!, selDr!, err=*next)
