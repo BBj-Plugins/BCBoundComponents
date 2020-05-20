@@ -218,8 +218,8 @@ class public BusinessGrid extends AbstractBCBoundWidget implements IPersistentSt
             endif
 
         endif
-
-        #grid!.setData(rs!)
+        
+        #grid!.updateData(rs!)
     methodend
 
     rem /**
