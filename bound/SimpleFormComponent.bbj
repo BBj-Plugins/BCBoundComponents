@@ -373,6 +373,7 @@ REM                 cast(BBjInputE, c!).setLength(precision!)
             selDr! = null()
         fi
         lookup! = cast(BusinessComponent, #getBinder().getBC()).getLookup(fieldName!, selDr!)
+        if lookup! = null() then methodret
         lookupAttributes! = lookup!.getAttributesRecord()
         rs! = lookup!.retrieve()
 REM         rs! = cast(BusinessComponent, #getBinder().getBC()).getLookupData(fieldName!, selDr!)
