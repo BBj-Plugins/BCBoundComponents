@@ -372,10 +372,13 @@ REM                 cast(BBjInputE, c!).setLength(precision!)
         else
             selDr! = null()
         fi
-        
-        rs! = cast(BusinessComponent, #getBinder().getBC()).getLookupData(fieldName!, selDr!)
+        lookup! = cast(BusinessComponent, #getBinder().getBC()).getLookup(fieldName!, selDr!)
+        lookupAttributes! = lookup!.getAttributesRecord()
+        rs! = lookup!.retrieve()
+REM         rs! = cast(BusinessComponent, #getBinder().getBC()).getLookupData(fieldName!, selDr!)
         if rs!.isEmpty() then methodret
-        ids! = rs!.get(0).getFieldsHavingAttributeValue("EDITABLE", "2")
+        ids! = lookupAttributes!.getFieldsHavingAttributeValue("EDITABLE", "2")
+REM         ids! = rs!.get(0).getFieldsHavingAttributeValue("EDITABLE", "2")
         if !ids!.isEmpty() then
             idNames! = ids!.getFieldNames()
         else
