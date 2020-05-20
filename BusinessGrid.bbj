@@ -95,6 +95,7 @@ class public BusinessGrid extends AbstractBCBoundWidget implements IPersistentSt
             #exportButton!.setProgramName(pgm(-2,0))
             
             #fitToGridButton! = #getCanvas().addMenuButton(203, 48, 5, 20, 20, "")
+            #fitToGridButton!.setBorderPainted(Boolean.TRUE)
             #fitToGridButton!.setImageSize(23, 23)
             #fitToGridButton!.setCallback(#fitToGridButton!.ON_BUTTON_PUSH, #this!, "fitToGrid")
             

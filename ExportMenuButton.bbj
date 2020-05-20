@@ -54,6 +54,7 @@ class public ExportMenuButton
 
     method public ExportMenuButton(BBjWindow wnd!, BBjNumber id, BBjNumber x, BBjNumber y, BBjNumber width, BBjNumber height)
         #menuButton! = wnd!.addMenuButton(id, x, y, width, height, "")
+        #menuButton!.setBorderPainted(Boolean.TRUE)
         #menuButton!.setImageFile("BusinessUIComponents/icon/print.png")
         #menuButton!.setImageSize(23, 23)
         
