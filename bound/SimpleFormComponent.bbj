@@ -499,6 +499,7 @@ REM         it! = #fieldList!.iterator()
             case BBjControl.LISTBUTTON_TYPE
                 listEdit! = cast(BBjListButton, control!)
                 selIndex = listEdit!.getSelectedIndex()
+                if selIndex < 0 then methodret ""
                 if listEdit!.getUserData() = null() then
                     methodret listEdit!.getItemAt(selIndex)
                 endif
