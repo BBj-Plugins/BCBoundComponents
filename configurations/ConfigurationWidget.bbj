@@ -299,7 +299,7 @@ REM         escape
     methodend
     
     rem /**
-    rem  * initialisation method. will be called by the state handler. sets icons, callbacks and loads/applies the availlable configurations
+    rem  * initialisation method. will be called by the state handler. sets icons, callbacks and loads/applies the available configurations
     rem  */
     method public void init()
 REM         #setIcons()
@@ -330,7 +330,7 @@ REM         #setIcons()
         dr!.setFieldValue(#bc!.getFieldNameKeyx(), #keyx!)
         dr!.setFieldValue(#bc!.getFieldNameUserid(), #userName!)
         #bc!.setFilter(dr!)
-        #availableConfigs! = #bc!.getAvaillableConfigurations()
+        #availableConfigs! = #bc!.getAvailableConfigurations()
         #fillOptionListEdit()
     methodend
     
