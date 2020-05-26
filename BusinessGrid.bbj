@@ -210,6 +210,7 @@ class public BusinessGrid extends AbstractBCBoundWidget implements IPersistentSt
                         column!.setCellRenderer(new GxRendererCustomHTML("<%= ""<input readonly type='password' value='"" + params.value + ""' />"" %>"))
                     endif
 
+                    hide = BBjAPI.FALSE
                     if fa!.containsKey("HIDE") then hide = num(fa!.get("HIDE"))
                     if hide then column!.setHidden(hide)
 
