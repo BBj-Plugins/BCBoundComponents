@@ -7,11 +7,15 @@ REM  */
 use com.basiscomponents.bc.BusinessComponent
 use com.basiscomponents.db.ResultSet
 use com.basiscomponents.db.DataRow
+
 use java.sql.Connection
 use java.sql.PreparedStatement
 use java.sql.Statement
+
 use java.util.HashMap
 use java.util.HashSet
+use java.util.Iterator
+
 use java.text.SimpleDateFormat
 
 
@@ -66,14 +70,13 @@ class public ChileCustomerBC implements BusinessComponent
         vec!.addItem("*")
         #Scopes!.put("D",vec!)
 
-
-        rem Fill the attributes record
     methodend
 
     rem /**
     rem  * Returns an empty DataRow including all field attributes (like field name, editable, label etc.)
     rem  * @return the empty DataRow with the field attributes
     rem  */
+    rem @Override
     method public DataRow getAttributesRecord()
 
         if #AttributesRecord! <> null() then
@@ -188,6 +191,7 @@ class public ChileCustomerBC implements BusinessComponent
     rem  * @param  DataRow filter!  a DataRow object including field names and values to filter for.
     rem  *                          Filters are AND combined.
     rem  */
+    rem @Override
     method public void setFilter(DataRow filter!)
 
 REM         equal = 0
@@ -212,23 +216,78 @@ REM         endif
     methodend
 
     rem /**
-    rem  * Set a field selection to retrieve a custom set of fields.
-    rem  * The default scope will be used if no field selection is set.
-    rem  * @param  BBjVector fieldSelection!  a BBjVector containing the field names for retrieving.
+    rem  * Sets the working field selection to a custom set of fields contained in a vector.<br>
+    rem  * Field selections are in addition to any scope fields.
+    rem  * This method sets the working result set to NULL.
+    rem  *
+    rem  * @param  BBjVector fieldSelection!  a vector containing the field names
     rem  */
+    rem @Override
     method public void setFieldSelection(BBjVector fieldSelection!)
-
-REM         if #FieldSelection! <> null() and fieldSelection! <> null() and #FieldSelection!.equals(fieldSelection!) then
-REM             methodret
-REM         endif
-
-        if fieldSelection! = null() then
-            #FieldSelection! = fieldSelection!
+        if fieldSelection! = null()  or fieldSelection!.size()=0 then
+            #FieldSelection! = null()
         else
             #FieldSelection! = cast(BBjVector,fieldSelection!.clone())
         endif
         #ResultSet! = null()
+    methodend
 
+    rem /**
+    rem  * Sets the working field selection to a custom set of fields contained in a data row.<br>
+    rem  * Field selections are in addition to any scope fields.
+    rem  * This method sets the working result set to NULL.
+    rem  *
+    rem  * @param fieldSelection!  a data row containing the field names (only the field names are used)
+    rem  * @see #retrieve()
+    rem  */
+    rem @Override
+    method public void setFieldSelection(DataRow fieldSelection!)
+        declare Iterator iter!
+
+        if fieldSelection! = null() or fieldSelection!.isEmpty() then
+            #FieldSelection! = null()
+        else
+            if #FieldSelection! <> null() then
+                #FieldSelection!.clear()
+            else
+                #FieldSelection! = BBjAPI().makeVector()
+            endif
+            iter! = fieldSelection!.getFieldNames().iterator()
+            while iter!.hasNext()
+                fieldName! = str(iter!.next())
+                #FieldSelection!.addItem(fieldName!)
+            wend
+        endif
+        #ResultSet! = null()
+    methodend
+
+    rem /**
+    rem  * Sets the working field selection to a custom set of fields contained in a collection object.<br>
+    rem  * Field selections are in addition to any scope fields.
+    rem  * This method sets the working result set to NULL.
+    rem  *
+    rem  * @param fieldSelection!  a string collection containing the field names
+    rem  * @see #retrieve()
+    rem  */
+    rem @Override
+    method public void setFieldSelection(Collection fieldSelection!)
+        declare Iterator iter!
+
+        if fieldSelection! = null() or fieldSelection!.size()=0 then
+            #FieldSelection! = null()
+        else
+            if #FieldSelection! <> null() then
+                #FieldSelection!.clear()
+            else
+                #FieldSelection! = BBjAPI().makeVector()
+            endif
+            iter! = fieldSelection!.iterator()
+            while iter!.hasNext()
+                fieldName! = str(iter!.next())
+                #FieldSelection!.addItem(fieldName!)
+            wend
+        endif
+        #ResultSet! = null()
     methodend
 
     rem /**
@@ -236,6 +295,7 @@ REM         endif
     rem  * If no or a wrong scope is set then the default scope (D) will be used.
     rem  * @param  BBjString scope$  the scope to set.
     rem  */
+    rem @Override
     method public void setScope(BBjString scope$)
 
 REM         if #Scope$ <> scope$ then
@@ -251,6 +311,7 @@ REM         endif
     rem  * If a scope and/or a field selection is set, it will be used to retrieve the desired fields.
     rem  * @return ResultSet  a ResultSet with customer DataRows (may be empty).
     rem  */
+    rem @Override
     method public ResultSet retrieve()
 
         declare ResultSet rs!
@@ -373,6 +434,7 @@ REM         endif
     rem  * @param  BBjInt    last%   the index of the last element in the subset.
     rem  * @return ResultSet         a ResultSet with customer DataRows (may be empty).
     rem  */
+    rem @Override
     method public ResultSet retrieve(BBjInt first%, BBjInt last%)
 
         declare ResultSet rs!
@@ -398,6 +460,7 @@ REM         endif
     rem  * @param  DataRow dr!  a customer DataRow that will be validated
     rem  * @return BBjVector    List with validation error messages (empty list means no validation errors).
     rem  */
+    rem @Override
     method public ResultSet validateWrite(DataRow dr!)
 
         declare ResultSet rsErrors!
@@ -490,6 +553,7 @@ REM         endif
     rem  * @param  DataRow dr!  a customer DataRow to be persist.
     rem  * @return DataRow      the customer DataRow (may contain auto generated values/ID's)
     rem  */
+    rem @Override
     method public DataRow write(DataRow dr!)
         dr! = #addCustNum(dr!)
         rsErrors! = #validateWrite(dr!)
@@ -613,6 +677,7 @@ REM                 endif
     rem  * @param  DataRow dr!  a customer DataRow that should be removed
     rem  * @return BBjVector    List with validation error messages (empty list means no validation errors).
     rem  */
+    rem @Override
     method public ResultSet validateRemove(DataRow dr!)
 
         declare ResultSet rsErrors!
@@ -651,6 +716,7 @@ REM                 endif
     rem  * @param  DataRow dr!  a customer DataRow to be removed.
     rem  * @throws an exception if the customer does not exists.
     rem  */
+    rem @Override
     method public void remove(DataRow dr!)
 
         rsErrors! = #validateRemove(dr!)
@@ -681,16 +747,51 @@ REM             errormsg$ = errormsg$(1,len(errormsg$)-1)
         endif
 
     methodend
-    
+
     rem override
     method public BusinessComponent getLookup(String fieldName!, DataRow dr!)
         methodret null()
     methodend
-    
+
     rem override
     method public ResultSet getLookupData(String fieldName!, DataRow dr!)
         methodret null()
     methodend
+
+    rem /**
+    rem  * Gets an initialized (predefined) data row, including all data row and field attributes.<br>
+    rem  * This method can be used to set default values for a new data row.
+    rem  * If NULL is passed, then a new (empty) data row is returned.
+    rem  * This method sets the working data row to this one.
+    rem  *
+    rem  * @param predefined!  the data row with predefined fields and attributes
+    rem  * @return the initialized data row
+    rem  */
+    rem @Override
+    method public DataRow getNewObjectTemplate(DataRow predefined!)
+        declare DataRow dr!
+
+        if predefined! <> null() then
+            dr! = predefined!
+        else
+            dr! = new DataRow()
+        endif
+
+        methodret dr!
+    methodend
+
+    rem /**
+    rem  * Gets a data row of fields (the values are not used) which are allowed for filtering.<br>
+    rem  * The default implementation returns the attributes record.
+    rem  *
+    rem  * @return the data row with fields allowed for filtering
+    rem  * @see #getAttributesRecord()
+    rem  */
+    rem @Override
+    method public DataRow getAllowedFilter()
+        methodret #getAttributesRecord()
+    methodend
+
 
 classend
 
