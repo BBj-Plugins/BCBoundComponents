@@ -226,7 +226,7 @@ REM         #mainWindow!.destroy()
 			fs! = bbjapi().getThinClient().getClientFileSystem() 
 			cf! = fs!.getClientFile(chosenDirOrFilePath!) 
 			cf!.copyToClient(outputFile!.getAbsolutePath())
-			cf!.delete!
+			cf!.delete()
 		endif
 		
         bbjapi().getThinClient().browse(outputFile!.getAbsolutePath().replace("\", "/"))
