@@ -40,6 +40,7 @@ class public BusinessGrid extends AbstractBCBoundWidget implements IPersistentSt
     field private BBjMenuButton          fitToGridButton!
 
     field private Boolean columnConfigurationSet! = Boolean.FALSE
+    field private Boolean initialRetrieve! = Boolean.TRUE
 
     rem --------------------- constructors -------------------------------------
 
@@ -120,6 +121,14 @@ class public BusinessGrid extends AbstractBCBoundWidget implements IPersistentSt
             #cfgwidget!.setLocation(#getWidth()-155, 5)
         fi
     methodend
+    
+REM     method public void focusFirstRow()
+REM         escape
+REM         rs! = #getBinder().getRS()
+REM         if rs! <> null() and rs!.size() then
+REM             #grid!.setSelectedRow(0)
+REM         endif
+REM     methodend
     
     method protected void updateProperties()
         #super!.updateProperties()
@@ -233,7 +242,17 @@ class public BusinessGrid extends AbstractBCBoundWidget implements IPersistentSt
         endif
         
         #grid!.updateData(rs!)
+        rem select first row on first retrieve
+REM                 escape
+        if #initialRetrieve! then
+            if rs! <> null() and rs!.size() then
+                #initialRetrieve! = Boolean.FALSE
+                #grid!.setSelectedRow(0)
+            endif
+        endif
     methodend
+    
+    
 
     rem /**
     rem  *

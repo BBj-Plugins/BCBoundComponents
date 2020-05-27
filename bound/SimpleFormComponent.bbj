@@ -25,6 +25,9 @@ class public SimpleFormComponent extends AbstractBCBoundWidget
     field private BBjVector calendarButtons! = new BBjVector()
     field private BiMap controlMap!
     field private HashMap controlPrefixMap!
+    field private BBjColor colorFocusGained!
+    field private BBjColor colorFocusLost!
+    
 
     rem --------------------- constructors -------------------------------------
     
@@ -80,6 +83,14 @@ class public SimpleFormComponent extends AbstractBCBoundWidget
             calendarButton! = it!.next()
             cast(BBjButton, calendarButton!).setImageFile(#getUIPropertiesManager().getProperty("SIMPLE_FORM_BTN_CALENDAR"))
         wend
+        r = #getUIPropertiesManager().getPropertyAsNumber("CONTROL_GAINED_FOCUS_RED")
+        g = #getUIPropertiesManager().getPropertyAsNumber("CONTROL_GAINED_FOCUS_GREEN")
+        b = #getUIPropertiesManager().getPropertyAsNumber("CONTROL_GAINED_FOCUS_BLUE")
+        #colorFocusGained! = BBjAPI().getSysGui().makeColor(r,g,b)
+        r = #getUIPropertiesManager().getPropertyAsNumber("CONTROL_LOST_FOCUS_RED")
+        g = #getUIPropertiesManager().getPropertyAsNumber("CONTROL_LOST_FOCUS_GREEN")
+        b = #getUIPropertiesManager().getPropertyAsNumber("CONTROL_LOST_FOCUS_BLUE")
+        #colorFocusLost! = BBjAPI().getSysGui().makeColor(r,g,b)
     methodend
     
     method public void setControlMap(BiMap controlMap!)
@@ -289,6 +300,16 @@ REM         it! = #fieldList!.iterator()
         #fieldList! = CAST(BBjVector,fieldList!)
     methodend
     
+    method public void controlChangeBackColorOnGainedFocus(BBjGainedFocusEvent ev!)
+        control! = ev!.getControl()
+        control!.setBackColor(#colorFocusGained!)
+    methodend
+    
+    method public void controlChangeBackColorOnLostFocus(BBjLostFocusEvent ev!)
+        control! = ev!.getControl()
+        control!.setBackColor(#colorFocusLost!)
+    methodend
+    
     rem /**
     rem  * formats a control by parsing the attributes record and appliying those attributes.
     rem  */
@@ -304,9 +325,13 @@ REM         it! = #fieldList!.iterator()
         
             case BBjControl.INPUTE_TYPE
 REM                 cast(BBjInputE, c!).setLength(precision!)
+                c!.setCallback(c!.ON_GAINED_FOCUS, #this!, "controlChangeBackColorOnGainedFocus")
+                c!.setCallback(c!.ON_LOST_FOCUS, #this!, "controlChangeBackColorOnLostFocus")
                 break
                 
             case BBjControl.INPUTN_TYPE
+                c!.setCallback(c!.ON_GAINED_FOCUS, #this!, "controlChangeBackColorOnGainedFocus")
+                c!.setCallback(c!.ON_LOST_FOCUS, #this!, "controlChangeBackColorOnLostFocus")
                 if fieldAttributes!.containsKey("MASK") then
                     mask! = fieldAttributes!.get("MASK")
                     cast(BBjInputN, c!).setMask(mask!)
@@ -532,7 +557,6 @@ REM         it! = #fieldList!.iterator()
     methodend
     
     method protected void toggleIDFieldEnabled(Boolean enabled!)
-REM     escape
         idControls! = #getIDControls()
         it! = idControls!.iterator()
         while it!.hasNext()
