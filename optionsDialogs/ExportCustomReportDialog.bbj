@@ -220,7 +220,7 @@ REM         #mainWindow!.destroy()
         
         rem exporting
         declare File outputFile!
-        outputFile! = #exporter!.exportToPDFByCustomReport(chosenDirOrFilePath!, report!, rs!)
+        outputFile! = #exporter!.exportToPDFByCustomReport(reportPath$, report!, rs!)
 		
 		if info(3,6) = "5" then
 			fs! = bbjapi().getThinClient().getClientFileSystem() 

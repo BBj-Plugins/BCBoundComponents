@@ -21,6 +21,7 @@ class public SimpleFormComponent extends AbstractBCBoundWidget
     field private BBjWindow cw!
     field private BBjVector fieldList!
     field private BBjVector controlList!
+    field private BBjVector idControls!
     field private BBjVector calendarButtons! = new BBjVector()
     field private BiMap controlMap!
     field private HashMap controlPrefixMap!
@@ -192,6 +193,7 @@ REM         it! = #fieldList!.iterator()
             endif
         wend
         #cw!.setEnabled(1)
+        #toggleIDFieldEnabled(Boolean.FALSE)
     methodend
     
     method protected void fillControl(BBjControl control!, String value!)
@@ -280,7 +282,6 @@ REM         it! = #fieldList!.iterator()
             if attrList!.contains(fieldName$) then
                 fieldList!.addItem(fieldName$)
                 #registerCallbacks(c!)
-                precision! = attributes!.getFieldPrecision(fieldName$)
                 #formatField(c!)
             fi
         wend
@@ -530,11 +531,52 @@ REM         it! = #fieldList!.iterator()
         swend
     methodend
     
+    method protected void toggleIDFieldEnabled(Boolean enabled!)
+REM     escape
+        idControls! = #getIDControls()
+        it! = idControls!.iterator()
+        while it!.hasNext()
+            idControl! = it!.next()
+            idControl!.setEnabled(enabled!)
+        wend
+    methodend
+    
+    method protected BBjVector getIDControls()
+        if #idControls! <> null() then methodret #idControls!
+        if #controlList! = null() then methodret new BBjVector()
+        attrRecord! = #getBinder().getBC().getAttributesRecord()
+        ids! = attrRecord!.getFieldsHavingAttributeValue("EDITABLE", "2")
+        if ids!.isEmpty() then methodret new BBjVector()
+        idNames! = ids!.getFieldNames()
+        it! = #controlList!.iterator()
+        idControls! = new BBjVector()
+        while it!.hasNext()
+            control! = it!.next()
+            fieldName! = #getFieldNameForControl(control!)
+            if idNames!.contains(fieldName!) then
+                idControls!.add(control!)
+            endif
+        wend
+        #idControls! = cast(BBjVector, idControls!)
+        methodret idControls!
+    methodend
+    
+    method protected void focusFirstIDField()
+        idControls! = #getIDControls()
+        if idControls!.size() < 1 then methodret
+        firstID! = idControls!.get(0)
+        if firstID!.isEnabled() then
+            firstID!.focus()
+        endif
+    methodend
+    
     method public void onSignal(int signal!, Object payload!)
         binder! = #getBinder()
         switch signal!
             case binder!.SIGNAL_NEW
                 #clearForm()
+                #toggleIDFieldEnabled(Boolean.TRUE)
+                #focusFirstIDField()
                 break
             case default
                 break
