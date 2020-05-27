@@ -12,6 +12,8 @@ class public AbstractBCBoundWidget extends BBjWidget implements IBCBound
     field private BCBinder binder!
     field private IPropertiesManager uiPropertiesManager!
     field private IPropertiesManager textPropertiesManager!
+    field private BBjColor colorFocusGained! = BBjAPI().getSysGui().makeColor(255,255,255)
+    field private BBjColor colorFocusLost! = BBjAPI().getSysGui().makeColor(255,255,255)
 
     method protected AbstractBCBoundWidget()
     methodend
@@ -20,6 +22,13 @@ class public AbstractBCBoundWidget extends BBjWidget implements IBCBound
         methodret #getCanvas()
     methodend
     
+    method public BBjColor getColorFocusGained()
+        methodret #colorFocusGained!
+    methodend
+    
+    method public BBjColor getColorFocusLost()
+        methodret #colorFocusLost!
+    methodend
     rem -------------------------BCBinder methods--------------------------------
     method public void setBinder(BCBinder binder!)
         #binder! = binder!
@@ -55,6 +64,15 @@ class public AbstractBCBoundWidget extends BBjWidget implements IBCBound
     method protected void updateProperties()
         if #getUIPropertiesManager() = null() then #setUIPropertiesManager(PropertiesManager.getInstance())
         if #getTextPropertiesManager() = null() then #setTextPropertiesManager(LocalizedPropertiesManager.getInstance())
+        
+        r = #getUIPropertiesManager().getPropertyAsNumber("CONTROL_GAINED_FOCUS_RED")
+        g = #getUIPropertiesManager().getPropertyAsNumber("CONTROL_GAINED_FOCUS_GREEN")
+        b = #getUIPropertiesManager().getPropertyAsNumber("CONTROL_GAINED_FOCUS_BLUE")
+        #colorFocusGained! = BBjAPI().getSysGui().makeColor(r,g,b,err=*next)
+        r = #getUIPropertiesManager().getPropertyAsNumber("CONTROL_LOST_FOCUS_RED")
+        g = #getUIPropertiesManager().getPropertyAsNumber("CONTROL_LOST_FOCUS_GREEN")
+        b = #getUIPropertiesManager().getPropertyAsNumber("CONTROL_LOST_FOCUS_BLUE")
+        #colorFocusLost! = BBjAPI().getSysGui().makeColor(r,g,b,err=*next)
     methodend
     rem ------------------properties manager--------------------------------------
     method public void setUIPropertiesManager(IPropertiesManager uiPropertiesManager!)

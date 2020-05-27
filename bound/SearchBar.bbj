@@ -61,6 +61,8 @@ class public SearchBar extends AbstractBCBoundWidget
             #btn_retrieve!.setCallback(BBjAPI.ON_TOOL_BUTTON_PUSH,#this!,"onBtnRetrieve")
             #searchField! = #getCanvas().addInputE(101,0,1,#getWidth() - 20,#getHeight() - 2)
             #updateProperties()
+            #searchField!.setCallback(#searchField!.ON_GAINED_FOCUS, #this!, "controlChangeBackColorOnGainedFocus")
+            #searchField!.setCallback(#searchField!.ON_LOST_FOCUS, #this!, "controlChangeBackColorOnLostFocus")
         FI
     methodend
     
@@ -105,6 +107,16 @@ class public SearchBar extends AbstractBCBoundWidget
     
     method public Boolean canSetSelection()
         methodret BBjAPI.TRUE
+    methodend
+    
+    method public void controlChangeBackColorOnGainedFocus(BBjGainedFocusEvent ev!)
+        control! = ev!.getControl()
+        control!.setBackColor(#getColorFocusGained())
+    methodend
+    
+    method public void controlChangeBackColorOnLostFocus(BBjLostFocusEvent ev!)
+        control! = ev!.getControl()
+        control!.setBackColor(#getColorFocusLost())
     methodend
     
 
