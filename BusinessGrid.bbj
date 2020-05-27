@@ -90,7 +90,10 @@ class public BusinessGrid extends AbstractBCBoundWidget implements IPersistentSt
             menu!.addItem(GxContextMenuItem.AUTO_SIZE_ALL())
             menu!.addItem(GxContextMenuItem.RESET_COLUMNS())
             options!.setContextMenu(menu!)
-
+            
+            rem need to wait for next Gx release:
+            rem options!.setSuppressCellSelection(Boolean.TRUE)
+            
             #exportButton! = new ExportMenuButton(#getCanvas(), 202, 0, 5, 43, 20)
             #exportButton!.setGrid(#this!)
             #exportButton!.setBC(new CustomConfigurationsBC(info(3,2), "exportButtonConfigurations"))
@@ -104,8 +107,8 @@ class public BusinessGrid extends AbstractBCBoundWidget implements IPersistentSt
             statusbar! = #grid!.getStatusbar()
             statusbar!.addComponent(new GxStatusBarTotalAndFilteredRowCountComponent("right"))
             statusbar!.addComponent(new GxStatusBarSelectedRowCountComponent("center"))
-            statusbar!.setComponentVisibility("agTotalAndFilteredRowCountComponent"  , Boolean.TRUE)
-            statusbar!.setComponentVisibility("agSelectedRowCountComponent"  , Boolean.TRUE)
+            statusbar!.setComponentVisibility(GxStatusBarTotalAndFilteredRowCountComponent.NAME(), Boolean.TRUE)
+            statusbar!.setComponentVisibility(GxStatusBarSelectedRowCountComponent.NAME(), Boolean.TRUE)
             
             #updateProperties()
         fi
