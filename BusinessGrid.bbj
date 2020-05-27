@@ -205,11 +205,15 @@ class public BusinessGrid extends AbstractBCBoundWidget implements IPersistentSt
                         endif
                     endif
 
-                    if type = java.sql.Types.BOOLEAN then
+                    if type = java.sql.Types.BOOLEAN  OR type = java.sql.Types.BIT then
                         checkboxRenderer! = new GxRendererBoolean()
-                        checkboxRenderer!.setTrueValue("<input type='checkbox' checked/>")
-                        checkboxRenderer!.setFalseValue("<input type='checkbox' />")
+                        checkboxRenderer!.setTrueValue("<font size=+1>&#9745;</font>")
+                        checkboxRenderer!.setFalseValue("<font size=+1>&#9744;</font>")
                         column!.setCellRenderer(checkboxRenderer!)
+                        
+                        rem checkboxRenderer!.setTrueValue("<input type='checkbox' checked/>")
+                        rem checkboxRenderer!.setFalseValue("<input type='checkbox' />")
+                        
                         rem column!.getCellRenderer().setTrueValue(GxRendererBoolean.SWITCH_RENDERER())
                         rem column!.getCellRenderer().setFalseValue(GxRendererBoolean.SWITCH_RENDERER())
                     endif
