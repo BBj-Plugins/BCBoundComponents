@@ -12,6 +12,8 @@ use ::BBjGridExWidget/GxContextMenu.bbj::GxContextMenuItem
 use ::BBjGridExWidget/GxRenderers.bbj::GxRendererCustomHTML
 use ::BBjGridExWidget/GxRenderers.bbj::GxRendererBoolean
 use ::BBjGridExWidget/GxState.bbj::GxState
+use ::BBjGridExWidget/GxStatusBar.bbj::GxStatusBarTotalAndFilteredRowCountComponent
+use ::BBjGridExWidget/GxStatusBar.bbj::GxStatusBarSelectedRowCountComponent
 
 use ::BusinessUIComponents/AbstractBCBoundWidget.bbj::AbstractBCBoundWidget
 use ::BusinessUIComponents/ExportMenuButton.bbj::ExportMenuButton
@@ -98,6 +100,12 @@ class public BusinessGrid extends AbstractBCBoundWidget implements IPersistentSt
             #fitToGridButton!.setBorderPainted(Boolean.TRUE)
             #fitToGridButton!.setImageSize(23, 23)
             #fitToGridButton!.setCallback(#fitToGridButton!.ON_BUTTON_PUSH, #this!, "fitToGrid")
+            
+            statusbar! = #grid!.getStatusbar()
+            statusbar!.addComponent(new GxStatusBarTotalAndFilteredRowCountComponent("right"))
+            statusbar!.addComponent(new GxStatusBarSelectedRowCountComponent("center"))
+            statusbar!.setComponentVisibility("agTotalAndFilteredRowCountComponent"  , Boolean.TRUE)
+            statusbar!.setComponentVisibility("agSelectedRowCountComponent"  , Boolean.TRUE)
             
             #updateProperties()
         fi
@@ -210,6 +218,7 @@ class public BusinessGrid extends AbstractBCBoundWidget implements IPersistentSt
                         column!.setCellRenderer(new GxRendererCustomHTML("<%= ""<input readonly type='password' value='"" + params.value + ""' />"" %>"))
                     endif
 
+                    hide = BBjAPI.FALSE
                     if fa!.containsKey("HIDE") then hide = num(fa!.get("HIDE"))
                     if hide then column!.setHidden(hide)
 

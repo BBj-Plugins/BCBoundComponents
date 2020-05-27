@@ -1,27 +1,22 @@
 REM /**
 REM  * CustomConfigurationBC.bbj
 REM  * @author jcorea
-REM  * Custom implementation of the ConfigurationsBC, which uses creates a new VKEYED file "configurationWidgetConfigs" in bbj/cfg folder (unless it already exists)
+REM  * Custom implementation of the ConfigurationsBC, which uses or creates a new VKEYED file "configurationWidgetConfigs" in the bbj/cfg folder.
 REM  * 
 REM  */
+use com.basiscomponents.bc.BusinessComponent
 use com.basiscomponents.bc.ConfigurationsBC
 use com.basiscomponents.bc.IConfigurationsBC
 use com.basiscomponents.db.DataRow
 use com.basiscomponents.db.ResultSet
 
-use java.util.Collection
-use java.util.LinkedList
+
+
 use java.io.File
-use java.util.regex.Pattern
+use java.util.Collection
 use java.util.regex.Matcher
-use com.basis.bbj.datatypes.TemplatedString
-use com.basis.startup.type.BBjException
-use com.basiscomponents.bc.BusinessComponent
-use com.basiscomponents.db.BBArrayList
-use com.basiscomponents.util.JLibDataFileHandler
-use com.google.common.base.Strings
-use com.basis.filesystem.ConnectionMgr
-use com.basis.filesystem.Filesystem
+use java.util.regex.Pattern
+
 
 class public CustomConfigurationsBC implements BusinessComponent,IConfigurationsBC
     field protected ConfigurationsBC configurationsBC!
@@ -77,8 +72,11 @@ REM         path! = "C:\Users\FOO\Documents\00tempConfigscanbedeleted"
         #configurationsBC!.setFieldsMinLengthAutoConvert(fieldsMinLengthAutoConvert!)
     methodend
     
-    method public static void setTemplateConfigFile(String template!)
-        ConfigurationsBC.setTemplateConfigFile(template!)
+REM     method public static void setTemplateConfigFile(String template!)
+REM         ConfigurationsBC.setTemplateConfigFile(template!)
+REM     methodend
+    method public void setTemplateConfigFile(String template!)
+        #configurationsBC!.setTemplateConfigFile(template!)
     methodend
     
     method public DataRow getAttributesRecord()
@@ -157,8 +155,8 @@ REM         path! = "C:\Users\FOO\Documents\00tempConfigscanbedeleted"
         methodret #configurationsBC!.getFieldSelection()
     methodend
     
-    method public ResultSet getAvaillableConfigurations()
-        methodret #configurationsBC!.getAvaillableConfigurations()
+    method public ResultSet getAvailableConfigurations()
+        methodret #configurationsBC!.getAvailableConfigurations()
     methodend
     
     method public DataRow getScope()
@@ -208,7 +206,17 @@ REM         path! = "C:\Users\FOO\Documents\00tempConfigscanbedeleted"
     method public String getFieldNameConfig()
         methodret #configurationsBC!.getFieldNameConfig()
     methodend
+
+    rem @Override
+    method public BusinessComponent getLookup(String fieldName!, DataRow dr!)
+        methodret null()
+    methodend
     
+    rem @Override
+    method public ResultSet getLookupData(String fieldName!, DataRow dr!)
+        methodret null()
+    methodend
+
     rem /**
     rem  * creates a vkeyed datafile if doesnt already exist
     rem  */
