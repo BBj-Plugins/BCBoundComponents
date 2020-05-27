@@ -31,8 +31,8 @@ rem  */
 class public BusinessGrid extends AbstractBCBoundWidget implements IPersistentState
 
     field private BBjGridExWidget grid!
-    field private Boolean sending! = BBjAPI.FALSE
-    field private Boolean ignoreNext! = BBjAPI.FALSE
+    field private Boolean         sending! = Boolean.FALSE
+    field private Boolean         ignoreNext! = Boolean.FALSE
 
     field private ConfigurationWidget    cfgwidget!
     field private CustomConfigurationsBC cfgbc!
@@ -61,11 +61,11 @@ class public BusinessGrid extends AbstractBCBoundWidget implements IPersistentSt
     rem  * @param BBjInt h: height
     rem  */
     method public BusinessGrid(BBjWindow wnd!, BBjInt id!, BBjInt x!, BBjInt y!, BBjInt w!, BBjInt h!)
-        #super!.create(wnd!,id!,x!,y!,w!,h!)
+        #super!.create(wnd!, id!, x!, y!, w!, h!)
     methodend
 
     rem /**
-    rem  * The constructor that an existing child-window (canvas) on which the widget is created.
+    rem  * The constructor using an existing child-window (canvas) on which the widget is created.
     rem  */
     method public BusinessGrid(BBjChildWindow wnd!)
         #super!.create(wnd!)
@@ -74,16 +74,16 @@ class public BusinessGrid extends AbstractBCBoundWidget implements IPersistentSt
     rem /**
     rem  * This method is called whenever the widget needs to be rendered.
     rem  *
-    rem  * @param Boolean f_init!: if TRUE the control is rendered for the first time so this method has to perform initial rendering
-    rem  * @Override
+    rem  * @param Boolean f_init!: if TRUE, the control is rendered for the first time, so this method performs initial rendering
     rem  */
+    rem @Override
     method public void redraw(Boolean f_init!)
         if (f_init!) then
             rem rendering for the first time
             rem so have to initialize / create my controls
-            #grid! = new BBjGridExWidget(#getCanvas(),100,0,30,#getWidth(),#getHeight()-30)
+            #grid! = new BBjGridExWidget(#getCanvas(), 100, 0, 30, #getWidth(), #getHeight()-30)
             #grid!.getOptions().setNavigationBehavior(#grid!.GRID_NAVIGATION_BEHAVIOUR_NEXT_ROW())
-            #grid!.setCallback(#grid!.ON_GRID_ROW_SELECT(),#this!,"onGridSelection")
+            #grid!.setCallback(#grid!.ON_GRID_ROW_SELECT(), #this!, "onGridSelection")
             #cfgbc! = new CustomConfigurationsBC(info(3,2))
 
             options! = #grid!.getOptions()
@@ -91,33 +91,34 @@ class public BusinessGrid extends AbstractBCBoundWidget implements IPersistentSt
             menu!.addItem(GxContextMenuItem.AUTO_SIZE_ALL())
             menu!.addItem(GxContextMenuItem.RESET_COLUMNS())
             options!.setContextMenu(menu!)
-            
+
             rem need to wait for next Gx release:
             rem options!.setSuppressCellSelection(Boolean.TRUE)
-            
+
             #exportButton! = new ExportMenuButton(#getCanvas(), 202, 0, 5, 43, 20)
             #exportButton!.setGrid(#this!)
             #exportButton!.setBC(new CustomConfigurationsBC(info(3,2), "exportButtonConfigurations"))
-            #exportButton!.setProgramName(pgm(-2,0))
-            
+            #exportButton!.setProgramName(pgm(-2, 0))
+
             #fitToGridButton! = #getCanvas().addMenuButton(203, 48, 5, 20, 20, "")
             #fitToGridButton!.setBorderPainted(Boolean.TRUE)
             #fitToGridButton!.setImageSize(23, 23)
             #fitToGridButton!.setCallback(#fitToGridButton!.ON_BUTTON_PUSH, #this!, "fitToGrid")
-            
+
             statusbar! = #grid!.getStatusbar()
             statusbar!.addComponent(new GxStatusBarTotalAndFilteredRowCountComponent("right"))
             statusbar!.addComponent(new GxStatusBarSelectedRowCountComponent("center"))
             statusbar!.setComponentVisibility(GxStatusBarTotalAndFilteredRowCountComponent.NAME(), Boolean.TRUE)
             statusbar!.setComponentVisibility(GxStatusBarSelectedRowCountComponent.NAME(), Boolean.TRUE)
-            
+
             #updateProperties()
         fi
 
         #grid!.setSize(#getWidth(),#getHeight()-30)
+
         if #cfgwidget! <> null() then
-            rem min padding for config widget because of the print button to the left of it
-            #cfgwidget!.setMinPaddingLeft(50)
+            rem min padding for config widget to allow for the export and fitToGrid buttons to the left
+            #cfgwidget!.setMinPaddingLeft(75)
             #cfgwidget!.setLocation(#getWidth()-155, 5)
         fi
     methodend
@@ -130,14 +131,18 @@ REM             #grid!.setSelectedRow(0)
 REM         endif
 REM     methodend
     
+
+    rem /**
+    rem  *
+    rem  */
     method protected void updateProperties()
         #super!.updateProperties()
         uiProperties! = #getUIPropertiesManager()
         #exportButton!.setImageFile(uiProperties!.getProperty("EXPORT_BTN_IMAGE"))
         #fitToGridButton!.setImageFile(uiProperties!.getProperty("FIT_TO_GRID_IMAGE"))
-        
+
         height = uiProperties!.getPropertyAsNumber("CONFIG_WIDGET_HEIGHT")
-        if height > 0 then 
+        if height > 4 then
             #exportButton!.setSize(height*2, height)
             #exportButton!.setImageSize(height-4, height-4)
             #fitToGridButton!.setSize(height, height)
@@ -149,12 +154,15 @@ REM     methodend
 
     rem -----------------------getter and setter -----------------------------
     rem /**
-    rem  *
+    rem  * @return the BBjGridExWidget object
     rem  */
     method public BBjGridExWidget getGrid()
         methodret #grid!
     methodend
 
+    rem /**
+    rem  * @param user!
+    rem  */
     method public void setConfigurationWidgetUser(String user!)
         #cfgbc!.setUserName(user!)
     methodend
@@ -162,7 +170,7 @@ REM     methodend
     rem ----------------------grid handling---------------------------------------------
 
     rem /**
-    rem  *
+    rem  * This method is called by the BCBinder object after having performed a retrieval.
     rem  */
     method public void onSetData()
         declare ResultSet rs!
@@ -181,16 +189,20 @@ REM     methodend
 
             if !(#columnConfigurationSet!) then
 
-                rem render grid columns based on the attributes record (w/o any data)
+                rem Render grid columns based on the attributes record (w/o any data)
                 rsa! = new ResultSet()
                 rsa!.add(ar!)
                 #grid!.setData(rsa!)
 
                 for rscol = 0 to rs!.getColumnCount() - 1
 
-                    type = rs!.getColumnType(rscol)
                     fieldName$ = rs!.getColumnName(rscol)
                     column! = #grid!.getColumn(fieldName$)
+
+                    rem The type in the attributes datarow and thus the grid column type represent the 'target type'
+                    rem and may differ from the type in the current resultset, if a ConversionRuleSet is involved.
+                    rem type = ar!.getFieldType(fieldName$)
+                    type = column!.getType()
 
                     fa! = ar!.getFieldAttributes(fieldName$);rem returns HashMap
 
@@ -240,7 +252,7 @@ REM     methodend
             endif
 
         endif
-        
+
         #grid!.updateData(rs!)
         rem select first row on first retrieve
 REM                 escape
@@ -258,9 +270,7 @@ REM                 escape
     rem  *
     rem  */
     method public void onSetSelection()
-            if (#sending!) then
-                methodret
-            fi
+            if (#sending!) then methodret
 
             sel! = #getBinder().getSelection()
             rs! = #getBinder().getRS()
@@ -276,7 +286,7 @@ REM                 escape
             #grid!.deselectAll()
             if (s!.size()>0) then
                 #grid!.setSelectedRows(s!)
-                #grid!.ensureIndexVisible(s!.getItem(0),#grid!.GRID_ROWPOS_MIDDLE())
+                #grid!.ensureIndexVisible(s!.getItem(0), #grid!.GRID_ROWPOS_MIDDLE())
             fi
     methodend
 
@@ -285,7 +295,7 @@ REM                 escape
     rem  */
     method public void onGridSelection(BBjCustomEvent ev!)
         if #ignoreNext! then
-            #ignoreNext! = BBjAPI.FALSE
+            #ignoreNext! = Boolean.FALSE
             methodret
         fi
 
@@ -298,12 +308,12 @@ REM                 escape
                   row! = it!.next()
                   sel!.addItem(row!.asDataRow().getRowKey())
               wend
-              #sending! = BBjAPI.TRUE
+              #sending! = Boolean.TRUE
               #getBinder().setSelection(sel!)
-              #sending! = BBjAPI.FALSE
+              #sending! = Boolean.FALSE
          else
             #onSetSelection()
-            #ignoreNext! = BBjAPI.TRUE
+            #ignoreNext! = Boolean.TRUE
          fi
     methodend
 
@@ -321,6 +331,8 @@ REM                 escape
     rem /**
     rem  * This method will provide the widget with the current state of the component.<br>
     rem  * The widget will store this data for later retrieval.
+    rem  *
+    rem  * @return String containing the current state of all columns
     rem  */
     method public String retrieveState()
         methodret #grid!.getColumnState().toString()
@@ -335,31 +347,35 @@ REM                 escape
     rem  * @param callable!
     rem  */
     method public void setStateChangeCallback(String methodName!, CustomObject callable!)
-       #grid!.setCallback(#grid!.ON_GRID_COLUMN_STATE_CHANGE(),callable!,methodName!)
+        #grid!.setCallback(#grid!.ON_GRID_COLUMN_STATE_CHANGE(), callable!, methodName!)
     methodend
 
     rem /**
     rem  * Registers the governing BCBinder and creates the configuration widget.
     rem  *
-    rem  * @param binder!
+    rem  * @param binder!  BCBinder object
     rem  */
     method public void setBinder(BCBinder binder!)
         #super!.setBinder(binder!)
-        x$=str(binder!.getBC())
+        x$ = str(binder!.getBC())
         while pos("::"=x$)>0
-            x$=X$(pos("::"=x$)+2)
+            x$ = x$(pos("::"=x$)+2)
         wend
         #cfgwidget! = new ConfigurationWidget(#getCanvas(),201, #getWidth()-155, 5 , #this!, Boolean.TRUE, "GRD", x$, #cfgbc! )
     methodend
-    
+
+    rem /**
+    rem  * @param ev!  BBjEvent object
+    rem  */
     method public void fitToGrid(BBjEvent ev!)
         #fitToGrid()
     methodend
-    
+
+    rem /**
+    rem  *
+    rem  */
     method private void fitToGrid()
-        if #grid!<>null() then
-            #grid!.setFitToGrid()
-        fi
+        if #grid!<>null() then #grid!.setFitToGrid()
     methodend
 
 classend
