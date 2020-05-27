@@ -12,6 +12,7 @@ use java.sql.Connection
 use java.sql.PreparedStatement
 use java.sql.Statement
 
+use java.util.Collection
 use java.util.HashMap
 use java.util.HashSet
 use java.util.Iterator
