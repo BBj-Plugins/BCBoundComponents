@@ -146,7 +146,7 @@ REM     methodend
 		if info(3,6) = "5" then
 			outputFile! = java.io.File.createTempFile("tempFile", ".csv")
 			outputFile!.createNewFile()
-			writer! = new FileWriter(tempFile!)
+			writer! = new FileWriter(outputFile!)
 		else
 			outputFile! = new File(chosenDirOrFilePath!)
 		endif

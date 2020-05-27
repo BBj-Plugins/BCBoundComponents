@@ -198,37 +198,26 @@ REM         #mainWindow!.destroy()
 		if info(3,6) = "5" then
 			fs! = bbjapi().getThinClient().getClientFileSystem() 
 			cf! = fs!.getClientFile(report!) 
-			reportPath$ = cf!.copyFromClient("tempFile.jrxml")
-			compiledReport! = JasperCompileManager.compileReport(reportPath$)
-		else
-			compiledReport! = JasperCompileManager.compileReport(report!)
+			reportPath$ = cf!.copyFromClient("customReport" + str(System.currentTimeMillis()) + ".jrxml")
+            System.out.println(reportPath$)
 		endif
-        
-        rem compiledReport! = JasperCompileManager.compileReport(report!)
-
-        declare JRField field!
-
-        fields! = compiledReport!.getFields()
-        dr! = new DataRow()
-        for i = 0 to fields!.length - 1
-            field! = cast(JRField, fields![i])
-            name$ = field!.getName()
-            dr!.setFieldValue(name$, "")
-        next i
 
         rem TODO: wie triggern wir das neue resultset, welches die felder des reports beinhaltet? kein controller vorhanden!
-        
         rem exporting
         declare File outputFile!
-        outputFile! = #exporter!.exportToPDFByCustomReport(chosenDirOrFilePath!, report!, rs!)
-		
+
+        if info(3,6) = "5" then
+            outputFile! = #exporter!.exportToPDFByCustomReport("report.pdf", reportPath$, rs!)
+        else
+            outputFile! = #exporter!.exportToPDFByCustomReport(chosenDirOrFilePath!, report!, rs!)
+        endif
+
 		if info(3,6) = "5" then
 			fs! = bbjapi().getThinClient().getClientFileSystem() 
-			cf! = fs!.getClientFile(chosenDirOrFilePath!) 
+			cf! = fs!.getClientFile("report.pdf") 
 			cf!.copyToClient(outputFile!.getAbsolutePath())
-			cf!.delete!
 		endif
-		
+
         bbjapi().getThinClient().browse(outputFile!.getAbsolutePath().replace("\", "/"))
         #mainWindow!.destroy()
     methodend
