@@ -83,14 +83,6 @@ REM     field private BBjColor colorFocusLost!
             calendarButton! = it!.next()
             cast(BBjButton, calendarButton!).setImageFile(#getUIPropertiesManager().getProperty("SIMPLE_FORM_BTN_CALENDAR"))
         wend
-REM         r = #getUIPropertiesManager().getPropertyAsNumber("CONTROL_GAINED_FOCUS_RED")
-REM         g = #getUIPropertiesManager().getPropertyAsNumber("CONTROL_GAINED_FOCUS_GREEN")
-REM         b = #getUIPropertiesManager().getPropertyAsNumber("CONTROL_GAINED_FOCUS_BLUE")
-REM         #colorFocusGained! = BBjAPI().getSysGui().makeColor(r,g,b)
-REM         r = #getUIPropertiesManager().getPropertyAsNumber("CONTROL_LOST_FOCUS_RED")
-REM         g = #getUIPropertiesManager().getPropertyAsNumber("CONTROL_LOST_FOCUS_GREEN")
-REM         b = #getUIPropertiesManager().getPropertyAsNumber("CONTROL_LOST_FOCUS_BLUE")
-REM         #colorFocusLost! = BBjAPI().getSysGui().makeColor(r,g,b)
     methodend
     
     method public void setControlMap(BiMap controlMap!)

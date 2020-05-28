@@ -16,6 +16,7 @@ class public EditToolbarComponent extends AbstractBCBoundWidget
     field private BBjToolButton btn_new!
     field private BBjToolButton btn_save!
     field private BBjToolButton btn_delete!
+    field private BBjToolButton btn_refresh!
     
     field private Boolean dirty! = BBjAPI.FALSE
         
@@ -59,6 +60,9 @@ class public EditToolbarComponent extends AbstractBCBoundWidget
             #btn_delete! = #getCanvas().addToolButton(102,40,0,20,20,"DELETE")
             #btn_delete!.setCallback(BBjAPI.ON_TOOL_BUTTON_PUSH,#this!,"onBtnDelete")
             
+            #btn_delete! = #getCanvas().addToolButton(103,60,0,20,20,"REFRESH")
+            #btn_delete!.setCallback(BBjAPI.ON_TOOL_BUTTON_PUSH,#this!,"onBtnRefresh")
+            
             #enableControls()
             #updateProperties()
         FI
@@ -74,6 +78,7 @@ class public EditToolbarComponent extends AbstractBCBoundWidget
             #btn_new!.setImageFile(uiProperties!.getProperty("EDIT_TOOLBAR_BTN_NEW_IMAGE"))
             #btn_save!.setImageFile(uiProperties!.getProperty("EDIT_TOOLBAR_BTN_SAVE_IMAGE"))
             #btn_delete!.setImageFile(uiProperties!.getProperty("EDIT_TOOLBAR_BTN_DELETE_IMAGE"))
+            #btn_delete!.setImageFile(uiProperties!.getProperty("EDIT_TOOLBAR_BTN_REFRESH_IMAGE"))
             
             height = uiProperties!.getPropertyAsNumber("EDIT_TOOLBAR_HEIGHT")
             imageSize = height - 4
@@ -101,6 +106,10 @@ class public EditToolbarComponent extends AbstractBCBoundWidget
     
     method public void onBtnNew( BBjToolButtonPushEvent ev! )
         #getBinder().sendSignal(BCBinder.SIGNAL_NEW)
+    methodend
+    
+    method public void onBtnRefresh( BBjToolButtonPushEvent ev! )
+        #getBinder().retrieve()
     methodend
 
     method public void onBtnSave( BBjToolButtonPushEvent ev! )
