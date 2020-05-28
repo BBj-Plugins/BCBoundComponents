@@ -98,7 +98,6 @@ class public BusinessGrid extends AbstractBCBoundWidget implements IPersistentSt
             #exportButton! = new ExportMenuButton(#getCanvas(), 202, 0, 5, 43, 20)
             #exportButton!.setGrid(#this!)
             #exportButton!.setBC(new CustomConfigurationsBC(info(3,2), "exportButtonConfigurations"))
-<<<<<<< HEAD
             
             pgmName! = pgm(-1)
             declare String[] split!
@@ -110,10 +109,6 @@ class public BusinessGrid extends AbstractBCBoundWidget implements IPersistentSt
             endif
             #exportButton!.setProgramName(pgmName$)
             
-=======
-            #exportButton!.setProgramName(pgm(-2, 0))
-
->>>>>>> 324c53bbe66f7d6efc64c29471752c3c7abd66ee
             #fitToGridButton! = #getCanvas().addMenuButton(203, 48, 5, 20, 20, "")
             #fitToGridButton!.setBorderPainted(Boolean.TRUE)
             #fitToGridButton!.setImageSize(23, 23)
