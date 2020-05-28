@@ -42,7 +42,7 @@ REM wnd!        .setCallback(BBjAPI.ON_CLOSE,"byebye")
 wnd!        .setCallback(BBjAPI.ON_RESIZE,"resize")
 
 nav! = new NavigatorComponent(wnd!,100,85,10,200,20)
-edittb! = new EditToolbarComponent(wnd!,101,5,10,60,30)
+edittb! = new EditToolbarComponent(wnd!,101,5,10,80,30)
 
 splitter! = new HorizontalSplitter(wnd!,102,5,30,900,800)
 

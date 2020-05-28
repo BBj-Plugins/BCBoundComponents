@@ -368,6 +368,17 @@ REM                 escape
         wend
         #cfgwidget! = new ConfigurationWidget(#getCanvas(),201, #getWidth()-155, 5 , #this!, Boolean.TRUE, "GRD", x$, #cfgbc! )
     methodend
+    
+    method public void onSignal(int signal!, Object payload!)
+        binder! = #getBinder()
+        switch signal!
+            case binder!.SIGNAL_TERMINATE
+                #cfgwidget!.saveAutoConfig(#retrieveState())
+                break
+            case default
+                break
+        swend
+    methodend
 
     rem /**
     rem  * @param ev!  BBjEvent object

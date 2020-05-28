@@ -360,7 +360,7 @@ REM                 cast(BBjInputE, c!).setLength(precision!)
                 if fieldAttributes!.containsKey("MASK") then
                     mask! = fieldAttributes!.get("MASK")
                 else
-                    mask! = "%Yd-%Mz-%Dz"
+                    mask! = "%Yd.%Mz.%Dz"
                 endif
                 cast(BBjInputD, c!).setMask(mask!)
                 #addCalendarButton(cast(BBjInputD, c!))
