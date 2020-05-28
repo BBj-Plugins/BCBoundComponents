@@ -58,6 +58,9 @@ class public ConfigurationWidget extends BBjWidget
     
     field protected static BBjColor ADMIN_ENABLED_COLOR! = BBJAPI().makeColor(0,250,0)
     field protected static BBjColor ADMIN_DISABLED_COLOR!  = BBJAPI().makeColor(100,100,100)
+    
+    field private BBjColor colorFocusGained! = BBjAPI().getSysGui().makeColor(255,255,255)
+    field private BBjColor colorFocusLost! = BBjAPI().getSysGui().makeColor(255,255,255)
 
     field protected static String ON_STATE_CHANGE! = "STATE_CHANGE"
     field protected static String ON_CONFIGURATION_CHANGE! = "CONFIGURATION_CHANGE"
@@ -218,6 +221,8 @@ REM                 #buttonAdmin!.setShortCue("Admin mode (currently disabled)")
             #createPopupButton()
             #toggleSaveButton(Boolean.FALSE)
             #updateProperties()
+            #listEditOptions!.setCallback(#listEditOptions!.ON_GAINED_FOCUS, #this!, "controlChangeBackColorOnGainedFocus")
+            #listEditOptions!.setCallback(#listEditOptions!.ON_LOST_FOCUS, #this!, "controlChangeBackColorOnLostFocus")
         FI
         if !#bcInitialized! and #bc!<> null() then
             #init()
@@ -285,6 +290,14 @@ REM         escape
                 #buttonAdmin!.setShortCue( textProperties!.getProperty("CONFIG_WIDGET_BTN_ADMIN_DISABLED_SHORT_CUE"))
             endif
         endif
+        r = uiProperties!.getPropertyAsNumber("CONTROL_GAINED_FOCUS_RED")
+        g = uiProperties!.getPropertyAsNumber("CONTROL_GAINED_FOCUS_GREEN")
+        b = uiProperties!.getPropertyAsNumber("CONTROL_GAINED_FOCUS_BLUE")
+        #colorFocusGained! = BBjAPI().getSysGui().makeColor(r,g,b,err=*next)
+        r = uiProperties!.getPropertyAsNumber("CONTROL_LOST_FOCUS_RED")
+        g = uiProperties!.getPropertyAsNumber("CONTROL_LOST_FOCUS_GREEN")
+        b = uiProperties!.getPropertyAsNumber("CONTROL_LOST_FOCUS_BLUE")
+        #colorFocusLost! = BBjAPI().getSysGui().makeColor(r,g,b,err=*next)
     methodend
     
     rem /**
@@ -643,6 +656,16 @@ REM         #currentConfig! = ""
             selectedConfig!.setFieldValue(#bc!.getFieldNameUserid(), #userName!)
         endif
         methodret selectedConfig!
+    methodend
+    
+    method public void controlChangeBackColorOnGainedFocus(BBjGainedFocusEvent ev!)
+        control! = ev!.getControl()
+        control!.setBackColor(#colorFocusGained!)
+    methodend
+    
+    method public void controlChangeBackColorOnLostFocus(BBjLostFocusEvent ev!)
+        control! = ev!.getControl()
+        control!.setBackColor(#colorFocusLost!)
     methodend
     
 
