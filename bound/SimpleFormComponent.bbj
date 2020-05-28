@@ -18,13 +18,13 @@ rem  * A sample BBj Widget Implementation
 rem  */
 class public SimpleFormComponent extends AbstractBCBoundWidget
 
-    field private BBjWindow cw!
-    field private BBjVector fieldList!
-    field private BBjVector controlList!
-    field private BBjVector idControls!
-    field private BBjVector calendarButtons! = new BBjVector()
-    field private BiMap controlMap!
-    field private HashMap controlPrefixMap!
+    field protected BBjWindow cw!
+    field protected BBjVector fieldList!
+    field protected BBjVector controlList!
+    field protected BBjVector idControls!
+    field protected BBjVector calendarButtons! = new BBjVector()
+    field protected BiMap controlMap!
+    field protected HashMap controlPrefixMap!
 REM     field private BBjColor colorFocusGained!
 REM     field private BBjColor colorFocusLost!
     
@@ -456,6 +456,7 @@ REM         calendarButton!.setImageFile("BusinessUIComponents/icon/ic_insert_in
                 c!.setCallback(BBjAPI.ON_EDIT_MODIFY,#this!,"onControlEditModify") 
                 break
             case BBjControl.LISTBUTTON_TYPE
+            case BBjControl.LISTEDIT_TYPE
                 c!.setCallback(BBjAPI.ON_LIST_SELECT,#this!,"onControlListSelect") 
                 break
             case default
