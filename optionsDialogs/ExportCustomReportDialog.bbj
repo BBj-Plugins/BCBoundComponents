@@ -171,19 +171,6 @@ class public ExportCustomReportDialog
 			reportPath$ = cf!.copyFromClient("customReport" + str(System.currentTimeMillis()) + ".jrxml")
             System.out.println(reportPath$)
 		endif
-<<<<<<< HEAD
-        
-        declare JRField field!
-
-        fields! = compiledReport!.getFields()
-        dr! = new DataRow()
-        for i = 0 to fields!.length - 1
-            field! = cast(JRField, fields![i])
-            name$ = field!.getName()
-            dr!.setFieldValue(name$, "")
-        next i
-=======
->>>>>>> 324c53bbe66f7d6efc64c29471752c3c7abd66ee
 
         rem TODO: wie triggern wir das neue resultset, welches die felder des reports beinhaltet? kein controller vorhanden!
         rem exporting
