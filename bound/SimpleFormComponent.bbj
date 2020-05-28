@@ -513,7 +513,6 @@ REM         calendarButton!.setImageFile("BusinessUIComponents/icon/ic_insert_in
     rem if not enabled: do not return any fields
         if !#cw!.isEnabled() then methodret new DataRow()
         dr! = new DataRow()
-REM         it! = #fieldList!.iterator()
         controlMap! = #getControlMap()
         it! = controlMap!.values().iterator()
         rem add all control values where control name = field name in attributes record and editable = 1 or 2
@@ -524,7 +523,7 @@ REM         it! = #fieldList!.iterator()
             if !editable!.equals("1") and !editable!.equals("2") then continue;rem only editable fields for to be added
             control! = #getControlFromControlList(controlMap!.inverse().get(field$))
             value! = #getValueFromControl(control!)
-            dr!.setFieldValue(field$, value!)
+            dr!.setFieldValue(field$, attributes!.getFieldType(field$), value!)
         wend
         methodret dr!
     methodend
