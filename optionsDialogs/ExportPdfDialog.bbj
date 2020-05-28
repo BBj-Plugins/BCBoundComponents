@@ -34,8 +34,6 @@ class public ExportPdfDialog extends Dialog
     field private BBjListButton lbPageFittingOptions!
     field private BBjListButton lbPageLayout!
     field private BBjInputN inFontSize!
-REM     field private BBjButton btnSaveLocation!
-REM     field private BBjStaticText stSaveLocation!
     
     field private FileChooser fileChooser!
     
@@ -84,9 +82,6 @@ REM     field private BBjStaticText stSaveLocation!
         #lbPageLayout!.addItem("landscape")
         #lbPageLayout!.selectIndex(0)
         
-REM         #btnSaveLocation! = wnd!.addButton(2040, 8, 90, 150, 23, "Choose save location")
-REM         #stSaveLocation! = wnd!.addStaticText(3040, 170, 90, 400, 23, "")
-        
         methodret wnd!
     methodend
     
@@ -99,62 +94,19 @@ REM         #stSaveLocation! = wnd!.addStaticText(3040, 170, 90, 400, 23, "")
     
     method protected void setCallbacks()
         #super!.setCallbacks()
-REM         #btnSaveLocation!.setCallback(BBjButton.ON_BUTTON_PUSH, #this!, "onSaveLocationButtonPush")
     methodend
     
-REM     method public void onSaveLocationButtonPush(BBjButtonPushEvent ev!)
-REM         dirOnly = 0
-REM         useSaveDialog = 1
-REM         if #getembedded() then dirOnly = 1, useSaveDialog = 0
-REM         path$ = #getPATH()
-REM         if #getcustomSaveLocation() <> "" then path$ = #getcustomSaveLocation()
-REM         #fileChooser! = new FileChooser(path$, 10, 10, #getpgmName() + "_PDF_" + str(#getembedded()), 1, dirOnly, 0, useSaveDialog)
-REM     methodend
-    
     method public void onExportButtonPush(BBjButtonPushEvent ev!)
-REM         rs! = #getgrid().getGrid().getRS()
-REM         if rs! = null() or rs!.isEmpty() then methodret
-REM         filePath! = #stSaveLocation!.getText()
-REM         if filePath!.trim().equals("") then methodret
-REM         
-REM         path! = Paths.get(filePath!)
-REM         outputFilename$ = path!.getFileName().toString()
-REM         path$ = path!.getParent().toString() + "/"
-REM         
-REM         dr! = rs!.get(0)
-REM         
-REM         rem creating SheetConfiguration
-REM         declare SheetConfiguration sheetConfiguration!
-REM         sheetConfiguration! = new SheetConfiguration()
-REM         
-REM         fieldWidths! = ColumnWidthCalculator.calculateColumnWidths(rs!, #inFontSize!.getValue())
-REM 
-REM         visibleRowsVec! = #getgrid().getGrid().getColumnState().getVisibleColumns()
-REM         for i = visibleRowsVec!.size() - 1 to 0 step - 1
-REM             fieldName$ = visibleRowsVec!.get(i)
-REM             header! = dr!.getDataField(fieldName$).getAttribute("LABEL")
-REM             if header! = null() then header! = fieldName$
-REM             width = fieldWidths!.getFieldAsNumber(fieldName$)
-REM             sheetConfiguration!.insertColumn(header!, width, fieldName$, k)
-REM         next i
-REM         
-REM         sheetConfiguration!.setReportDetails(new ReportDetails(0, "reportName", "tableName", "0000000000000000000001"))
-REM         sheetConfiguration!.setFontSize(#inFontSize!.getValue())
-REM         
-REM         fitTo = #lbPageFittingOptions!.getSelectedIndex()
-REM         
-REM         rem exporting
-REM         declare File outputFile!
-REM         outputFile! = #getexporter().exportToPDF(outputFilename$, path$, rs!, sheetConfiguration!, #showsBaristaHeader!, fitTo, #lbPageLayout!.getSelectedIndex())
-REM         bbjapi().getThinClient().browse(outputFile!.getAbsolutePath().replace("\", "/"))
-REM         #getmainWindow().destroy()
-
-        dirOnly = 0
-        useSaveDialog = 1
-        if #getembedded() then dirOnly = 1, useSaveDialog = 0
-        path$ = #getPATH()
-        if #getcustomSaveLocation() <> "" then path$ = #getcustomSaveLocation()
-        #fileChooser! = new FileChooser(path$, 10, 10, #getpgmName() + "_PDF_" + str(#getembedded()), 1, dirOnly, 0, useSaveDialog)
+        if info(3,6) = "5" then
+            #export(#getpgmName() + ".pdf")
+        else
+            dirOnly = 0
+            useSaveDialog = 1
+            if #getembedded() then dirOnly = 1, useSaveDialog = 0
+            path$ = #getPATH()
+            if #getcustomSaveLocation() <> "" then path$ = #getcustomSaveLocation()
+            #fileChooser! = new FileChooser(path$, 10, 10, #getpgmName() + "_PDF_" + str(#getembedded()), 1, dirOnly, 0, useSaveDialog)
+        endif
     methodend   
     
     method public void setBaristaHeaderVisible(Boolean visible!)
@@ -198,15 +150,6 @@ REM         #getmainWindow().destroy()
         #lbPageFittingOptions!.selectIndex(dr!.getFieldAsNumber("fitting").intValue())
         #inFontSize!.setValue(dr!.getFieldAsNumber("fontSize"))
         #lbPageLayout!.selectIndex(dr!.getFieldAsNumber("pageLayout").intValue())
-REM         #setCustomSaveLocation(dr!.getFieldAsString("path"))
-        
-REM         if #getembedded() then
-REM             if #getcustomSaveLocation() = "" then
-REM                 #stSaveLocation!.setText(#getPATH())
-REM             else
-REM                 #stSaveLocation!.setText(dr!.getFieldAsString("path"))
-REM             endif
-REM         endif
     methodend
     
     method public void onFileChooserFinish(BBjNamespaceEvent ev!)
@@ -224,6 +167,10 @@ REM         endif
         
         if !chosenDirOrFilePath!.toLowerCase().endsWith(".pdf") then chosenDirOrFilePath! = chosenDirOrFilePath! + ".pdf"
         
+        #export(chosenDirOrFilePath!)
+    methodend
+    
+    method private void export(BBjString chosenDirOrFilePath!)
         #disableDialogButtons()
         
         rs! = #getgrid().getGrid().getRS()
