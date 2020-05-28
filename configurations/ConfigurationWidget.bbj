@@ -318,11 +318,48 @@ REM         escape
 REM         #setIcons()
         #fetchAndFillOptionListEdit()
         #setCallbacks()
+        autoConfig! = #getAutoConfig()
+        if autoConfig! <> null() then
+            config! = autoConfig!.getFieldAsString(#bc!.getFieldNameConfig())
+            #stateHandler!.configurationChange(config!)
+            
+            methodret
+        endif
         if !#availableConfigs!.isEmpty() then 
             #selectedIndex = 0
             #listEditOptions!.selectIndex(#selectedIndex)
             #fireConfigurationChangeEvent()
         endif
+    methodend
+    
+    method protected DataRow getAutoConfig()
+        oldFilter! = #bc!.getFilter()
+        autoFilter! = oldFilter!.clone()
+        key! = #keyx! + "_auto"
+        autoFilter!.setFieldValue(#bc!.getFieldNameKeyx(), key!)
+        autoFilter!.setFieldValue(#bc!.getFieldNameSetting(), "")
+        #bc!.setFilter(autoFilter!)
+REM         escape
+        rs! = #bc!.retrieve()
+        #bc!.setFilter(oldFilter!)
+        if rs!.size() then
+            methodret rs!.get(0)
+        else
+            methodret null()
+        endif
+REM         #stateHandler!.configurationChange(config!)
+    methodend
+    
+    method public void saveAutoConfig(String config!)
+        selectedConfig! = #getDataRowForWrite()
+        key! = #keyx! + "_auto"
+        selectedConfig!.setFieldValue(#bc!.getFieldNameKeyx(), key!)
+        selectedConfig!.setFieldValue(#bc!.getFieldNameSetting(), "")
+        selectedConfig!.setFieldValue(#bc!.getFieldNameConfig(), config!)
+        oldFilter! = #bc!.getFilter()
+        #bc!.setFilter(selectedConfig!)
+        #bc!.write(selectedConfig!)
+        #bc!.setFilter(oldFilter!)
     methodend
     
     

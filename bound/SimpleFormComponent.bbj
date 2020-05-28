@@ -2,6 +2,7 @@ use ::BusinessUIComponents/AbstractBCBoundWidget.bbj::AbstractBCBoundWidget
 use ::BBjGridExWidget/BBjGridExWidget.bbj::BBjGridExWidget
 use ::BusinessUIComponents/configurations/IPropertiesManager.bbj::IPropertiesManager
 use ::BusinessUIComponents/configurations/PropertiesManager.bbj::PropertiesManager
+
 use com.basiscomponents.bc.BCBound
 use com.basiscomponents.bc.BCBinder
 use com.basiscomponents.bc.BusinessComponent
@@ -12,6 +13,8 @@ use com.google.common.collect.BiMap
 use com.google.common.collect.HashBiMap
 use java.util.HashMap
 use java.util.ArrayList
+use java.time.LocalDateTime
+use java.time.format.DateTimeFormatter
 
 rem /**
 rem  * A sample BBj Widget Implementation
@@ -190,7 +193,7 @@ REM         it! = #fieldList!.iterator()
             bcFieldName$ = controlMap!.get(n$)
             control! = #getControlFromControlList(n$)
             if rec!.contains(bcFieldName$) then
-                #fillControl(control!, rec!.getFieldAsString(bcFieldName$))
+                #fillControl(control!, rec!, bcFieldName$)
             else
                 #clearControl(control!)
             endif
@@ -199,7 +202,8 @@ REM         it! = #fieldList!.iterator()
         #toggleIDFieldEnabled(Boolean.FALSE)
     methodend
     
-    method protected void fillControl(BBjControl control!, String value!)
+    method protected void fillControl(BBjControl control!, DataRow dr!, BBjString fieldName$)
+        value! = dr!.getFieldAsString(fieldName$)
         switch control!.getControlType()
             case BBjControl.LISTBUTTON_TYPE
                 vecKeys! = control!.getUserData()
@@ -219,6 +223,54 @@ REM         it! = #fieldList!.iterator()
                 if value!.equals("1") then value! = "true"
                 selected! = Boolean.parseBoolean(value!)
                 cast(BBjCheckBox, control!).setSelected(selected!)
+                break
+            case BBjControl.INPUTD_TYPE
+            case BBjControl.STATIC_TEXT_TYPE
+                if value!.trim().equals("") then break
+                attributesRecord! = #getBinder().getAttributesRecord()
+                fieldAttributes! = attributesRecord!.getFieldAttributes(fieldName$)
+                if fieldAttributes!.containsKey("MASK") then
+                    mask$ = fieldAttributes!.get("MASK")
+                    value! = DATE(JUL(value!, "%Yd-%Mz-%Dz"):mask$)
+                else
+                    locale! = stbl("!LOCALE")
+                    switch locale!.toUpperCase()
+                        case "DE_DE"
+                            dateMask$ = "dd.MM.yyyy"
+                            timestampMask$ = "dd.MM.yyyy HH:mm:ss"
+                        break
+                        case "EN_US"
+                            dateMask$ = "MM/dd/yyyy"
+                            timestampMask$ = "MM/dd/yyyy hh:mm:ss"
+                        break
+                        case "EN_GB"
+                            dateMask$ = "dd/MM/yyyy"
+                            timestampMask$ = "dd/MM/yyyy hh:mm:ss"
+                        break
+                        case "NL_NL"
+                            dateMask$ = "dd-MM-yyyy"
+                            timestampMask$ = "dd-MM-yyyy HH:mm:ss"
+                        break
+                        case default
+                            dateMask$ = "MM/dd/yyyy"
+                            timestampMask$ = "MM/dd/yyyy hh:mm:ss"
+                        break
+                    swend
+                    
+                    if dr!.getFieldType(fieldName$) = java.sql.Types.DATE then
+                        if value!.trim().length() = 10 then
+                            value! = value! + " 00:00:00.0"
+                        endif
+                        datetime! = LocalDateTime.parse(value!, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.S"))
+                        value! = datetime!.format(DateTimeFormatter.ofPattern(dateMask$))
+                    endif
+                    
+                    if dr!.getFieldType(fieldName$) = java.sql.Types.TIMESTAMP then
+                        datetime! = LocalDateTime.parse(value!, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.S"))
+                        value! = datetime!.format(DateTimeFormatter.ofPattern(timestampMask$))
+                    endif
+                endif
+                control!.setText(value!)
                 break
             case default
                 control!.setText(value!)
@@ -360,7 +412,24 @@ REM                 cast(BBjInputE, c!).setLength(precision!)
                 if fieldAttributes!.containsKey("MASK") then
                     mask! = fieldAttributes!.get("MASK")
                 else
-                    mask! = "%Yd-%Mz-%Dz"
+                    locale! = stbl("!LOCALE")
+                    switch locale!.toUpperCase()
+                        case "DE_DE"
+                            mask! = "%Dz.%Mz.%Y"
+                        break
+                        case "EN_US"
+                            mask! = "%Mz/%Dz/%Y"
+                        break
+                        case "EN_GB"
+                            mask! = "%Dz/%Mz/%Y"
+                        break
+                        case "NL_NL"
+                            mask! = "%Dz-%Mz-%Y"
+                        break
+                        case default
+                            mask! = "%Mz/%Dz/%Y"
+                        break
+                    swend
                 endif
                 cast(BBjInputD, c!).setMask(mask!)
                 #addCalendarButton(cast(BBjInputD, c!))
@@ -505,6 +574,16 @@ REM         calendarButton!.setImageFile("BusinessUIComponents/icon/ic_insert_in
     method public DataRow getFieldsForWrite()
     rem if not enabled: do not return any fields
         if !#cw!.isEnabled() then methodret new DataRow()
+        sel! = #getBinder().getSelection()
+        
+        if (sel!.size() <> 1) then
+            #clearForm()
+            methodret
+        fi
+        rs! = #getBinder().getRS()
+        rowkey$ = sel!.get(0)
+        rec! = rs!.get(rowkey$)
+        
         dr! = new DataRow()
         controlMap! = #getControlMap()
         it! = controlMap!.values().iterator()
@@ -518,7 +597,25 @@ REM         calendarButton!.setImageFile("BusinessUIComponents/icon/ic_insert_in
             value! = #getValueFromControl(control!)
             dr!.setFieldValue(field$, attributes!.getFieldType(field$), value!)
         wend
-        methodret dr!
+        
+        fieldNames! = rec!.getFieldNames()
+        writeDR! = new DataRow()
+        
+        for i = 0 to fieldNames!.size()-1
+            fieldName! = fieldNames!.get(i)
+            editable! = "0"; editable! = attributes!.getFieldAttribute(fieldName!, "EDITABLE",err=*next)
+            if !editable!.equals("1") and !editable!.equals("2") then continue
+            if dr!.contains(fieldName!)then
+                if editable!.equals("2") then
+                    writeDR!.setFieldValue(fieldName!, dr!.getFieldAsString(fieldName!))
+                endif
+                if !rec!.getFieldAsString(fieldName!).equals(dr!.getFieldAsString(fieldName!)) then
+                    writeDR!.setFieldValue(fieldName!, dr!.getFieldAsString(fieldName!))
+                endif
+            endif
+        next i
+        
+        methodret writeDR!
     methodend
     
     method protected String getValueFromControl(BBjControl control!)
