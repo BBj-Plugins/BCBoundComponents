@@ -319,7 +319,6 @@ REM         #setIcons()
         #fetchAndFillOptionListEdit()
         #setCallbacks()
         autoConfig! = #getAutoConfig()
-        escape
         if autoConfig! <> null() then
             config! = autoConfig!.getFieldAsString(#bc!.getFieldNameConfig())
             #stateHandler!.configurationChange(config!)
