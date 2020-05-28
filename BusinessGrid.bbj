@@ -427,6 +427,9 @@ REM                 escape
     method public void onSignal(int signal!, Object payload!)
         binder! = #getBinder()
         switch signal!
+            case binder!.SIGNAL_SAVE
+                #grid!.focus()
+                break
             case binder!.SIGNAL_TERMINATE
                 #cfgwidget!.saveAutoConfig(#retrieveState())
                 break
