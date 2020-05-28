@@ -41,81 +41,17 @@ class public ExportHtmlDialog extends Dialog
     methodend
 
     method public void createDialogWindow()
-REM         #createDialogWindow("Export Html", 105)
-REM         wnd! = #getmainWindow()
-REM         wnd! = cast(BBjTopLevelWindow, #buildEmbed(wnd!))
-REM         #fillFormWithConfigurations()
-REM         #addBaseButtons(65)
-REM         #setCallbacks()
-
-        dirOnly = 0
-        useSaveDialog = 1
-        if #getembedded() then dirOnly = 1, useSaveDialog = 0
-        path$ = #getPATH()
-        if #getcustomSaveLocation() <> "" then path$ = #getcustomSaveLocation()
-        #fileChooser! = new FileChooser(path$, 10, 10, #getpgmName() + "_HTML_" + str(#getembedded()), 1, dirOnly, 0, useSaveDialog)
+        if info(3,6) = "5" then
+            #export(#getpgmName() + ".html")
+        else
+            dirOnly = 0
+            useSaveDialog = 1
+            if #getembedded() then dirOnly = 1, useSaveDialog = 0
+            path$ = #getPATH()
+            if #getcustomSaveLocation() <> "" then path$ = #getcustomSaveLocation()
+            #fileChooser! = new FileChooser(path$, 10, 10, #getpgmName() + "_HTML_" + str(#getembedded()), 1, dirOnly, 0, useSaveDialog)
+        endif
     methodend
-    
-REM     method private BBjWindow buildEmbed(BBjWindow wnd!)        
-REM         #btnSaveLocation! = wnd!.addButton(2040, 8, 15, 150, 23, "Choose save location")
-REM         #stSaveLocation! = wnd!.addStaticText(3040, 170, 15, 400, 23, "")
-REM         
-REM         methodret wnd!
-REM     methodend
-    
-REM     method public BBjWindow getEmbedded(BBjWindow wnd!)
-REM         #setMainWindow(#buildEmbed(wnd!))
-REM         #fillFormWithConfigurations()
-REM         #setCallbacks()
-REM         methodret #getmainWindow()
-REM     methodend
-    
-REM     method protected void setCallbacks()
-REM         #super!.setCallbacks()
-REM         #btnSaveLocation!.setCallback(BBjButton.ON_BUTTON_PUSH, #this!, "onSaveLocationButtonPush")
-REM     methodend
-    
-REM     method public void onSaveLocationButtonPush(BBjButtonPushEvent ev!)
-REM         dirOnly = 0
-REM         useSaveDialog = 1
-REM         if #getembedded() then dirOnly = 1, useSaveDialog = 0
-REM         path$ = #getPATH()
-REM         if #getcustomSaveLocation() <> "" then path$ = #getcustomSaveLocation()
-REM         #fileChooser! = new FileChooser(path$, 10, 10, #getpgmName() + "_HTML_" + str(#getembedded()), 1, dirOnly, 0, useSaveDialog)
-REM     methodend
-    
-REM     method public void onExportButtonPush(BBjButtonPushEvent ev!)
-REM         rs! = #getgrid().getGrid().getRS()
-REM         if rs! = null() or rs!.isEmpty() then methodret
-REM         path$ = #stSaveLocation!.getText()
-REM         if cvs(path$,3) = "" then methodret
-REM         
-REM         writer! = new FileWriter(path$)
-REM         
-REM         #getexporter().writeHTML(rs!, writer!)
-REM         #getmainWindow().destroy()
-REM     methodend
-    
-REM     method protected void fillFormWithConfigurations()
-REM         config$ = #getConfigurations()
-REM         if config$ = "" then methodret
-REM         
-REM         dr! = DataRowJsonMapper.fromJson(config$)
-REM         dr! = cast(DataRow, dr!.getField("html").getValue())
-REM         #setCustomSaveLocation(dr!.getFieldAsString("path"))
-REM         
-REM         if #getembedded() then
-REM             if #getcustomSaveLocation() = "" then
-REM                 #stSaveLocation!.setText(#getPATH())
-REM             else
-REM                 #stSaveLocation!.setText(dr!.getFieldAsString("path"))
-REM             endif
-REM         endif
-REM     methodend
-    
-REM     method public BBjString getSaveLocation()
-REM         methodret #stSaveLocation!.getText()
-REM     methodend
     
     method public void onFileChooserFinish(BBjNamespaceEvent ev!)
         val! = ev!.getNewValue()
@@ -132,7 +68,11 @@ REM     methodend
         swend
         
         if !chosenDirOrFilePath!.toLowerCase().endsWith(".html") then chosenDirOrFilePath! = chosenDirOrFilePath! + ".html"
+
+        #export(chosenDirOrFilePath!)
+    methodend
         
+    method private void export(BBjString chosenDirOrFilePath!)
         rs! = #getgrid().getGrid().getRS()
         if rs! = null() or rs!.isEmpty() then methodret
         
@@ -153,7 +93,6 @@ REM     methodend
 			cf! = fs!.getClientFile(chosenDirOrFilePath!) 
 			cf!.copyToClient(tempFile!.getAbsolutePath())
 		endif
-		
     methodend
 
 classend

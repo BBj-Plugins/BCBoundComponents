@@ -51,6 +51,8 @@ class public EditToolbarComponent extends AbstractBCBoundWidget
     rem  */
     method public void redraw(Boolean f_init!)
         if (f_init!) then
+            #getCanvas().setOpaque(0)
+            
             #btn_new! = #getCanvas().addToolButton(100,0,0,20,20,"NEW")
             #btn_new!.setCallback(BBjAPI.ON_TOOL_BUTTON_PUSH,#this!,"onBtnNew")
             

@@ -29,8 +29,6 @@ use com.google.gson.JsonObject
 class public ExportXlsxDialog extends Dialog
 
     field private BBjCheckBox cbWriteHeader!
-REM     field private BBjButton btnSaveLocation!
-REM     field private BBjStaticText stSaveLocation!
     
     field private FileChooser fileChooser!
     
@@ -62,9 +60,6 @@ REM     field private BBjStaticText stSaveLocation!
         wnd!.addStaticText(2010, 8, 15, 150, 23, "Write header")
         #cbWriteHeader! = wnd!.addCheckBox(3010, 170, 15, 23, 23, "")
         
-REM         #btnSaveLocation! = wnd!.addButton(2020, 8, 40, 150, 23, "Choose save location")
-REM         #stSaveLocation! = wnd!.addStaticText(3020, 170, 40, 400, 23, "")
-        
         methodret wnd!
     methodend
     
@@ -77,54 +72,19 @@ REM         #stSaveLocation! = wnd!.addStaticText(3020, 170, 40, 400, 23, "")
     
     method protected void setCallbacks()
         #super!.setCallbacks()
-REM         #btnSaveLocation!.setCallback(BBjButton.ON_BUTTON_PUSH, #this!, "onSaveLocationButtonPush")
     methodend
     
-REM     method public void onSaveLocationButtonPush(BBjButtonPushEvent ev!)
-REM         dirOnly = 0
-REM         useSaveDialog = 1
-REM         if #getembedded() then dirOnly = 1, useSaveDialog = 0
-REM         path$ = #getPATH()
-REM         if #getcustomSaveLocation() <> "" then path$ = #getcustomSaveLocation()
-REM         #fileChooser! = new FileChooser(path$, 10, 10, #getpgmName() + "_XLSX_" + str(#getembedded()), 1, dirOnly, 0, useSaveDialog)
-REM     methodend
-    
     method public void onExportButtonPush(BBjButtonPushEvent ev!)
-REM         rs! = #getgrid().getGrid().getRS()
-REM         if rs! = null() or rs!.isEmpty() then methodret
-REM         path$ = #stSaveLocation!.getText()
-REM         if cvs(path$,3) = "" then methodret
-REM         
-REM         dr! = rs!.get(0)
-REM         
-REM         rem creating SheetConfiguration
-REM         declare SheetConfiguration sheetConfiguration!
-REM         sheetConfiguration! = new SheetConfiguration()
-REM 
-REM         visibleRowsVec! = #getgrid().getGrid().getColumnState().getVisibleColumns()
-REM         for i = visibleRowsVec!.size() - 1 to 0 step - 1
-REM             fieldName$ = visibleRowsVec!.get(i)
-REM             header! = dr!.getDataField(fieldName$).getAttribute("LABEL")
-REM             if header! = null() then header! = fieldName$
-REM             width = 1000
-REM             sheetConfiguration!.insertColumn(header!, width, fieldName$, k)
-REM         next i
-REM         
-REM         rem exporting
-REM         declare File outputFile!
-REM         outputFile! = new File(path$)
-REM         
-REM         writeHeader! = #cbWriteHeader!.isSelected()
-REM         
-REM         #getexporter().writeXLSX(rs!, outputFile!, writeHeader!, sheetConfiguration!)
-REM         #getmainWindow().destroy()
-        
-        dirOnly = 0
-        useSaveDialog = 1
-        if #getembedded() then dirOnly = 1, useSaveDialog = 0
-        path$ = #getPATH()
-        if #getcustomSaveLocation() <> "" then path$ = #getcustomSaveLocation()
-        #fileChooser! = new FileChooser(path$, 10, 10, #getpgmName() + "_XLSX_" + str(#getembedded()), 1, dirOnly, 0, useSaveDialog)
+        if info(3,6) = "5" then
+            #export(#getpgmName() + ".xlsx")
+        else
+            dirOnly = 0
+            useSaveDialog = 1
+            if #getembedded() then dirOnly = 1, useSaveDialog = 0
+            path$ = #getPATH()
+            if #getcustomSaveLocation() <> "" then path$ = #getcustomSaveLocation()
+            #fileChooser! = new FileChooser(path$, 10, 10, #getpgmName() + "_XLSX_" + str(#getembedded()), 1, dirOnly, 0, useSaveDialog)
+        endif
     methodend
     
     method public Boolean isWriteHeaderChecked()
@@ -146,15 +106,6 @@ REM         #getmainWindow().destroy()
         dr! = DataRowJsonMapper.fromJson(config$)
         dr! = cast(DataRow, dr!.getField("xlsx").getValue())
         #cbWriteHeader!.setSelected(dr!.getFieldAsNumber("writeHeader").intValue())
-REM         #setCustomSaveLocation(dr!.getFieldAsString("path"))
-        
-REM         if #getembedded() then
-REM             if #getcustomSaveLocation() = "" then
-REM                 #stSaveLocation!.setText(#getPATH())
-REM             else
-REM                 #stSaveLocation!.setText(dr!.getFieldAsString("path"))
-REM             endif
-REM         endif
     methodend
     
     method public void onFileChooserFinish(BBjNamespaceEvent ev!)
@@ -173,10 +124,13 @@ REM         endif
         
         if !chosenDirOrFilePath!.toLowerCase().endsWith(".xlsx") then chosenDirOrFilePath! = chosenDirOrFilePath! + ".xlsx"
 
+        #export(chosenDirOrFilePath!)
+    methodend
+    
+    method private void export(BBjString chosenDirOrFilePath!)
         #disableDialogButtons()
             
         rs! = #getgrid().getGrid().getRS()
-REM         if rs! = null() or rs!.isEmpty() then methodret
         
         dr! = rs!.get(0)
         
@@ -195,24 +149,23 @@ REM         if rs! = null() or rs!.isEmpty() then methodret
         
         rem exporting
         declare File outputFile!
-        rem outputFile! = new File(chosenDirOrFilePath!)
-		if info(3,6) = "5" then
-			outputFile! = java.io.File.createTempFile("tempFile", ".xlsx")
-			outputFile!.createNewFile()
-		else
-			outputFile! = new File(chosenDirOrFilePath!)
-		endif
+        if info(3,6) = "5" then
+            outputFile! = java.io.File.createTempFile("tempFile", ".xlsx")
+            outputFile!.createNewFile()
+        else
+            outputFile! = new File(chosenDirOrFilePath!)
+        endif
         
         writeHeader! = #cbWriteHeader!.isSelected()
-		
+        
         #getexporter().writeXLSX(rs!, outputFile!, writeHeader!, sheetConfiguration!)
-		
-		if info(3,6) = "5" then
-			fs! = bbjapi().getThinClient().getClientFileSystem() 
-			cf! = fs!.getClientFile(chosenDirOrFilePath!) 
-			cf!.copyToClient(outputFile!.getAbsolutePath())
-		endif
-		
+        
+        if info(3,6) = "5" then
+            fs! = bbjapi().getThinClient().getClientFileSystem() 
+            cf! = fs!.getClientFile(chosenDirOrFilePath!)
+            cf!.copyToClient(outputFile!.getAbsolutePath())
+        endif
+        
         #saveConfiguration()
         #getmainWindow().destroy()
     methodend

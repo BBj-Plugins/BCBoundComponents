@@ -98,8 +98,17 @@ class public BusinessGrid extends AbstractBCBoundWidget implements IPersistentSt
             #exportButton! = new ExportMenuButton(#getCanvas(), 202, 0, 5, 43, 20)
             #exportButton!.setGrid(#this!)
             #exportButton!.setBC(new CustomConfigurationsBC(info(3,2), "exportButtonConfigurations"))
-            #exportButton!.setProgramName(pgm(-2, 0))
-
+            
+            pgmName! = pgm(-1)
+            declare String[] split!
+            split! = CAST(String[], pgmName!.split("\\"))
+            if split!.length > 0 then
+                pgmName$ = (split![split!.length-1]).replace(".bbj", "")
+            else
+                pgmName$ = "export"
+            endif
+            #exportButton!.setProgramName(pgmName$)
+            
             #fitToGridButton! = #getCanvas().addMenuButton(203, 48, 5, 20, 20, "")
             #fitToGridButton!.setBorderPainted(Boolean.TRUE)
             #fitToGridButton!.setImageSize(23, 23)
@@ -184,10 +193,46 @@ REM     methodend
         rs! = #getBinder().getRS()
         ar! = #getBinder().getAttributesRecord()
         if rs! = null() or ar! = null() then methodret
-
         if rs!.getColumnCount() and !(ar!.isEmpty()) then
 
             if !(#columnConfigurationSet!) then
+            
+                locale! = stbl("!LOCALE")
+                switch locale!.toUpperCase()
+                    case "DE_DE"
+                        dateMask$ = "%Dz.%Mz.%Y"
+                        timestampMask$ = "%Dz.%Mz.%Y %H:%m:%s"
+                        numberGroupSeparator$ = "."
+                        numberDecimalSeparator$ = ","
+                    break
+                    case "EN_US"
+                        dateMask$ = "%Mz/%Dz/%Y"
+                        timestampMask$ = "%Mz/%Dz/%Y %h:%m:%s"
+                        numberGroupSeparator$ = ","
+                        numberDecimalSeparator$ = "."
+                    break
+                    case "EN_GB"
+                        dateMask$ = "%Dz/%Mz/%Y"
+                        timestampMask$ = "%Dz/%Mz/%Y %h:%m:%s"
+                        numberGroupSeparator$ = ","
+                        numberDecimalSeparator$ = "."
+                    break
+                    case "NL_NL"
+                        dateMask$ = "%Dz-%Mz-%Y"
+                        timestampMask$ = "%Dz-%Mz-%Y %H:%m:%s"
+                        numberGroupSeparator$ = "."
+                        numberDecimalSeparator$ = ","
+                    break
+                    case default
+                        dateMask$ = "%Mz/%Dz/%Y"
+                        timestampMask$ = "%Mz/%Dz/%Y %h:%m:%s"
+                        numberGroupSeparator$ = ","
+                        numberDecimalSeparator$ = "."
+                    break
+                swend
+        
+                #grid!.getClientContext().addProperty("numberGroupSep",numberGroupSeparator$, err=*next)        
+                #grid!.getClientContext().addProperty("numberDecimalSep",numberDecimalSeparator$, err=*next)
 
                 rem Render grid columns based on the attributes record (w/o any data)
                 rsa! = new ResultSet()
@@ -217,6 +262,16 @@ REM     methodend
                     if type = java.sql.Types.DATE or type = java.sql.Types.TIME or type = java.sql.Types.BOOLEAN then
                         column!.setHeaderAlignment(#grid!.GRID_ALIGN_CENTER())
                         column!.setAlignment(#grid!.GRID_ALIGN_CENTER())
+                        if type = java.sql.Types.DATE then
+                            column! = #grid!.getColumn(fieldName$)
+                            vfe! = column!.getValueFormatterExpression()
+                            vfe!.setMask(dateMask$)
+                        endif
+                        if type = java.sql.Types.TIMESTAMP then
+                            column! = #grid!.getColumn(fieldName$)
+                            vfe! = column!.getValueFormatterExpression()
+                            vfe!.setMask(timestampMask$)
+                        endif
                     else
                         if SqlTypeNames.isNumericType(type) then
                             column!.setHeaderAlignment(#grid!.GRID_ALIGN_RIGHT())
@@ -393,5 +448,5 @@ REM                 escape
     method private void fitToGrid()
         if #grid!<>null() then #grid!.setFitToGrid()
     methodend
-
+    
 classend
