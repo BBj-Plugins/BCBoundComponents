@@ -573,6 +573,16 @@ REM         calendarButton!.setImageFile("BusinessUIComponents/icon/ic_insert_in
     method public DataRow getFieldsForWrite()
     rem if not enabled: do not return any fields
         if !#cw!.isEnabled() then methodret new DataRow()
+        sel! = #getBinder().getSelection()
+        
+        if (sel!.size() <> 1) then
+            #clearForm()
+            methodret
+        fi
+        rs! = #getBinder().getRS()
+        rowkey$ = sel!.get(0)
+        rec! = rs!.get(rowkey$)
+        
         dr! = new DataRow()
         controlMap! = #getControlMap()
         it! = controlMap!.values().iterator()
@@ -586,7 +596,25 @@ REM         calendarButton!.setImageFile("BusinessUIComponents/icon/ic_insert_in
             value! = #getValueFromControl(control!)
             dr!.setFieldValue(field$, attributes!.getFieldType(field$), value!)
         wend
-        methodret dr!
+        
+        fieldNames! = rec!.getFieldNames()
+        writeDR! = new DataRow()
+        
+        for i = 0 to fieldNames!.size()-1
+            fieldName! = fieldNames!.get(i)
+            editable! = "0"; editable! = attributes!.getFieldAttribute(fieldName!, "EDITABLE",err=*next)
+            if !editable!.equals("1") and !editable!.equals("2") then continue
+            if dr!.contains(fieldName!)then
+                if editable!.equals("2") then
+                    writeDR!.setFieldValue(fieldName!, dr!.getFieldAsString(fieldName!))
+                endif
+                if !rec!.getFieldAsString(fieldName!).equals(dr!.getFieldAsString(fieldName!)) then
+                    writeDR!.setFieldValue(fieldName!, dr!.getFieldAsString(fieldName!))
+                endif
+            endif
+        next i
+        
+        methodret writeDR!
     methodend
     
     method protected String getValueFromControl(BBjControl control!)
