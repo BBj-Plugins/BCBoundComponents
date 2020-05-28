@@ -264,6 +264,7 @@ REM                 escape
             if rs! <> null() and rs!.size() then
                 #initialRetrieve! = Boolean.FALSE
                 #grid!.setSelectedRow(0)
+                #grid!.focus()
             endif
         endif
     methodend
