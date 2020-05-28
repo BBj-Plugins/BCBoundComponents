@@ -262,15 +262,22 @@ REM     methodend
                     if type = java.sql.Types.DATE or type = java.sql.Types.TIME or type = java.sql.Types.BOOLEAN then
                         column!.setHeaderAlignment(#grid!.GRID_ALIGN_CENTER())
                         column!.setAlignment(#grid!.GRID_ALIGN_CENTER())
-                        if type = java.sql.Types.DATE then
+                        if fa!.containsKey("MASK") then 
+                            mask$ = cvs(fa!.get("MASK"),3)
                             column! = #grid!.getColumn(fieldName$)
                             vfe! = column!.getValueFormatterExpression()
-                            vfe!.setMask(dateMask$)
-                        endif
-                        if type = java.sql.Types.TIMESTAMP then
-                            column! = #grid!.getColumn(fieldName$)
-                            vfe! = column!.getValueFormatterExpression()
-                            vfe!.setMask(timestampMask$)
+                            vfe!.setMask(mask$)
+                        else
+                            if type = java.sql.Types.DATE then
+                                column! = #grid!.getColumn(fieldName$)
+                                vfe! = column!.getValueFormatterExpression()
+                                vfe!.setMask(dateMask$)
+                            endif
+                            if type = java.sql.Types.TIMESTAMP then
+                                column! = #grid!.getColumn(fieldName$)
+                                vfe! = column!.getValueFormatterExpression()
+                                vfe!.setMask(timestampMask$)
+                            endif
                         endif
                     else
                         if SqlTypeNames.isNumericType(type) then
