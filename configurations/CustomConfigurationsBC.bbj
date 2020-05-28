@@ -20,7 +20,7 @@ use java.util.regex.Pattern
 
 class public CustomConfigurationsBC implements BusinessComponent,IConfigurationsBC
     field protected ConfigurationsBC configurationsBC!
-
+    
     method public CustomConfigurationsBC(String userName!)
         bbjHome! = new File(System.getProperty("basis.BBjHome"),err=*next)
         if bbjHome! <> null() then
