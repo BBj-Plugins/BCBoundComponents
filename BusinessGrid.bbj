@@ -346,8 +346,8 @@ REM                 escape
             s! = new BBjVector()
             while it!.hasNext()
                 rowkey$ = it!.next()
-                i = rs!.indexOf(rowkey$)
-                s!.addItem(i)
+REM                 i = rs!.indexOf(rowkey$)
+                s!.addItem(rowkey$)
             wend
 
             #grid!.deselectAll()
