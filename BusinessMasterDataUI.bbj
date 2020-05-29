@@ -1,4 +1,5 @@
 use ::BBjWidget/BBjWidget.bbj::BBjWidget
+use ::BusinessUIComponents/AbstractBCBoundWidget.bbj::AbstractBCBoundWidget
 use ::BusinessUIComponents/BusinessGrid.bbj::BusinessGrid
 use ::BusinessUIComponents/bound/TestComponent.bbj::TestComponent
 use ::BusinessUIComponents/bound/NavigatorComponent.bbj::NavigatorComponent
@@ -8,7 +9,7 @@ use ::BusinessUIComponents/bound/SearchBar.bbj::SearchBar
 use ::BusinessUIComponents/bound/BCErrorHandler.bbj::BCErrorHandler
 use ::BusinessUIComponents/bound/WindowCloseHandler.bbj::WindowCloseHandler
 use ::BusinessUIComponents/unbound/HorizontalSplitter.bbj::HorizontalSplitter
-use ::BusinessUIComponents/configurations/PropertiesManager.bbj::PropertiesManager
+use ::BusinessUIComponents/configurations/IPropertiesManager.bbj::IPropertiesManager
 use com.basiscomponents.bc.BCBinder
 use com.basiscomponents.db.DataRow
 use com.basiscomponents.db.ResultSet
@@ -22,6 +23,7 @@ class public BusinessMasterDataUI
     field protected BBjTabCtrl formTabCtrl!
     field protected BCBinder binder!
     field protected BBjSysGui sysgui!
+    field protected BBjVector componentsWithProperties! = new BBjVector()
     
 
     method public BusinessMasterDataUI( BBjString BC$, BBjString TITLE$)
@@ -62,9 +64,27 @@ class public BusinessMasterDataUI
         process_events
     methodend
     
+    rem ######### propertiesManager Setters #########
+    
+    method public void setTextPropertiesManager(IPropertiesManager pm!)
+        it! = #componentsWithProperties!.iterator()
+        while it!.hasNext()
+            component! = it!.next()
+            cast(AbstractBCBoundWidget, component!).setTextPropertiesManager(pm!)
+        wend
+    methodend
+    
+    method public void setUIPropertiesManager(IPropertiesManager pm!)
+        it! = #componentsWithProperties!.iterator()
+        while it!.hasNext()
+            component! = it!.next()
+            cast(AbstractBCBoundWidget, component!).setUIPropertiesManager(pm!)
+        wend
+    methodend
+    
     rem ######### add methods for BC bound components #########
     
-    method public void addForms(ResultSet form_defs!)
+    method public void addForms(ResultSet form_defs!, HashMap controlPrefixMap!)
         cwIdStart = 200
         it! = form_defs!.iterator()
         while it!.hasNext()
@@ -76,21 +96,27 @@ class public BusinessMasterDataUI
             else
                 form! = new SimpleFormComponent(formCW!,100,0,5,300,300)
                 form!.setForm(dr!.getFieldAsString("ARC"), dr!.getFieldAsNumber("CWID"))
+                #componentsWithProperties!.add(form!)
             fi
+            if controlPrefixMap! <> null() then
+                form!.setControlPrefixMap(controlPrefixMap!)
+            endif
             #forms!.addItem(form!)
             #binder!.register(form!)
             cwIdStart = cwIdStart + 1
         wend
     methodend
     
-    method public void addEditToolbar()
-        edittb! = new EditToolbarComponent(#wnd!,111,2,2,100,32)
+    method public void addEditToolbar(BBjNumber x, BBjNumber y)
+        edittb! = new EditToolbarComponent(#wnd!,111,x,y,100,32)
         #binder!.register(edittb!)
+        #componentsWithProperties!.add(edittb!)
     methodend
     
-    method public void addBusinessGrid()
-        bgrid! = new BusinessGrid(#splitter!.getTopCanvas(),160,0,0,960,500)
+    method public void addBusinessGrid(BBjNumber x, BBjNumber y)
+        bgrid! = new BusinessGrid(#splitter!.getTopCanvas(),160,x,y,960,500)
         #binder!.register(bgrid!)
+        #componentsWithProperties!.add(bgrid!)
     methodend
     method public void addBCErrorHandler()
         #binder!.register(new BCErrorHandler())
@@ -130,14 +156,15 @@ classend
 
 declare ResultSet form_defs!
 
+enter form_defs!, controlPrefixMap!, BC$, TITLE$
 enter form_defs!, BC$, TITLE$
 md! = new BusinessMasterDataUI(BC$, TITLE$)
 
 md!.addMenuBar()
-md!.addEditToolbar()
-md!.addBusinessGrid()
+md!.addEditToolbar(2,2)
+md!.addBusinessGrid(0,0)
 md!.addBCErrorHandler()
 md!.addWindowCloseHandler()
-md!.addForms(form_defs!)
+md!.addForms(form_defs!, controlPrefixMap!)
 
 md!.doModal()
