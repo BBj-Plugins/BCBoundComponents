@@ -107,14 +107,14 @@ class public BusinessMasterDataUI
         wend
     methodend
     
-    method public void addEditToolbar(BBjNumber x, BBjNumber y)
-        edittb! = new EditToolbarComponent(#wnd!,111,x,y,100,32)
+    method public void addEditToolbar(BBjInt x!, BBjInt y!)
+        edittb! = new EditToolbarComponent(#wnd!,111,x!,y!,100,32)
         #binder!.register(edittb!)
         #componentsWithProperties!.add(edittb!)
     methodend
     
-    method public void addBusinessGrid(BBjNumber x, BBjNumber y)
-        bgrid! = new BusinessGrid(#splitter!.getTopCanvas(),160,x,y,960,500)
+    method public void addBusinessGrid(BBjInt x!, BBjInt y!)
+        bgrid! = new BusinessGrid(#splitter!.getTopCanvas(),160,x!,y!,960,500)
         #binder!.register(bgrid!)
         #componentsWithProperties!.add(bgrid!)
     methodend
@@ -157,7 +157,7 @@ classend
 declare ResultSet form_defs!
 
 enter form_defs!, controlPrefixMap!, BC$, TITLE$
-enter form_defs!, BC$, TITLE$
+REM enter form_defs!, BC$, TITLE$
 md! = new BusinessMasterDataUI(BC$, TITLE$)
 
 md!.addMenuBar()
