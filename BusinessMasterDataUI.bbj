@@ -1,3 +1,4 @@
+use ::BBjWidget/BBjWidget.bbj::BBjWidget
 use ::BusinessUIComponents/BusinessGrid.bbj::BusinessGrid
 use ::BusinessUIComponents/bound/TestComponent.bbj::TestComponent
 use ::BusinessUIComponents/bound/NavigatorComponent.bbj::NavigatorComponent
@@ -13,92 +14,130 @@ use com.basiscomponents.db.DataRow
 use com.basiscomponents.db.ResultSet
 use java.util.HashMap
 
+class public BusinessMasterDataUI
+
+    field protected BBjTopLevelWindow wnd!
+    field protected HorizontalSplitter splitter!
+    field protected BBjVector forms!
+    field protected BBjTabCtrl formTabCtrl!
+    field protected BCBinder binder!
+    field protected BBjSysGui sysgui!
+    
+
+    method public BusinessMasterDataUI( BBjString BC$, BBjString TITLE$)
+        ? 'HIDE'
+        #sysgui! = BBjAPI().openSysGui("X0")
+        #sysgui!.setRepaintEnabled(0)
+        
+        if info(3,6)="5" then
+            #wnd! = #sysgui!.addWindow(100,100,1020,760,TITLE$,$01001010$)
+        else
+            #wnd! = #sysgui!.addWindow(100,100,1020,760,TITLE$,$00000093$)
+        fi
+        
+        #wnd!.setCallback(BBjAPI.ON_RESIZE, #this!,"resize")
+        
+        #splitter! = new HorizontalSplitter(#wnd!,112,2,25,890,800)
+        
+        #splitter!.setTopCtrl(bgrid!)
+        
+        #formTabCtrl! = #splitter!.getBottomCanvas().addTabCtrl(115, 0, 0, 500, 500)
+        #forms! = new BBjVector()
+        #splitter!.setBottomCtrl(#formTabCtrl!)
+        
+        bc! = eval("new "+BC$+"()")
+        
+        #binder! = new BCBinder(bc!)
+        #binder!.setDebugLevel(1)
+    methodend
+    
+    method public void doModal()
+        #binder!.retrieve()
+        
+        #delayed_resize(null())
+        
+        #sysgui!.setRepaintEnabled(1)
+        #wnd!.setVisible(1)
+        
+        process_events
+    methodend
+    
+    rem ######### add methods for BC bound components #########
+    
+    method public void addForms(ResultSet form_defs!)
+        cwIdStart = 200
+        it! = form_defs!.iterator()
+        while it!.hasNext()
+            dr! = it!.next()
+            formCW! = #splitter!.getBottomCanvas().addChildWindow(cwIdStart + i,0,0,500,500,"",$00000800$, #sysgui!.getAvailableContext(),$$)
+            #formTabCtrl!.addTab(dr!.getFieldAsString("TABNAME"), formCW!)
+            if (dr!.contains("CLASSNAME")) then
+                form! = eval("new "+dr!.getFieldAsString("CLASSNAME")+"(formCW!,100,0,5,300,300)")
+            else
+                form! = new SimpleFormComponent(formCW!,100,0,5,300,300)
+                form!.setForm(dr!.getFieldAsString("ARC"), dr!.getFieldAsNumber("CWID"))
+            fi
+            #forms!.addItem(form!)
+            #binder!.register(form!)
+            cwIdStart = cwIdStart + 1
+        wend
+    methodend
+    
+    method public void addEditToolbar()
+        edittb! = new EditToolbarComponent(#wnd!,111,2,2,100,32)
+        #binder!.register(edittb!)
+    methodend
+    
+    method public void addBusinessGrid()
+        bgrid! = new BusinessGrid(#splitter!.getTopCanvas(),160,0,0,960,500)
+        #binder!.register(bgrid!)
+    methodend
+    method public void addBCErrorHandler()
+        #binder!.register(new BCErrorHandler())
+    methodend
+    
+    method public void addWindowCloseHandler()
+        #binder!.register(new WindowCloseHandler(#wnd!))
+    methodend
+    
+    method public void addMenuBar()
+        menubar! = #wnd!.addMenuBar()
+        fileMenu! = menubar!.addMenu(401, "File")
+        recordMenu! = menubar!.addMenu(402, "Record")
+        helpMenu! = menubar!.addMenu(403, "Help")
+        statusbar! = #wnd!.addStatusBar(450)
+    methodend
+    
+    rem ############## Events ######################
+    
+    method public void resize(BBjEvent ev!)
+        BBjAPI().removeTimer("resize",err=*next)
+        BBjAPI().createTimer("resize", .4, #this!, "delayed_resize")
+    methodend
+    
+    method public void delayed_resize(BBjEvent ev!)
+        BBjAPI().removeTimer("resize",err=*next)
+        w = #wnd!.getWidth()
+        h = #wnd!.getHeight()
+        #splitter!.setSize(w-4 ,h-25)
+        
+        for i = 0 to #forms!.size() - 1
+          cast(BBjWidget, #forms!.getItem(i)).setSize(#formTabCtrl!.getWidth(), #formTabCtrl!.getHeight())
+        next i
+    methodend
+
+classend
+
 declare ResultSet form_defs!
 
-enter form_defs!, BC$, TITLE$ 
+enter form_defs!, BC$, TITLE$
+md! = new BusinessMasterDataUI(BC$, TITLE$)
 
-? 'HIDE'
-sysgui! = BBjAPI().openSysGui("X0")
-sysgui!.setRepaintEnabled(0)
+md!.addMenuBar()
+md!.addEditToolbar()
+md!.addBusinessGrid()
+md!.addBCErrorHandler()
+md!.addWindowCloseHandler()
+md!.addForms(form_defs!)
 
-if info(3,6)="5" then
-    wnd! = sysgui!.addWindow(100,100,1020,760,TITLE$,$01001010$)
-else
-    wnd! = sysgui!.addWindow(100,100,1020,760,TITLE$,$00000093$)
-fi
-
-wnd!.setCallback(BBjAPI.ON_RESIZE,"resize")
-
-edittb! = new EditToolbarComponent(wnd!,111,2,2,100,32)
-splitter! = new HorizontalSplitter(wnd!,112,2,25,890,800)
-
-bgrid! = new BusinessGrid(splitter!.getTopCanvas(),160,0,0,960,500)
-bgrid!.setConfigurationWidgetUser(info(3,2))
-splitter!.setTopCtrl(bgrid!)
-
-tabCtrl! = splitter!.getBottomCanvas().addTabCtrl(115, 0, 0, 500, 500)
-splitter!.setBottomCtrl(tabCtrl!)
-
-cwIdStart = 200
-forms! = new BBjVector()
-it! = form_defs!.iterator()
-while it!.hasNext()
-    dr! = it!.next()
-    formCW! = splitter!.getBottomCanvas().addChildWindow(cwIdStart + i,0,0,500,500,"",$00000800$,sysgui!.getAvailableContext(),$$)
-    tabCtrl!.addTab(dr!.getFieldAsString("TABNAME"), formCW!)
-    if (dr!.contains("CLASSNAME")) then
-        form! = eval("new "+dr!.getFieldAsString("CLASSNAME")+"(formCW!,100,0,5,300,300)")
-    else
-        form! = new SimpleFormComponent(formCW!,100,0,5,300,300)
-        form!.setForm(dr!.getFieldAsString("ARC"), dr!.getFieldAsNumber("CWID"))
-    fi
-    forms!.addItem(form!)
-wend
-
-menubar! = wnd!.addMenuBar()
-fileMenu! = menubar!.addMenu(401, "File")
-recordMenu! = menubar!.addMenu(402, "Record")
-helpMenu! = menubar!.addMenu(403, "Help")
-statusbar! = wnd!.addStatusBar(450)
-
-bc! = eval("new "+BC$+"()")
-
-binder! = new BCBinder(bc!)
-binder!.setDebugLevel(1)
-
-binder!.register(edittb!)
-binder!.register(bgrid!)
-binder!.register(new BCErrorHandler())
-binder!.register(new WindowCloseHandler(wnd!))
-
-for i = 0 to forms!.size() - 1
-    binder!.register(forms!.getItem(i))
-next i
-
-binder!.retrieve()
-
-gosub delayed_resize
-
-sysgui!.setRepaintEnabled(1)
-wnd!.setVisible(1)
-
-process_events
-
-resize:
-  BBjAPI().removeTimer("resize",err=*next)
-  BBjAPI().createTimer("resize",.4,"delayed_resize")
-return
-
-delayed_resize:
-  BBjAPI().removeTimer("resize",err=*next)
-  w = wnd!.getWidth()
-  h = wnd!.getHeight()
-  splitter!.setSize(w-4 ,h-25)
-  
-  for i = 0 to forms!.size() - 1
-    forms!.getItem(i).setSize(tabCtrl!.getWidth(), tabCtrl!.getHeight())
-  next i
-return
-
-byebye:
-    bye
+md!.doModal()
