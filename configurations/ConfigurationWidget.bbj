@@ -318,6 +318,7 @@ REM         escape
 REM         #setIcons()
         #fetchAndFillOptionListEdit()
         #setCallbacks()
+        rem first try to apply auto config, that should be the last opened config which would be saved on program exit
         autoConfig! = #getAutoConfig()
         if autoConfig! <> null() then
             config! = autoConfig!.getFieldAsString(#bc!.getFieldNameConfig())
@@ -325,8 +326,22 @@ REM         #setIcons()
             
             methodret
         endif
+        rem if no autoconfig, apply the default config and select it in the list edit
         if !#availableConfigs!.isEmpty() then 
             #selectedIndex = 0
+            effectiveConfigs! = #bc!.getEffectiveConfiguration()
+            if !effectiveConfigs!.size() then break
+            effectiveConfig! = effectiveConfigs!.get(0)
+            #availableConfigs!.iterator()
+            if #availableConfigs!.size() then
+                for i=0 to #availableConfigs!.size() - 1
+                    availableConfig! = #availableConfigs!.get(i)
+                    if availableConfig!.equals(effectiveConfig!) then
+                        #selectedIndex = i
+                        break
+                    endif
+                next i
+            endif
             #listEditOptions!.selectIndex(#selectedIndex)
             #fireConfigurationChangeEvent()
         endif
