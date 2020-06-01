@@ -330,7 +330,7 @@ REM         #setIcons()
         if !#availableConfigs!.isEmpty() then 
             #selectedIndex = 0
             effectiveConfigs! = #bc!.getEffectiveConfiguration()
-            if !effectiveConfigs!.size() then break
+            if !effectiveConfigs!.size() then methodret
             effectiveConfig! = effectiveConfigs!.get(0)
             #availableConfigs!.iterator()
             if #availableConfigs!.size() then
