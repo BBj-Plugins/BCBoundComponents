@@ -22,7 +22,7 @@ forms!.add(dr!)
 BC$="::BusinessUIComponents/ExampleBCs/ChileCustomerBC.bbj::ChileCustomerBC"
 TITLE$ = "ChileCustomer Demo"
 
-CALL "BusinessUIComponents/BusinessMasterDataUI.bbj", forms!, null(), BC$, TITLE$
+CALL "BusinessUIComponents/BusinessMasterDataUI.bbj", forms!, BC$, TITLE$
 
 REM resize:
 REM REM   if timerActive! then return

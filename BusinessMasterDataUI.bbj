@@ -156,8 +156,11 @@ classend
 
 declare ResultSet form_defs!
 
-enter form_defs!, controlPrefixMap!, BC$, TITLE$
-REM enter form_defs!, BC$, TITLE$
+rem controlPrefixMap! is optional
+controlPrefixMap! = null()
+enter form_defs!, BC$, TITLE$, controlPrefixMap!, err=*next
+
+
 md! = new BusinessMasterDataUI(BC$, TITLE$)
 
 md!.addMenuBar()
