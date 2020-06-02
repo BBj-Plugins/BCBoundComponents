@@ -100,7 +100,6 @@ class public EditToolbarComponent extends AbstractBCBoundWidget
     
     methodend
 
-
     method private void enableControls()
         if #getBinder() <> null() then
             #btn_new!.setEnabled(#dirty! = BBjAPI.FALSE)

@@ -1,0 +1,383 @@
+REM /**
+REM  * MenuBarUIC.bbj
+REM  * @author mneu
+REM  *
+REM  */
+
+use ::BusinessUIComponents/AbstractBCBoundWidget.bbj::AbstractBCBoundWidget
+use ::BusinessUIComponents/configurations/IPropertiesManager.bbj::IPropertiesManager
+use ::BusinessUIComponents/configurations/PropertiesManager.bbj::PropertiesManager
+use ::BusinessUIComponents/configurations/LocalizedPropertiesManager.bbj::LocalizedPropertiesManager
+use com.basiscomponents.bc.BCBound
+use com.basiscomponents.bc.BCBinder
+use com.basiscomponents.db.DataRow
+
+class public MenuBar extends AbstractBCBoundWidget
+
+    field public static BBjNumber MENU_FILE    = 2001
+    field public static BBjNumber MENU_RECORD  = 2002
+    field public static BBjNumber MENU_HELP    = 2003
+
+    field private static BBjString MENU_NAME_FILE$    = "FILE"
+    field private static BBjString MENU_NAME_RECORD$  = "RECORD"
+    field private static BBjString MENU_NAME_HELP$    = "HELP"
+    
+    field private static BBjString MENU_TEXT_FILE$    = "MENU_TEXT_FILE"
+    field private static BBjString MENU_TEXT_RECORD$  = "MENU_TEXT_RECORD"
+    field private static BBjString MENU_TEXT_HELP$    = "MENU_TEXT_HELP"
+    
+    field public static BBjNumber MENU_ITEM_RUN             = 1001
+    field public static BBjNumber MENU_ITEM_SAVE            = 1002
+    field public static BBjNumber MENU_ITEM_CLOSE           = 1003
+    field public static BBjNumber MENU_ITEM_CLEAR           = 1004
+    field public static BBjNumber MENU_ITEM_NEW_RECORD      = 1006
+    field public static BBjNumber MENU_ITEM_PROGRAM_INFO    = 1007
+    
+    field private static BBjString MENU_ITEM_NAME_RUN$           = "RUN"
+    field private static BBjString MENU_ITEM_NAME_SAVE$          = "SAVE"
+    field private static BBjString MENU_ITEM_NAME_CLOSE$         = "CLOSE"
+    field private static BBjString MENU_ITEM_NAME_CLEAR$         = "CLEAR"
+    field private static BBjString MENU_ITEM_NAME_NEW_RECORD$    = "NEW_RECORD"
+    field private static BBjString MENU_ITEM_NAME_PROGRAM_INFO$  = "PROGRAM_INFO"
+    
+    field private static BBjString MENU_ITEM_TEXT_RUN$           = "MENU_ITEM_TEXT_RUN"
+    field private static BBjString MENU_ITEM_TEXT_SAVE$          = "MENU_ITEM_TEXT_SAVE"
+    field private static BBjString MENU_ITEM_TEXT_CLOSE$         = "MENU_ITEM_TEXT_CLOSE"
+    field private static BBjString MENU_ITEM_TEXT_CLEAR$         = "MENU_ITEM_TEXT_CLEAR"
+    field private static BBjString MENU_ITEM_TEXT_NEW_RECORD$    = "MENU_ITEM_TEXT_NEW_RECORD"
+    field private static BBjString MENU_ITEM_TEXT_PROGRAM_INFO$  = "MENU_ITEM_TEXT_PROGRAM_INFO"
+    
+    field private static BBjString MENU_ITEM_IMAGE_ID_RUN$           = "00014"
+    field private static BBjString MENU_ITEM_IMAGE_ID_SAVE$          = "00004"
+    field private static BBjString MENU_ITEM_IMAGE_ID_CLOSE$         = ""
+    field private static BBjString MENU_ITEM_IMAGE_ID_CLEAR$         = "00015"
+    field private static BBjString MENU_ITEM_IMAGE_ID_NEW_RECORD$    = "00000"
+    field private static BBjString MENU_ITEM_IMAGE_ID_PROGRAM_INFO$  = ""
+    
+    field private static BBjString MENU_ITEM_ACCELERATOR_RUN$ = $2005$
+    field private static BBjString MENU_ITEM_ACCELERATOR_SAVE$ = $2013$
+    field private static BBjString MENU_ITEM_ACCELERATOR_CLOSE$ = $214E$
+    field private static BBjString MENU_ITEM_ACCELERATOR_CLEAR$ = $2011$
+    field private static BBjString MENU_ITEM_ACCELERATOR_NEW_RECORD$ = $200E$
+    field private static BBjString MENU_ITEM_ACCELERATOR_PROGRAM_INFO$ = $0000$
+
+    field private BBjVector menuList!
+    field private BBjVector menuItemList!
+    
+    field private BBjMenuBar menuBar!
+    field private BCBinder binder!
+    
+
+    method public MenuBar()
+        #super()
+        #menuList! = new BBjVector()
+        #menuItemList! = new BBjVector()
+    methodend
+    
+    method public MenuBar(BBjTopLevelWindow cw!)
+        #menuList! = new BBjVector()
+        #menuItemList! = new BBjVector()
+        #menuBar! = cw!.addMenuBar()
+        #addPresetMenuItem(#MENU_ITEM_CLOSE)
+    methodend
+    
+    method public void initMasterData()
+        #setPresetMenuItemCallback(#MENU_ITEM_CLOSE, #this!, "closeProgram")
+        #addPresetMenuItem(#MENU_ITEM_SAVE)
+        #addPresetMenuItem(#MENU_ITEM_NEW_RECORD)
+REM         #addPresetMenuItem(#MENU_ITEM_PROGRAM_INFO) rem needed?
+        #setMenuItemEnabled(#MENU_ITEM_NAME_SAVE$, Boolean.FALSE)
+    methodend
+    
+    method public void addPresetMenuItem(BBjNumber menuItemID)
+        switch menuItemID
+            case #MENU_ITEM_RUN
+                menuName$ = #MENU_NAME_RECORD$
+                menuItemName$ = #MENU_ITEM_NAME_RUN$
+                menuItemText$ = #MENU_ITEM_TEXT_RUN$
+                imageID$ = #MENU_ITEM_IMAGE_ID_RUN$
+                callbackMethodName$ = "performAction"
+                accelerator$ = #MENU_ITEM_ACCELERATOR_RUN$
+                break
+            case #MENU_ITEM_SAVE
+                menuName$ = #MENU_NAME_RECORD$
+                menuItemName$ = #MENU_ITEM_NAME_SAVE$
+                menuItemText$ = #MENU_ITEM_TEXT_SAVE$
+                imageID$ = #MENU_ITEM_IMAGE_ID_SAVE$
+                callbackMethodName$ = "saveData"
+                accelerator$ = #MENU_ITEM_ACCELERATOR_SAVE$
+                break
+            case #MENU_ITEM_CLOSE
+                menuName$ = #MENU_NAME_FILE$
+                menuItemName$ = #MENU_ITEM_NAME_CLOSE$
+                menuItemText$ = #MENU_ITEM_TEXT_CLOSE$
+                imageID$ = #MENU_ITEM_IMAGE_ID_CLOSE$
+                callbackMethodName$ = "callbackMethodNeedsToBeSet"
+                accelerator$ = #MENU_ITEM_ACCELERATOR_CLOSE$
+                break
+            case #MENU_ITEM_CLEAR
+                menuName$ = #MENU_NAME_RECORD$
+                menuItemName$ = #MENU_ITEM_NAME_CLEAR$
+                menuItemText$ = #MENU_ITEM_TEXT_CLEAR$
+                imageID$ = #MENU_ITEM_IMAGE_ID_CLEAR$
+                callbackMethodName$ = "clearAll"
+                accelerator$ = #MENU_ITEM_ACCELERATOR_CLEAR$
+                break
+            case #MENU_ITEM_NEW_RECORD
+                menuName$ = #MENU_NAME_RECORD$
+                menuItemName$ = #MENU_ITEM_NAME_NEW_RECORD$
+                menuItemText$ = #MENU_ITEM_TEXT_NEW_RECORD$
+                imageID$ = #MENU_ITEM_IMAGE_ID_NEW_RECORD$
+                callbackMethodName$ = "createNewRecord"
+                accelerator$ = #MENU_ITEM_ACCELERATOR_NEW_RECORD$
+                break   
+            case #MENU_ITEM_PROGRAM_INFO
+                menuName$ = #MENU_NAME_HELP$
+                menuItemName$ = #MENU_ITEM_NAME_PROGRAM_INFO$
+                menuItemText$ = #MENU_ITEM_TEXT_PROGRAM_INFO$
+                imageID$ = #MENU_ITEM_IMAGE_ID_PROGRAM_INFO$
+                callbackMethodName$ = "showProgramInfo"
+                accelerator$ = #MENU_ITEM_ACCELERATOR_PROGRAM_INFO$
+                break   
+            case #MENU_ITEM_ONLINE_MANUAL
+                menuName$ = #MENU_NAME_HELP$
+                menuItemName$ = #MENU_ITEM_NAME_ONLINE_MANUAL$
+                menuItemText$ = #MENU_ITEM_TEXT_ONLINE_MANUAL$
+                imageID$ = #MENU_ITEM_IMAGE_ID_ONLINE_MANUAL$
+                callbackMethodName$ = "callbackMethodNeedsToBeSet"
+                accelerator$ = #MENU_ITEM_ACCELERATOR_ONLINE_MANUAL$
+                break    
+            case default
+                ? "given menu item ID '" + str(menuItemID) + "' does not match with one of the predefined ones."
+                methodret
+                break
+        swend
+
+        #addCustomMenuItem(menuItemName$, menuName$, imageID$, accelerator$, menuItemText$, #this!, callbackMethodName$)
+    methodend
+    
+    method private BBjString getMenuItemName(BBjNumber menuItemID)
+        switch menuItemID
+            case #MENU_ITEM_RUN
+                menuItemName$ = #MENU_ITEM_NAME_RUN$
+                break
+            case #MENU_ITEM_SAVE
+                menuItemName$ = #MENU_ITEM_NAME_SAVE$
+                break
+            case #MENU_ITEM_CLOSE
+                menuItemName$ = #MENU_ITEM_NAME_CLOSE$
+                break
+            case #MENU_ITEM_CLEAR
+                menuItemName$ = #MENU_ITEM_NAME_CLEAR$
+                break
+            case #MENU_ITEM_ONLINE_MANUAL
+                menuItemName$ = #MENU_ITEM_NAME_ONLINE_MANUAL$
+                break    
+            case default
+                ? "given menu item ID '" + str(menuItemID) + "' does not match with one of the predefined ones."
+                methodret ""
+                break
+        swend
+        methodret menuItemName$
+    methodend
+    
+    method private BBjString getMenuName(BBjNumber menuItemID)
+        switch menuName$
+            case #MENU_FILE
+                menuName$ = #MENU_NAME_FILE$
+                break
+            case #MENU_RECORD
+                menuName$ = #MENU_NAME_RECORD$
+                break
+            case #MENU_HELP
+                menuName$ = #MENU_NAME_HELP$
+                break
+            case default
+                ? "given menu ID '" + str(menuItemID) + "' does not match with one of the predefined ones."
+                methodret ""
+                break
+        swend  
+        methodret menuItemName$
+    methodend
+    
+    method public BBjMenuItem addCustomMenuItem(BBjString menuItemName$, BBjString menuName$, BBjString imageID$, BBjString accelerator$, BBjString menuItemText$, CustomObject obj!, BBjString callbackMethodName$)
+        
+        menuItem! = #findMenuItem(menuItemName$)
+        if menuItem! <> null() then
+            ? "menu item '" + menuItemName$ + "' already exists."
+            methodret menuItem!
+        endif
+        
+        menu! = #createMenu(menuName$)
+        
+        if menu! = null() then methodret null()
+        
+        menuItemText$ = str(LocalizedPropertiesManager.getInstance().getProperty(menuItemText$))
+        menuItem! = menu!.addMenuItem(1101 + #menuItemList!.size(), menuItemText$)
+        menuItem!.setName(menuItemName$)
+        
+        if callbackMethodName$ > "" then
+            menuItem!.setCallback(#menuBar!.ON_MENU_ITEM_SELECT, obj!, callbackMethodName$)
+            menuItem!.setEnabled(1)
+        else
+            ? "no callbackMethod provided -> setting menuItem '" + menuItemName$ + "' enabled = 0"
+            menuItem!.setEnabled(0)
+        endif
+        
+        rem TODO: button image?
+        
+        if accelerator$ > "" then
+            menuItem!.setAccelerator(accelerator$)
+        endif
+        
+        #menuItemList!.addItem(menuItem!)
+        methodret menuItem!
+    methodend
+    
+    method private BBjMenu createMenu(BBjString menuName$)
+        menu! = #findMenu(menuName$)
+        if menu! <> null() then
+            ? "menu '" + menuName$ + "' already exists"
+            methodret menu!
+        endif
+
+        switch menuName$
+            case #MENU_NAME_FILE$
+                menuText$ = #MENU_TEXT_FILE$
+                break
+            case #MENU_NAME_RECORD$
+                menuText$ = #MENU_TEXT_RECORD$
+                break
+            case #MENU_NAME_HELP$
+                menuText$ = #MENU_TEXT_HELP$
+                break
+            case default
+                ? "given menu name '" + str(menuName$) + "' does not match with one of the predefined ones."
+                methodret null()
+                break
+        swend   
+        
+        menuText$ = str(LocalizedPropertiesManager.getInstance().getProperty(menuText$))
+        menu! = #menuBar!.addMenu(1001 + #menuList!.size(), menuText$)
+        menu!.setName(menuName$)
+        #menuList!.addItem(menu!)
+        methodret menu!
+    methodend
+    
+    method public void performAction(BBjEvent ev!)
+        #getBinder().retrieve()
+    methodend
+    
+    method public void saveData(BBjEvent ev!)
+        #getBinder().sendSignal(BCBinder.SIGNAL_SAVE, err=*next)
+    methodend
+    
+    method public void createNewRecord(BBjEvent ev!)
+        #getBinder().sendSignal(BCBinder.SIGNAL_NEW)
+    methodend
+    
+    method public void showProgramInfo(BBjEvent ev!)
+REM         CAST(ProdinUIControllerIF, #getUIController()).showProgramInfo()
+        rem TODO: needed?
+        rem TODO: if yes, then custom method
+    methodend
+    
+    method public void clearAll(BBjEvent ev!)
+REM         #getBinder().sendSignal(SIGNAL_INITIATE_TERMINATE)
+        rem TODO: need signal
+    methodend
+    
+    method public void setPresetMenuItemCallback(BBjNumber menuItemID, CustomObject origin!, BBjString callbackMethodName$)
+        menuItemName$ = #getMenuItemName(menuItemID)
+        if menuItemName$ = "" then
+            methodret
+        endif
+        #setMenuItemCallback(menuItemName$, origin!, callbackMethodName$)
+    methodend
+    
+    method public void setMenuItemCallback(BBjString menuItemName$, CustomObject origin!, BBjString callbackMethodName$)
+        declare BBjMenuItem menuItem!
+        menuItem! = #findMenuItem(menuItemName$)
+        if menuItem! <> null() then
+            menuItem!.setCallback(menuItem!.ON_MENU_ITEM_SELECT, origin!, callbackMethodName$)
+            menuItem!.setEnabled(1)
+        endif
+    methodend
+    
+    method private BBjMenu findMenu(BBjString menuName$)
+        if #menuList!.size() = 0 then
+            methodret null()
+        endif
+        
+        declare BBjMenu temp!
+        for i = #menuList!.size() - 1 to 0 step -1
+            temp! = cast(BBjMenu, #menuList!.get(i))
+            name! = temp!.getName()
+            if name! = menuName$ then
+                methodret temp!
+            endif
+        next i
+        
+        methodret null()
+    methodend
+    
+    method private BBjMenuItem findMenuItem(BBjString menuItemName$)
+        if #menuItemList!.size() = 0 then
+            methodret null()
+        endif
+        
+        declare BBjMenuItem temp!
+        for i = #menuItemList!.size() - 1 to 0 step -1
+            temp! = cast(BBjMenuItem, #menuItemList!.get(i))
+            name! = temp!.getName()
+            if name! = menuItemName$ then
+                methodret temp!
+            endif
+        next i
+        
+        methodret null()
+    methodend
+    
+    method public boolean setMenuItemEnabled(BBjNumber menuItem, boolean enabled!)
+        menuItem$ = #getMenuItemName(menuItem)
+        methodret #setMenuItemEnabled(menuItem$, enabled!)
+    methodend
+    
+    method public boolean setMenuItemEnabled(BBjString menuItem$, boolean enabled!)
+        if menuItem$ = "" then 
+            methodret Boolean.FALSE
+        endif
+        
+        declare BBjMenuItem menuItem!
+        menuItem! = #findMenuItem(menuItem$)
+        
+        if menuItem! <> null() then
+            menuItem!.setEnabled(enabled!)
+            methodret Boolean.TRUE
+        else
+            methodret Boolean.FALSE
+        endif
+    methodend
+    
+    method public void callbackMethodNeedsToBeSet(BBjEvent ev!)
+        ? "The callback method for this button needs to be set."
+    methodend
+    
+    method public void closeProgram(BBjEvent ev!)
+        #getBinder().sendSignal(SIGNAL_INITIATE_TERMINATE)
+    methodend
+    
+REM     method public void pendingDataChanges()
+REM         #setMenuItemEnabled(#MENU_ITEM_NAME_SAVE$,Boolean.TRUE)
+REM     methodend
+    
+    method public void onSignal(int signal!, Object payload!)
+        if signal! = BCBinder.SIGNAL_DIRTY or signal! = BCBinder.SIGNAL_ERROR then
+            #setMenuItemEnabled(#MENU_ITEM_NAME_SAVE$, Boolean.TRUE)
+        else
+            #setMenuItemEnabled(#MENU_ITEM_NAME_SAVE$, Boolean.FALSE)
+        endif
+    methodend
+    
+classend
+    

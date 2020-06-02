@@ -578,7 +578,7 @@ REM         calendarButton!.setImageFile("BusinessUIComponents/icon/ic_insert_in
         
         if (sel!.size() <> 1) then
             #clearForm()
-            methodret
+            methodret new DataRow()
         fi
         rs! = #getBinder().getRS()
         rowkey$ = sel!.get(0)

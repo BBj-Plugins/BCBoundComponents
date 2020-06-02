@@ -7,6 +7,7 @@ use ::BusinessUIComponents/bound/SimpleFormComponent.bbj::SimpleFormComponent
 use ::BusinessUIComponents/bound/WindowCloseHandler.bbj::WindowCloseHandler
 use ::BusinessUIComponents/bound/SearchBar.bbj::SearchBar
 use ::BusinessUIComponents/bound/BCErrorHandler.bbj::BCErrorHandler
+use ::BusinessUIComponents/bound/MenuBar.bbj::MenuBar
 use ::BusinessUIComponents/unbound/HorizontalSplitter.bbj::HorizontalSplitter
 use com.basiscomponents.bc.BCBinder
 use com.basiscomponents.db.DataRow
@@ -118,6 +119,9 @@ splitter!.setBottomCtrl(tabCtrl!)
 
 bc! = eval("new "+BC$+"()")
 
+menuBar! = new MenuBar(wnd!)
+menuBar!.initMasterData()
+
 binder! = new BCBinder(bc!)
 binder!.register(nav!)
 binder!.register(edittb!)
@@ -125,6 +129,9 @@ binder!.register(bgrid!)
 binder!.register(searchBar!)
 binder!.register(errorHandler!)
 binder!.register(windowCloseHandler!)
+binder!.register(menuBar!)
+
+menuBar!.setBinder(binder!)
 
 for i = 0 to forms!.size() - 1
     binder!.register(forms!.getItem(i))
