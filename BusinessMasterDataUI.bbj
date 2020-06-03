@@ -6,10 +6,12 @@ use ::BusinessUIComponents/bound/NavigatorComponent.bbj::NavigatorComponent
 use ::BusinessUIComponents/bound/EditToolbarComponent.bbj::EditToolbarComponent
 use ::BusinessUIComponents/bound/SimpleFormComponent.bbj::SimpleFormComponent
 use ::BusinessUIComponents/bound/SearchBar.bbj::SearchBar
+use ::BusinessUIComponents/bound/MenuBar.bbj::MenuBar
 use ::BusinessUIComponents/bound/BCErrorHandler.bbj::BCErrorHandler
 use ::BusinessUIComponents/bound/WindowCloseHandler.bbj::WindowCloseHandler
 use ::BusinessUIComponents/unbound/HorizontalSplitter.bbj::HorizontalSplitter
 use ::BusinessUIComponents/configurations/IPropertiesManager.bbj::IPropertiesManager
+use ::BusinessUIComponents/configurations/LocalizedPropertiesManager.bbj::LocalizedPropertiesManager
 use com.basiscomponents.bc.BCBinder
 use com.basiscomponents.db.DataRow
 use com.basiscomponents.db.ResultSet
@@ -107,6 +109,19 @@ class public BusinessMasterDataUI
         wend
     methodend
     
+    method public BCBinder getBinder()
+        methodret #binder!
+    methodend
+
+    method public void addMenuBar()
+        menuBar! = new MenuBar(#wnd!)
+        #binder!.register(menuBar!)
+        menuBar!.setBinder(#binder!)
+        REM #componentsWithProperties!.add(menuBar!) ; rem currently useless
+        menuBar!.setTextPropertiesManager(LocalizedPropertiesManager.getInstance())
+        menuBar!.initMasterData()
+    methodend
+    
     method public void addEditToolbar(BBjInt x!, BBjInt y!)
         edittb! = new EditToolbarComponent(#wnd!,111,x!,y!,100,32)
         #binder!.register(edittb!)
@@ -126,13 +141,13 @@ class public BusinessMasterDataUI
         #binder!.register(new WindowCloseHandler(#wnd!))
     methodend
     
-    method public void addMenuBar()
-        menubar! = #wnd!.addMenuBar()
-        fileMenu! = menubar!.addMenu(401, "File")
-        recordMenu! = menubar!.addMenu(402, "Record")
-        helpMenu! = menubar!.addMenu(403, "Help")
-        statusbar! = #wnd!.addStatusBar(450)
-    methodend
+REM     method public void addMenuBar()
+REM         menubar! = #wnd!.addMenuBar()
+REM         fileMenu! = menubar!.addMenu(401, "File")
+REM         recordMenu! = menubar!.addMenu(402, "Record")
+REM         helpMenu! = menubar!.addMenu(403, "Help")
+REM         statusbar! = #wnd!.addStatusBar(450)
+REM     methodend
     
     rem ############## Events ######################
     
@@ -150,6 +165,10 @@ class public BusinessMasterDataUI
         for i = 0 to #forms!.size() - 1
           cast(BBjWidget, #forms!.getItem(i)).setSize(#formTabCtrl!.getWidth(), #formTabCtrl!.getHeight())
         next i
+    methodend
+
+    method public BBjWindow getWindow()
+        methodret #wnd!
     methodend
 
 classend
