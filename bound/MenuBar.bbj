@@ -78,10 +78,10 @@ class public MenuBar extends AbstractBCBoundWidget
         #menuList! = new BBjVector()
         #menuItemList! = new BBjVector()
         #menuBar! = cw!.addMenuBar()
-        #addPresetMenuItem(#MENU_ITEM_CLOSE)
     methodend
     
     method public void initMasterData()
+        #addPresetMenuItem(#MENU_ITEM_CLOSE)
         #setPresetMenuItemCallback(#MENU_ITEM_CLOSE, #this!, "closeProgram")
         #addPresetMenuItem(#MENU_ITEM_SAVE)
         #addPresetMenuItem(#MENU_ITEM_NEW_RECORD)
@@ -212,7 +212,7 @@ REM         #addPresetMenuItem(#MENU_ITEM_PROGRAM_INFO) rem needed?
         
         if menu! = null() then methodret null()
         
-        menuItemText$ = str(LocalizedPropertiesManager.getInstance().getProperty(menuItemText$))
+        menuItemText$ = str(#getTextPropertiesManager().getProperty(menuItemText$))
         menuItem! = menu!.addMenuItem(1101 + #menuItemList!.size(), menuItemText$)
         menuItem!.setName(menuItemName$)
         
@@ -257,7 +257,7 @@ REM         #addPresetMenuItem(#MENU_ITEM_PROGRAM_INFO) rem needed?
                 break
         swend   
         
-        menuText$ = str(LocalizedPropertiesManager.getInstance().getProperty(menuText$))
+        menuText$ = str(#getTextPropertiesManager().getProperty(menuText$))
         menu! = #menuBar!.addMenu(1001 + #menuList!.size(), menuText$)
         menu!.setName(menuName$)
         #menuList!.addItem(menu!)
