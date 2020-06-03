@@ -1,0 +1,17 @@
+REM /**
+REM  * QuickSearchField.bbj
+REM  * @author jcorea
+REM  *
+REM  */
+
+use com.basiscomponents.bc.BusinessComponent
+use com.basiscomponents.db.ResultSet
+use com.basiscomponents.db.DataRow
+
+class public QuickSearchField
+
+    method public QuickSearchField(BBjInputE control!, BusinessComponent bc!)
+        
+    methodend
+
+classend
