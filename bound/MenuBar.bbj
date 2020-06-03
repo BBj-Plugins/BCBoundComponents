@@ -269,6 +269,7 @@ REM         #addPresetMenuItem(#MENU_ITEM_PROGRAM_INFO) rem needed?
     methodend
     
     method public void saveData(BBjEvent ev!)
+        #setMenuItemEnabled(#MENU_ITEM_NAME_SAVE$, Boolean.FALSE)
         #getBinder().sendSignal(BCBinder.SIGNAL_SAVE, err=*next)
     methodend
     
@@ -364,7 +365,7 @@ REM         #getBinder().sendSignal(SIGNAL_INITIATE_TERMINATE)
     methodend
     
     method public void closeProgram(BBjEvent ev!)
-        #getBinder().sendSignal(SIGNAL_INITIATE_TERMINATE)
+        #getBinder().sendSignal(BCBinder.SIGNAL_INITIATE_TERMINATE)
     methodend
     
 REM     method public void pendingDataChanges()
@@ -372,7 +373,7 @@ REM         #setMenuItemEnabled(#MENU_ITEM_NAME_SAVE$,Boolean.TRUE)
 REM     methodend
     
     method public void onSignal(int signal!, Object payload!)
-        if signal! = BCBinder.SIGNAL_DIRTY or signal! = BCBinder.SIGNAL_ERROR then
+        if signal! = BCBinder.SIGNAL_DIRTY then
             #setMenuItemEnabled(#MENU_ITEM_NAME_SAVE$, Boolean.TRUE)
         else
             #setMenuItemEnabled(#MENU_ITEM_NAME_SAVE$, Boolean.FALSE)
