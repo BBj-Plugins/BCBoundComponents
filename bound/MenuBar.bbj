@@ -380,5 +380,9 @@ REM     methodend
         endif
     methodend
     
+    method public void onSetSelection()
+        #setMenuItemEnabled(#MENU_ITEM_NAME_SAVE$, Boolean.FALSE)
+    methodend
+    
 classend
     
