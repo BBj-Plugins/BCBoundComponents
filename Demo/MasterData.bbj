@@ -9,6 +9,7 @@ use ::BusinessUIComponents/bound/SearchBar.bbj::SearchBar
 use ::BusinessUIComponents/bound/BCErrorHandler.bbj::BCErrorHandler
 use ::BusinessUIComponents/bound/MenuBar.bbj::MenuBar
 use ::BusinessUIComponents/unbound/HorizontalSplitter.bbj::HorizontalSplitter
+use ::BusinessUIComponents/configurations/LocalizedPropertiesManager.bbj::LocalizedPropertiesManager
 use com.basiscomponents.bc.BCBinder
 use com.basiscomponents.db.DataRow
 use com.basiscomponents.db.ResultSet
@@ -58,6 +59,8 @@ tabCtrl! = splitter!.getBottomCanvas().addTabCtrl(104, 0, 0, 500, 500)
 
 errorHandler! = new BCErrorHandler()
 windowCloseHandler! = new WindowCloseHandler(wnd!)
+
+localeManager! = LocalizedPropertiesManager.getInstance()
 
 cwIdStart = 200
 
@@ -120,6 +123,7 @@ splitter!.setBottomCtrl(tabCtrl!)
 bc! = eval("new "+BC$+"()")
 
 menuBar! = new MenuBar(wnd!)
+menuBar!.setTextPropertiesManager(localeManager!)
 menuBar!.initMasterData()
 
 binder! = new BCBinder(bc!)

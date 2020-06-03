@@ -78,10 +78,10 @@ class public MenuBar extends AbstractBCBoundWidget
         #menuList! = new BBjVector()
         #menuItemList! = new BBjVector()
         #menuBar! = cw!.addMenuBar()
-        #addPresetMenuItem(#MENU_ITEM_CLOSE)
     methodend
     
     method public void initMasterData()
+        #addPresetMenuItem(#MENU_ITEM_CLOSE)
         #setPresetMenuItemCallback(#MENU_ITEM_CLOSE, #this!, "closeProgram")
         #addPresetMenuItem(#MENU_ITEM_SAVE)
         #addPresetMenuItem(#MENU_ITEM_NEW_RECORD)
@@ -212,7 +212,7 @@ REM         #addPresetMenuItem(#MENU_ITEM_PROGRAM_INFO) rem needed?
         
         if menu! = null() then methodret null()
         
-        menuItemText$ = str(LocalizedPropertiesManager.getInstance().getProperty(menuItemText$))
+        menuItemText$ = str(#getTextPropertiesManager().getProperty(menuItemText$))
         menuItem! = menu!.addMenuItem(1101 + #menuItemList!.size(), menuItemText$)
         menuItem!.setName(menuItemName$)
         
@@ -257,7 +257,7 @@ REM         #addPresetMenuItem(#MENU_ITEM_PROGRAM_INFO) rem needed?
                 break
         swend   
         
-        menuText$ = str(LocalizedPropertiesManager.getInstance().getProperty(menuText$))
+        menuText$ = str(#getTextPropertiesManager().getProperty(menuText$))
         menu! = #menuBar!.addMenu(1001 + #menuList!.size(), menuText$)
         menu!.setName(menuName$)
         #menuList!.addItem(menu!)
@@ -269,6 +269,7 @@ REM         #addPresetMenuItem(#MENU_ITEM_PROGRAM_INFO) rem needed?
     methodend
     
     method public void saveData(BBjEvent ev!)
+        #setMenuItemEnabled(#MENU_ITEM_NAME_SAVE$, Boolean.FALSE)
         #getBinder().sendSignal(BCBinder.SIGNAL_SAVE, err=*next)
     methodend
     
@@ -364,7 +365,7 @@ REM         #getBinder().sendSignal(SIGNAL_INITIATE_TERMINATE)
     methodend
     
     method public void closeProgram(BBjEvent ev!)
-        #getBinder().sendSignal(SIGNAL_INITIATE_TERMINATE)
+        #getBinder().sendSignal(BCBinder.SIGNAL_INITIATE_TERMINATE)
     methodend
     
 REM     method public void pendingDataChanges()
@@ -372,11 +373,15 @@ REM         #setMenuItemEnabled(#MENU_ITEM_NAME_SAVE$,Boolean.TRUE)
 REM     methodend
     
     method public void onSignal(int signal!, Object payload!)
-        if signal! = BCBinder.SIGNAL_DIRTY or signal! = BCBinder.SIGNAL_ERROR then
+        if signal! = BCBinder.SIGNAL_DIRTY then
             #setMenuItemEnabled(#MENU_ITEM_NAME_SAVE$, Boolean.TRUE)
         else
             #setMenuItemEnabled(#MENU_ITEM_NAME_SAVE$, Boolean.FALSE)
         endif
+    methodend
+    
+    method public void onSetSelection()
+        #setMenuItemEnabled(#MENU_ITEM_NAME_SAVE$, Boolean.FALSE)
     methodend
     
 classend
