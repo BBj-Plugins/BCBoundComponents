@@ -1,0 +1,129 @@
+REM /**
+REM  * QuickSearchField.bbj
+REM  * @author jcorea
+REM  *
+REM  */
+
+use com.basiscomponents.bc.BusinessComponent
+use com.basiscomponents.db.BBArrayList
+use com.basiscomponents.db.ResultSet
+use com.basiscomponents.db.DataRow
+
+class public QuickSearchField
+    field protected BBjInputE control!
+    field protected BBjListButton popup!
+    field protected BusinessComponent bc!
+    field protected BBjNumber delay = 1
+    field protected BBjNumber maxEntries = 10
+    field protected String searchFieldName! = "_SEARCH"
+    field protected BBArrayList idFieldNames!
+    field protected Boolean hasDesc!
+    field protected String uniqueID! = java.util.UUID.randomUUID().toString()
+    
+    field protected BBjVector optionIDs!
+    
+
+    method public QuickSearchField(BBjInputE control!, BusinessComponent bc!)
+        #control! = control!
+        #bc! = bc!
+        wnd! = #control!.getParentWindow()
+        popupX = #control!.getX()
+        popupY = #control!.getY() + #control!.getHeight()
+        popupW = #control!.getWidth()
+        popupH = #control!.getHeight() * maxEntries
+        #popup! = cast(BBjListButton, wnd!.addListButton(wnd!.getAvailableControlID(), popupX, popupY, popupW, popupH, ""))
+        #popup!.setVisible(0)
+        #popup!.setCallback(BBjControl.ON_LIST_SELECT, #this!, "popupSelect")
+        #control!.setCallback(BBjControl.ON_LOST_FOCUS, #this!, "controlLostFocus")
+        #control!.setCallback(BBjControl.ON_EDIT_MODIFY, #this!, "onEditModifyEvent")
+        #setFieldNames()
+    methodend
+    
+    method public void onEditModifyEvent(BBjEvent ev!)
+        BBjAPI().removeTimer(#uniqueID! + "startSearch",err=*next)
+        BBjAPI().createTimer(#uniqueID! + "startSearch", #delay, #this!, "startSearch")
+    methodend
+    
+    
+    method public void startSearch(BBjEvent ev!)
+        #popup!.removeAllItems()
+        searchString! = #control!.getText()
+        if searchString!.trim().equals("") then
+            #optionIDs! = null()
+            #control!.setUserData(null())
+            methodret
+        endif
+        filter! = new DataRow()
+        filter!.setFieldValue(#searchFieldName!, "*" + searchString! + "*")
+        #bc!.setFilter(filter!)
+        rs! = #bc!.retrieve()
+        if !rs!.size() then methodret
+        if rs!.size() > #maxEntries then
+            maxItems = #maxEntries
+        else
+            maxItems = rs!.size()
+        endif
+        #optionIDs! = new BBjVector()
+        
+        FOR i = 0 TO maxItems - 1
+            dr! = rs!.get(i)
+            idField! = new StringBuilder()
+            itIDNames! = #idFieldNames!.iterator()
+            while itIDNames!.hasNext()
+                idName! = itIDNames!.next()
+                idField!.append(dr!.getFieldAsString(idName!))
+                if itIDNames!.hasNext() then idField!.append($00$)
+            wend
+            idField! = idField!.toString()
+            #optionIDs!.add(idField!)
+            if #hasDesc! then
+                desc! = (dr!.getFieldAsString("DESC"))
+            else
+                desc! = idField! + ": no DESC"
+            endif
+            #popup!.addItem(desc!)
+        NEXT i
+        #popup!.openList()
+        #popup!.setVisible(1)
+    methodend
+    
+    method public void popupSelect(BBjListSelectEvent ev!)
+        index = ev!.getSelectedIndex()
+        if #optionIDs! = null() then methodret
+        if index < 0 then methodret
+            #control!.setUserData(null())
+            #optionIDs! = null()
+            #popup!.setVisible(0)
+            methodret
+        endif
+        #control!.setUserData(#optionIDs!.get(index))
+        #control!.setText(ev!.getSelectedItem())
+        #optionIDs! = null()
+        #popup!.setVisible(0)
+    methodend
+    
+    method public void setFieldNames()
+        lookupAttributes! = #bc!.getAttributesRecord()
+        ids! = lookupAttributes!.getFieldsHavingAttributeValue("EDITABLE", "2")
+        if !ids!.isEmpty() then
+            #idFieldNames! = cast(BBArrayList, ids!.getFieldNames())
+        else
+            #idFieldNames! = new BBArrayList()
+            #idFieldNames!.add(rs!.get(0).getColumnName(0))
+        endif
+        if lookupAttributes!.contains("DESC") then
+            #hasDesc! = Boolean.TRUE
+        else
+            #hasDesc! = Boolean.FALSE
+        endif
+    methodend
+    
+    method public void controlLostFocus(BBjLostFocusEvent ev!)
+        focused! = #control!.getParentWindow().getFocusedControl()
+        if focused!.equals(#popup!) then methodret
+        #control!.setUserData(null())
+        #optionIDs! = null()
+        #popup!.setVisible(0)
+    methodend
+
+classend

@@ -2,6 +2,7 @@ use ::BusinessUIComponents/AbstractBCBoundWidget.bbj::AbstractBCBoundWidget
 use ::BBjGridExWidget/BBjGridExWidget.bbj::BBjGridExWidget
 use ::BusinessUIComponents/configurations/IPropertiesManager.bbj::IPropertiesManager
 use ::BusinessUIComponents/configurations/PropertiesManager.bbj::PropertiesManager
+use ::BusinessUIComponents/utils/QuickSearchField.bbj::QuickSearchField
 
 use com.basiscomponents.bc.BCBound
 use com.basiscomponents.bc.BCBinder
@@ -371,6 +372,7 @@ REM         it! = #fieldList!.iterator()
 REM                 cast(BBjInputE, c!).setLength(precision!)
                 c!.setCallback(c!.ON_GAINED_FOCUS, #this!, "controlChangeBackColorOnGainedFocus")
                 c!.setCallback(c!.ON_LOST_FOCUS, #this!, "controlChangeBackColorOnLostFocus")
+                #applyQuickSearch(cast(BBjInputE, c!), fieldName$, fieldAttributes!)
                 break
                 
             case BBjControl.INPUTN_TYPE
@@ -440,6 +442,22 @@ REM                 cast(BBjInputE, c!).setLength(precision!)
             case default
                 break
         swend
+    methodend
+    
+    method private void applyQuickSearch(BBjInputE control!, String fieldName!, HashMap fieldAttributes!)
+        if !fieldAttributes!.containsKey("LOOKUP") then methodret
+        sel! = #getBinder().getSelection()
+        if (sel!.size() = 1) then
+            rsBinder! = #getBinder().getRS()
+            rowkey$ = sel!.get(0)
+            selDr! = rsBinder!.get(rowkey$)
+        else
+            selDr! = null()
+        fi
+        rem try to call getLookup(). when it does not work or is empty, try to call getLookupData. if neither brings results, methodret.
+        lookup! = cast(BusinessComponent, #getBinder().getBC()).getLookup(fieldName!, selDr!, err=*next)
+        if lookup! = null() then methodret
+        qs! = new QuickSearchField(control!, lookup!)
     methodend
     
     rem /**
@@ -621,6 +639,15 @@ REM         calendarButton!.setImageFile("BusinessUIComponents/icon/ic_insert_in
     method protected String getValueFromControl(BBjControl control!)
         controlType = control!.getControlType()
         switch controlType
+            case BBjControl.INPUTE_TYPE
+                rem userdata is used for quicksearch
+                userData! = control!.getUserData()
+                if userData! <> null() then
+                    methodret userData!
+                else
+                    methodret control!.getText()
+                endif
+                break
             case BBjControl.LISTBUTTON_TYPE
                 listEdit! = cast(BBjListButton, control!)
                 selIndex = listEdit!.getSelectedIndex()
