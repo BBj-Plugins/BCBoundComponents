@@ -458,6 +458,7 @@ REM                 cast(BBjInputE, c!).setLength(precision!)
         lookup! = cast(BusinessComponent, #getBinder().getBC()).getLookup(fieldName!, selDr!, err=*next)
         if lookup! = null() then methodret
         qs! = new QuickSearchField(control!, lookup!)
+        qs!.setBinder(#getBinder())
     methodend
     
     rem /**
