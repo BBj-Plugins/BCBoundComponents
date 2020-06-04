@@ -30,6 +30,8 @@ class public SimpleFormComponent extends AbstractBCBoundWidget
     field protected BBjVector calendarButtons! = new BBjVector()
     field protected BiMap controlMap!
     field protected HashMap controlPrefixMap!
+    field protected String quickSearchField! = "_SEARCH"
+    field protected Boolean quickSearchUseWildCard! = Boolean.TRUE
 REM     field private BBjColor colorFocusGained!
 REM     field private BBjColor colorFocusLost!
     
@@ -460,6 +462,8 @@ REM                 cast(BBjInputE, c!).setLength(precision!)
         if lookup! = null() then methodret
         qs! = new QuickSearchField(control!, lookup!)
         qs!.setBinder(#getBinder())
+        qs!.setSearchFieldName(#quickSearchField!)
+        qs!.setUseWildCard(#quickSearchUseWildCard!)
         #quickSearchElements!.add(qs!)
     methodend
     
@@ -467,6 +471,7 @@ REM                 cast(BBjInputE, c!).setLength(precision!)
     rem  * default is "_SEARCH"
     rem  */
     method public void setQuickSearchFieldName(String quickSearchField!)
+        #quickSearchField! = quickSearchField!
         it! = #quickSearchElements!.iterator()
         while it!.hasNext()
             qs! = cast(QuickSearchField, it!.next())
@@ -478,6 +483,7 @@ REM                 cast(BBjInputE, c!).setLength(precision!)
     rem  * default is TRUE
     rem  */
     method public void setQuickSearchUseWildCard(Boolean useWildCard!)
+        #quickSearchUseWildCard! = useWildCard!
         it! = #quickSearchElements!.iterator()
         while it!.hasNext()
             qs! = cast(QuickSearchField, it!.next())
