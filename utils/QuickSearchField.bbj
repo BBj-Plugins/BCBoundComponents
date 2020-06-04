@@ -19,6 +19,7 @@ class public QuickSearchField
     field protected String searchFieldName! = "_SEARCH"
     field protected BBArrayList idFieldNames!
     field protected Boolean hasDesc!
+    field protected Boolean useWildCard! = Boolean.TRUE
     field protected String uniqueID! = java.util.UUID.randomUUID().toString()
     field protected BCBinder binder!
     
@@ -46,6 +47,14 @@ REM         #control!.setCallback(BBjControl.ON_LOST_FOCUS, #this!, "controlLost
     
     method public void setBinder(BCBinder binder!)
         #binder! = binder!
+    methodend
+    
+    method public void setSearchFieldName(String searchFieldName!)
+        #searchFieldName! = searchFieldName!
+    methodend
+    
+    method public void setUseWildCard(Boolean useWildCard!)
+        #useWildCard! = useWildCard!
     methodend
     
     method public void onEditModifyEvent(BBjEvent ev!)
@@ -77,7 +86,11 @@ REM             #control!.setUserData(null())
             methodret
         endif
         filter! = new DataRow()
-        filter!.setFieldValue(#searchFieldName!, "*" + searchString! + "*")
+        if #useWildCard! then
+            filter!.setFieldValue(#searchFieldName!, "*" + searchString! + "*")
+        else
+            filter!.setFieldValue(#searchFieldName!, searchString!)
+        endif
         #bc!.setFilter(filter!)
         rs! = #bc!.retrieve()
         if !rs!.size() then methodret

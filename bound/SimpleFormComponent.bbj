@@ -26,6 +26,7 @@ class public SimpleFormComponent extends AbstractBCBoundWidget
     field protected BBjVector fieldList!
     field protected BBjVector controlList!
     field protected BBjVector idControls!
+    field protected BBjVector quickSearchElements! = new BBjVector()
     field protected BBjVector calendarButtons! = new BBjVector()
     field protected BiMap controlMap!
     field protected HashMap controlPrefixMap!
@@ -459,6 +460,29 @@ REM                 cast(BBjInputE, c!).setLength(precision!)
         if lookup! = null() then methodret
         qs! = new QuickSearchField(control!, lookup!)
         qs!.setBinder(#getBinder())
+        #quickSearchElements!.add(qs!)
+    methodend
+    
+    rem /**
+    rem  * default is "_SEARCH"
+    rem  */
+    method public void setQuickSearchFieldName(String quickSearchField!)
+        it! = #quickSearchElements!.iterator()
+        while it!.hasNext()
+            qs! = cast(QuickSearchField, it!.next())
+            qs!.setSearchFieldName(quickSearchField!)
+        wend
+    methodend
+    
+    rem /**
+    rem  * default is TRUE
+    rem  */
+    method public void setQuickSearchUseWildCard(Boolean useWildCard!)
+        it! = #quickSearchElements!.iterator()
+        while it!.hasNext()
+            qs! = cast(QuickSearchField, it!.next())
+            qs!.setUseWildCard(useWildCard!)
+        wend
     methodend
     
     rem /**
