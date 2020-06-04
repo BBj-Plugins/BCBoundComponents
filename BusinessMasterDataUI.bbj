@@ -130,6 +130,7 @@ class public BusinessMasterDataUI
     
     method public void addBusinessGrid(BBjInt x!, BBjInt y!)
         bgrid! = new BusinessGrid(#splitter!.getTopCanvas(),160,x!,y!,960,500)
+        #splitter!.setTopCtrl(bgrid!)
         #binder!.register(bgrid!)
         #componentsWithProperties!.add(bgrid!)
     methodend
