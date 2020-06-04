@@ -42,8 +42,10 @@ REM         #popup!.setCallback(BBjControl.ON_LIST_CANCEL, #this!, "controlLostF
 REM         #control!.setCallback(BBjControl.ON_LOST_FOCUS, #this!, "controlLostFocus")
         #control!.setCallback(BBjControl.ON_EDIT_MODIFY, #this!, "onEditModifyEvent")
         #control!.setCallback(BBjControl.ON_INPUT_KEYPRESS, #this!, "onKeyPressed")
-        #setFieldNames()
+        #parseAttributes()
     methodend
+    
+    rem setters/ -------------------------------
     
     method public void setBinder(BCBinder binder!)
         #binder! = binder!
@@ -55,6 +57,33 @@ REM         #control!.setCallback(BBjControl.ON_LOST_FOCUS, #this!, "controlLost
     
     method public void setUseWildCard(Boolean useWildCard!)
         #useWildCard! = useWildCard!
+    methodend
+    
+    rem /setters -------------------------------
+    
+    rem getters/ -------------------------------
+    
+    method public BBjInputE getControl()
+        methodret #control!
+    methodend
+    
+    rem /getters -------------------------------
+    
+    method public String getDescForID(String id!)
+        if !#hasDesc! then methodret id! + ": no DESC"
+        ids! = id!.split($00$)
+        filter! = new DataRow()
+        for i = 0 to ids!.length - 1
+            currentID! = ids![i]
+            currentIDName! = #idFieldNames!.get(i)
+            filter!.setFieldValue(currentIDName!, currentID!)
+        endif
+        #bc!.setFilter(filter!)
+        rs! = #bc!.retrieve()
+        if rs!.size() <> 1 then methodret null()
+        dr! = rs!.get(0)
+        desc! = dr!.getFieldAsString("DESC") + " (" + id!.trim() + ")"
+        methodret desc!
     methodend
     
     method public void onEditModifyEvent(BBjEvent ev!)
@@ -113,7 +142,7 @@ REM             #control!.setUserData(null())
             idField! = idField!.toString()
             #optionIDs!.add(idField!)
             if #hasDesc! then
-                desc! = dr!.getFieldAsString("DESC") + " (" + idField! + ")"
+                desc! = dr!.getFieldAsString("DESC") + " (" + idField!.trim() + ")"
             else
                 desc! = idField! + ": no DESC"
             endif
@@ -145,7 +174,7 @@ REM         escape
         #control!.focus()
     methodend
     
-    method public void setFieldNames()
+    method public void parseAttributes()
         lookupAttributes! = #bc!.getAttributesRecord()
         ids! = lookupAttributes!.getFieldsHavingAttributeValue("EDITABLE", "2")
         if !ids!.isEmpty() then

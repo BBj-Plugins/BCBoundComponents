@@ -228,6 +228,25 @@ REM         it! = #fieldList!.iterator()
                 selected! = Boolean.parseBoolean(value!)
                 cast(BBjCheckBox, control!).setSelected(selected!)
                 break
+            case BBjControl.INPUTE_TYPE
+                it! = #quickSearchElements!.iterator()
+                isQS! = Boolean.FALSE
+                while it!.hasNext()
+                    qs! = cast(QuickSearchField, it!.next())
+                    if qs!.getControl().equals(control!) then 
+                        isQS! = Boolean.TRUE
+                        break
+                    endif
+                wend
+                if !isQS! then
+                    control!.setText(value!)
+                    break
+                endif
+                control!.setUserData(value!)
+                desc! = qs!.getDescForID(value!)
+                if desc! = null() then desc! = value!
+                control!.setText(desc!)
+                break
             case BBjControl.INPUTD_TYPE
             case BBjControl.STATIC_TEXT_TYPE
                 if value!.trim().equals("") then break
