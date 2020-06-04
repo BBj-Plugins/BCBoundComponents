@@ -5,6 +5,7 @@ REM  *
 REM  */
 
 use com.basiscomponents.bc.BusinessComponent
+use com.basiscomponents.bc.BCBinder
 use com.basiscomponents.db.BBArrayList
 use com.basiscomponents.db.ResultSet
 use com.basiscomponents.db.DataRow
@@ -18,7 +19,9 @@ class public QuickSearchField
     field protected String searchFieldName! = "_SEARCH"
     field protected BBArrayList idFieldNames!
     field protected Boolean hasDesc!
+    field protected Boolean useWildCard! = Boolean.TRUE
     field protected String uniqueID! = java.util.UUID.randomUUID().toString()
+    field protected BCBinder binder!
     
     field protected BBjVector optionIDs!
     
@@ -30,31 +33,64 @@ class public QuickSearchField
         popupX = #control!.getX()
         popupY = #control!.getY() + #control!.getHeight()
         popupW = #control!.getWidth()
-        popupH = #control!.getHeight() * maxEntries
+        popupH = #control!.getHeight() * #maxEntries
         #popup! = cast(BBjListButton, wnd!.addListButton(wnd!.getAvailableControlID(), popupX, popupY, popupW, popupH, ""))
+        #popup!.setFieldHeight(0)
         #popup!.setVisible(0)
         #popup!.setCallback(BBjControl.ON_LIST_SELECT, #this!, "popupSelect")
-        #control!.setCallback(BBjControl.ON_LOST_FOCUS, #this!, "controlLostFocus")
+REM         #popup!.setCallback(BBjControl.ON_LIST_CANCEL, #this!, "controlLostFocus")
+REM         #control!.setCallback(BBjControl.ON_LOST_FOCUS, #this!, "controlLostFocus")
         #control!.setCallback(BBjControl.ON_EDIT_MODIFY, #this!, "onEditModifyEvent")
+        #control!.setCallback(BBjControl.ON_INPUT_KEYPRESS, #this!, "onKeyPressed")
         #setFieldNames()
+    methodend
+    
+    method public void setBinder(BCBinder binder!)
+        #binder! = binder!
+    methodend
+    
+    method public void setSearchFieldName(String searchFieldName!)
+        #searchFieldName! = searchFieldName!
+    methodend
+    
+    method public void setUseWildCard(Boolean useWildCard!)
+        #useWildCard! = useWildCard!
     methodend
     
     method public void onEditModifyEvent(BBjEvent ev!)
         BBjAPI().removeTimer(#uniqueID! + "startSearch",err=*next)
         BBjAPI().createTimer(#uniqueID! + "startSearch", #delay, #this!, "startSearch")
+        #optionIDs! = null()
+        #control!.setUserData(null())
+        if #binder! <> null() then
+            #binder!.sendSignal(BCBinder.SIGNAL_DIRTY)
+        endif
+    methodend
+    
+    method public void onKeyPressed(BBjInputKeypressEvent ev!)
+        if !#popup!.isVisible() or #popup!.getItemCount() < 1 then methodret
+        keyCode = ev!.getKeyCode()
+        selectedIndex = #popup!.getSelectedIndex()
+        if keyCode <> 301 and keyCode <> 302 then methodret
+        #popup!.focus()
     methodend
     
     
     method public void startSearch(BBjEvent ev!)
+        BBjAPI().removeTimer(#uniqueID! + "startSearch")
         #popup!.removeAllItems()
         searchString! = #control!.getText()
         if searchString!.trim().equals("") then
-            #optionIDs! = null()
-            #control!.setUserData(null())
+REM             #optionIDs! = null()
+REM             #control!.setUserData(null())
             methodret
         endif
         filter! = new DataRow()
-        filter!.setFieldValue(#searchFieldName!, "*" + searchString! + "*")
+        if #useWildCard! then
+            filter!.setFieldValue(#searchFieldName!, "*" + searchString! + "*")
+        else
+            filter!.setFieldValue(#searchFieldName!, searchString!)
+        endif
         #bc!.setFilter(filter!)
         rs! = #bc!.retrieve()
         if !rs!.size() then methodret
@@ -77,20 +113,26 @@ class public QuickSearchField
             idField! = idField!.toString()
             #optionIDs!.add(idField!)
             if #hasDesc! then
-                desc! = (dr!.getFieldAsString("DESC"))
+                desc! = dr!.getFieldAsString("DESC") + " (" + idField! + ")"
             else
                 desc! = idField! + ": no DESC"
             endif
             #popup!.addItem(desc!)
         NEXT i
-        #popup!.openList()
+REM         escape
         #popup!.setVisible(1)
+        BBjAPI().createTimer(#uniqueID! + "openList", .05, #this!, "openList")
+    methodend
+    
+    method public void openList(BBjEvent ev!)
+        BBjAPI().removeTimer(#uniqueID! + "openList")
+        #popup!.openList()
     methodend
     
     method public void popupSelect(BBjListSelectEvent ev!)
         index = ev!.getSelectedIndex()
         if #optionIDs! = null() then methodret
-        if index < 0 then methodret
+        if index < 0 then
             #control!.setUserData(null())
             #optionIDs! = null()
             #popup!.setVisible(0)
@@ -100,6 +142,7 @@ class public QuickSearchField
         #control!.setText(ev!.getSelectedItem())
         #optionIDs! = null()
         #popup!.setVisible(0)
+        #control!.focus()
     methodend
     
     method public void setFieldNames()
@@ -118,12 +161,14 @@ class public QuickSearchField
         endif
     methodend
     
-    method public void controlLostFocus(BBjLostFocusEvent ev!)
-        focused! = #control!.getParentWindow().getFocusedControl()
-        if focused!.equals(#popup!) then methodret
-        #control!.setUserData(null())
-        #optionIDs! = null()
-        #popup!.setVisible(0)
-    methodend
+REM     method public void controlLostFocus(BBjEvent ev!)
+REM         focused! = #control!.getParentWindow().getFocusedControl()
+REM         if focused!.equals(#control!) then methodret
+REM         escape
+REM         #control!.setUserData(null())
+REM         #optionIDs! = null()
+REM         #popup!.setVisible(0)
+REM         #control!.focus()
+REM     methodend
 
 classend
