@@ -113,7 +113,7 @@ REM             #control!.setUserData(null())
             idField! = idField!.toString()
             #optionIDs!.add(idField!)
             if #hasDesc! then
-                desc! = (dr!.getFieldAsString("DESC"))
+                desc! = dr!.getFieldAsString("DESC") + " (" + idField! + ")"
             else
                 desc! = idField! + ": no DESC"
             endif
