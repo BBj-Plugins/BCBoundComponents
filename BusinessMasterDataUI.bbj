@@ -166,6 +166,12 @@ REM     methodend
           cast(BBjWidget, #forms!.getItem(i)).setSize(#formTabCtrl!.getWidth(), #formTabCtrl!.getHeight())
         next i
     methodend
+    
+    
+
+    method public BBjVector getForms()
+        methodret #forms!
+    methodend
 
     method public BBjWindow getWindow()
         methodret #wnd!
