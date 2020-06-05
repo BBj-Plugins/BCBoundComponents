@@ -242,7 +242,11 @@ REM         it! = #fieldList!.iterator()
                     control!.setText(value!)
                     break
                 endif
-                control!.setUserData(value!)
+                if value!.equals("") then
+                    control!.setUserData(null())
+                else
+                    control!.setUserData(value!)
+                endif
                 desc! = qs!.getDescForID(value!)
                 if desc! = null() then desc! = value!
                 control!.setText(desc!)
@@ -645,13 +649,13 @@ REM         calendarButton!.setImageFile("BusinessUIComponents/icon/ic_insert_in
         sel! = #getBinder().getSelection()
         
         if (sel!.size() <> 1) then
-            #clearForm()
-            methodret new DataRow()
-        fi
-        rs! = #getBinder().getRS()
-        rowkey$ = sel!.get(0)
-        rec! = rs!.get(rowkey$)
-        
+            rec! = #getBinder().getAttributesRecord().clone()
+            rec!.clear()
+        else
+            rs! = #getBinder().getRS()
+            rowkey$ = sel!.get(0)
+            rec! = rs!.get(rowkey$)
+        endif
         dr! = new DataRow()
         controlMap! = #getControlMap()
         it! = controlMap!.values().iterator()

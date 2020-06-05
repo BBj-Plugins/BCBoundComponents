@@ -132,13 +132,6 @@ class public BusinessGrid extends AbstractBCBoundWidget implements IPersistentSt
         fi
     methodend
     
-REM     method public void focusFirstRow()
-REM         escape
-REM         rs! = #getBinder().getRS()
-REM         if rs! <> null() and rs!.size() then
-REM             #grid!.setSelectedRow(0)
-REM         endif
-REM     methodend
     
 
     rem /**
@@ -321,7 +314,6 @@ REM     methodend
 
         #grid!.updateData(rs!)
         rem select first row on first retrieve
-REM                 escape
         if #initialRetrieve! then
             if rs! <> null() and rs!.size() then
                 #initialRetrieve! = Boolean.FALSE

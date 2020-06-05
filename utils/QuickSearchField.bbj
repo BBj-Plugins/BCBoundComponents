@@ -51,10 +51,16 @@ REM         #control!.setCallback(BBjControl.ON_LOST_FOCUS, #this!, "controlLost
         #binder! = binder!
     methodend
     
+    rem /**
+    rem  * what the field to use for the fulltext search is. default is '_SEARCH'
+    rem  */
     method public void setSearchFieldName(String searchFieldName!)
         #searchFieldName! = searchFieldName!
     methodend
     
+    rem /**
+    rem  * wether to use asterisks * before and after the search string. default is true
+    rem  */
     method public void setUseWildCard(Boolean useWildCard!)
         #useWildCard! = useWildCard!
     methodend
@@ -69,7 +75,11 @@ REM         #control!.setCallback(BBjControl.ON_LOST_FOCUS, #this!, "controlLost
     
     rem /getters -------------------------------
     
+    rem /**
+    rem  * returns the description for an id, used to correctly display the text in the input without using quicksearch, for example when the input is filled with the id after selection change in the binder.
+    rem  */
     method public String getDescForID(String id!)
+        if id! = null() or id!.trim().equals("") then methodret ""
         if !#hasDesc! then methodret id! + ": no DESC"
         ids! = id!.split($00$)
         filter! = new DataRow()
@@ -86,6 +96,10 @@ REM         #control!.setCallback(BBjControl.ON_LOST_FOCUS, #this!, "controlLost
         methodret desc!
     methodend
     
+    rem /**
+    rem  * in the input control on edit modify: after 1 second has passed without input, start the search. also resets the userdata and sends dirty signal to the binder, if binder is set, because this eventhandler
+    rem  * overwrites the old one defined in SimpleFormComponent
+    rem  */
     method public void onEditModifyEvent(BBjEvent ev!)
         BBjAPI().removeTimer(#uniqueID! + "startSearch",err=*next)
         BBjAPI().createTimer(#uniqueID! + "startSearch", #delay, #this!, "startSearch")
@@ -96,6 +110,9 @@ REM         #control!.setCallback(BBjControl.ON_LOST_FOCUS, #this!, "controlLost
         endif
     methodend
     
+    rem /**
+    rem  * in the input control, when arrow up or arrow down is pressed, then the popup control should be focused, so the user can navigate the search hits
+    rem  */
     method public void onKeyPressed(BBjInputKeypressEvent ev!)
         if !#popup!.isVisible() or #popup!.getItemCount() < 1 then methodret
         keyCode = ev!.getKeyCode()
@@ -105,15 +122,17 @@ REM         #control!.setCallback(BBjControl.ON_LOST_FOCUS, #this!, "controlLost
     methodend
     
     
+    rem /**
+    rem  * starts the search in the bc using the search field name (default is '_SEARCH') and filling the popup control with the resultset for up to #maxEntries (default 10) items.
+    rem  * also generates description and assembles id
+    rem  * 
+    rem  */
     method public void startSearch(BBjEvent ev!)
         BBjAPI().removeTimer(#uniqueID! + "startSearch")
         #popup!.removeAllItems()
         searchString! = #control!.getText()
-        if searchString!.trim().equals("") then
-REM             #optionIDs! = null()
-REM             #control!.setUserData(null())
-            methodret
-        endif
+        rem no search when input field empty
+        if searchString!.trim().equals("") then methodret
         filter! = new DataRow()
         if #useWildCard! then
             filter!.setFieldValue(#searchFieldName!, "*" + searchString! + "*")
@@ -142,7 +161,7 @@ REM             #control!.setUserData(null())
             idField! = idField!.toString()
             #optionIDs!.add(idField!)
             if #hasDesc! then
-                desc! = dr!.getFieldAsString("DESC") + " (" + idField!.trim() + ")"
+                desc! = dr!.getFieldAsString("DESC").trim() + " (" + idField!.trim() + ")"
             else
                 desc! = idField! + ": no DESC"
             endif
@@ -153,11 +172,17 @@ REM         escape
         BBjAPI().createTimer(#uniqueID! + "openList", .05, #this!, "openList")
     methodend
     
+    rem /**
+    rem  * expands the list of the popup control with the search hits. has to be in a timer with a delay, otherwise it will not work. called by the startSearch() method.
+    rem  */
     method public void openList(BBjEvent ev!)
         BBjAPI().removeTimer(#uniqueID! + "openList")
         #popup!.openList()
     methodend
     
+    rem /**
+    rem  * on selection of an item in the popup screen, the userdata of the input control is set to the selected id and the text is set to the description
+    rem  */
     method public void popupSelect(BBjListSelectEvent ev!)
         index = ev!.getSelectedIndex()
         if #optionIDs! = null() then methodret
@@ -174,6 +199,9 @@ REM         escape
         #control!.focus()
     methodend
     
+    rem /**
+    rem  * parses the id fields and determines if the field has a desc field by looking it up in the attributes record of the lookup bc
+    rem  */
     method public void parseAttributes()
         lookupAttributes! = #bc!.getAttributesRecord()
         ids! = lookupAttributes!.getFieldsHavingAttributeValue("EDITABLE", "2")
@@ -190,14 +218,4 @@ REM         escape
         endif
     methodend
     
-REM     method public void controlLostFocus(BBjEvent ev!)
-REM         focused! = #control!.getParentWindow().getFocusedControl()
-REM         if focused!.equals(#control!) then methodret
-REM         escape
-REM         #control!.setUserData(null())
-REM         #optionIDs! = null()
-REM         #popup!.setVisible(0)
-REM         #control!.focus()
-REM     methodend
-
 classend
