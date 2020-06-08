@@ -7,6 +7,7 @@ REM  */
 
 use ::BusinessUIComponents/AbstractBCBoundWidget.bbj::AbstractBCBoundWidget
 use ::BBjGridExWidget/BBjGridExWidget.bbj::BBjGridExWidget
+use ::BusinessUIComponents/configurations/PropertiesManager.bbj::PropertiesManager
 use com.basiscomponents.bc.BCBound
 use com.basiscomponents.bc.IBCBound
 use com.basiscomponents.bc.BCBinder
@@ -50,6 +51,9 @@ class public WindowCloseHandler implements IBCBound
     methodend
     
     method public void onSignal(int signal!, Object payload!)
+        if signal!=BCBinder.SIGNAL_TERMINATE then
+            PropertiesManager.getInstance().terminate()
+        endif
         if signal!=BCBinder.SIGNAL_DESTROY then
             release
         endif
