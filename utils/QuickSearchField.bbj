@@ -28,6 +28,7 @@ class public QuickSearchField
 
     method public QuickSearchField(BBjInputE control!, BusinessComponent bc!)
         #control! = control!
+        #control!.setLength(#control!.getLength() + 100)
         #bc! = bc!
         wnd! = #control!.getParentWindow()
         popupX = #control!.getX()
@@ -38,8 +39,6 @@ class public QuickSearchField
         #popup!.setFieldHeight(0)
         #popup!.setVisible(0)
         #popup!.setCallback(BBjControl.ON_LIST_SELECT, #this!, "popupSelect")
-REM         #popup!.setCallback(BBjControl.ON_LIST_CANCEL, #this!, "controlLostFocus")
-REM         #control!.setCallback(BBjControl.ON_LOST_FOCUS, #this!, "controlLostFocus")
         #control!.setCallback(BBjControl.ON_EDIT_MODIFY, #this!, "onEditModifyEvent")
         #control!.setCallback(BBjControl.ON_INPUT_KEYPRESS, #this!, "onKeyPressed")
         #parseAttributes()
