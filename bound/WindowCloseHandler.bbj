@@ -19,8 +19,8 @@ use com.basiscomponents.db.DataRow
 class public WindowCloseHandler implements IBCBound
 
     
-    field private BCBinder binder!
-    field private BBjWindow wnd!
+    field protected BCBinder binder!
+    field protected BBjWindow wnd!
 
     method public WindowCloseHandler(BBjWindow wnd!)
         #wnd! = wnd!
