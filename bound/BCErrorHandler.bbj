@@ -18,10 +18,16 @@ use com.basiscomponents.db.DataRow
 class public BCErrorHandler implements IBCBound
 
     
-    field private BCBinder binder!
+    field protected BCBinder binder!
+    field protected String title! = ""
+    
 
     method public BCErrorHandler()
     
+    methodend
+    
+    method public void setTitle(String title!)
+        #title! = title!
     methodend
     
     rem -------------------------BCBinder methods--------------------------------
@@ -50,7 +56,14 @@ class public BCErrorHandler implements IBCBound
     method public void onSignal(int signal!, Object payload!)
         if signal!=BCBinder.SIGNAL_ERROR then
             rem BCBinder.SIGNAL_ERROR
-            a = msgbox(cast(String, payload!))
+            exception! = cast(Exception, payload!)
+            cause! = exception!.getCause()
+            if cause! <> null() then
+                message! = cause!.getMessage()
+            else
+                message! = exception!.getMessage()
+            endif
+            a = msgbox(message!,16,#title!);rem 16 = OK button + stop sign
         endif
     methodend
     

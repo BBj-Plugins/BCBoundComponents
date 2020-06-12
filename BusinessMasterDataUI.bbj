@@ -134,8 +134,10 @@ class public BusinessMasterDataUI
         #binder!.register(bgrid!)
         #componentsWithProperties!.add(bgrid!)
     methodend
-    method public void addBCErrorHandler()
-        #binder!.register(new BCErrorHandler())
+    method public void addBCErrorHandler(String title!)
+        errorhandler! = new BCErrorHandler()
+        errorhandler!.setTitle(title!)
+        #binder!.register(errorhandler!)
     methodend
     
     method public void addWindowCloseHandler()
@@ -191,8 +193,8 @@ md! = new BusinessMasterDataUI(BC$, TITLE$)
 
 md!.addMenuBar()
 md!.addEditToolbar(2,2)
-md!.addBusinessGrid(0,0)
-md!.addBCErrorHandler()
+md!.addBusinessGrid(0,5)
+md!.addBCErrorHandler(TITLE$)
 md!.addWindowCloseHandler()
 md!.addForms(form_defs!, controlPrefixMap!)
 
