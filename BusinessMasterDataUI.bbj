@@ -8,7 +8,7 @@ use ::BusinessUIComponents/bound/SimpleFormComponent.bbj::SimpleFormComponent
 use ::BusinessUIComponents/bound/SearchBar.bbj::SearchBar
 use ::BusinessUIComponents/bound/MenuBar.bbj::MenuBar
 use ::BusinessUIComponents/bound/BCErrorHandler.bbj::BCErrorHandler
-use ::BusinessUIComponents/bound/WindowCloseHandler.bbj::WindowCloseHandler
+use ::BusinessUIComponents/bound/WindowHandler.bbj::WindowHandler
 use ::BusinessUIComponents/unbound/HorizontalSplitter.bbj::HorizontalSplitter
 use ::BusinessUIComponents/configurations/IPropertiesManager.bbj::IPropertiesManager
 use ::BusinessUIComponents/configurations/LocalizedPropertiesManager.bbj::LocalizedPropertiesManager
@@ -140,8 +140,11 @@ class public BusinessMasterDataUI
         #binder!.register(errorhandler!)
     methodend
     
-    method public void addWindowCloseHandler()
-        #binder!.register(new WindowCloseHandler(#wnd!))
+    method public void addWindowHandler(String pgmName!)
+        wh! = new WindowHandler(#wnd!)
+        wh!.setProgramName(pgmName!)
+        wh!.applyWindowConfig()
+        #binder!.register(wh!)
     methodend
     
 REM     method public void addMenuBar()
@@ -188,14 +191,13 @@ rem controlPrefixMap! is optional
 controlPrefixMap! = null()
 enter form_defs!, BC$, TITLE$, controlPrefixMap!, err=*next
 
-
 md! = new BusinessMasterDataUI(BC$, TITLE$)
 
 md!.addMenuBar()
 md!.addEditToolbar(2,2)
 md!.addBusinessGrid(0,5)
 md!.addBCErrorHandler(TITLE$)
-md!.addWindowCloseHandler()
+md!.addWindowHandler(TITLE$)
 md!.addForms(form_defs!, controlPrefixMap!)
 
 md!.doModal()
