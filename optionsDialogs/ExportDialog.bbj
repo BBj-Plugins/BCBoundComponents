@@ -1,0 +1,859 @@
+REM /**
+REM  * ExportDialog.bbj
+REM  * @author mneu
+REM  *
+REM  */
+
+use ::BusinessUIComponents/configurations/CustomConfigurationsBC.bbj::CustomConfigurationsBC
+use ::BusinessUIComponents/BusinessGrid.bbj::BusinessGrid
+use ::BBjGridExWidget/BBjGridExWidgetState.bbj::BBjGridExWidgetState
+
+use com.basiscomponents.db.DataRow
+use com.basiscomponents.db.ResultSet
+use com.basiscomponents.db.util.DataRowJsonMapper
+use com.basiscomponents.db.BBArrayList
+use com.basiscomponents.db.ResultSetExporter
+use com.basiscomponents.db.export.SheetConfiguration
+use com.basiscomponents.db.export.ReportDetails
+use com.basiscomponents.db.export.ColumnWidthCalculator
+
+use com.google.gson.Gson
+use com.google.gson.JsonObject
+use com.google.gson.JsonElement
+
+use java.util.HashMap
+
+use java.io.File
+use java.io.FileWriter
+
+use java.nio.file.Paths
+use java.nio.file.Path
+
+class public ExportDialog
+
+    field public static BBjString PATH$ = java.lang.System.getProperty("user.home") + "/Documents"
+    
+    field private static BBjString TXT_PDF$ = "PDF"
+    field private static BBjString TXT_XLSX$ = "XLSX"
+    field private static BBjString TXT_HTML$ = "HTML"
+    field private static BBjString TXT_XML$ = "XML"
+    field private static BBjString TXT_TXT$ = "TXT"
+    field private static BBjString TXT_CSV$ = "CSV"
+    field private static BBjString TXT_CUSTOM_PDF$ = "Custom PDF"
+
+    field private Boolean showsBaristaHeader! = Boolean.FALSE
+    
+    field private BBjButton btnExport!
+    field private BBjButton btnCancel!
+
+    field private BBjWindow mainWindow!
+    field private BBjString pgmName$
+    field private BusinessGrid grid!
+    field private CustomConfigurationsBC cfgBC!
+    field private BBjStaticText txExportFunction!
+    field private BBjListButton lbExportFunction!
+    field private BBjSysGui sysGui!
+    
+    field private BBjChildWindow cwPdf!
+    field private BBjListButton lbPageFittingOptions!
+    field private BBjListButton lbFontSize!
+    field private BBjListButton lbPageLayout!
+    field private BBjCheckBox cbPdfOpen!
+
+    field private BBjChildWindow cwXlsx!
+    field private BBjCheckBox cbWriteHeader!
+    field private BBjCheckBox cbXlsxOpen!
+    
+    field private BBjChildWindow cwXml!
+    field private BBjInputE ieRootTagName!
+    field private BBjInputE ieEntityName!
+    field private BBjCheckBox cbXmlOpen!
+    
+    field private BBjChildWindow cwCustomPdf!
+    field private BBjCheckBox cbCustomPdfOpen!
+    
+    field private BBjChildWindow cwHtml!
+    field private BBjCheckBox cbHtmlOpen!
+    
+    field private BBjChildWindow cwTxt!
+    field private BBjCheckBox cbTxtOpen!
+    
+    field private BBjChildWindow cwCsv!
+    field private BBjCheckBox cbCsvOpen!
+    
+    field private BBjChildWindow cwCurrentlyVisible!
+    
+    field private HashMap customJasperReportsMap!
+    
+    field private BBjFileChooser fileChooser!
+    
+    method private ExportDialog()
+    methodend
+    
+    method public ExportDialog(BBjString pgmName$, BusinessGrid grid!, HashMap customJasperReportsMap!)
+        #pgmName$ = pgmName$
+        #grid! = grid!
+        #customJasperReportsMap! = customJasperReportsMap!
+        #sysGui! = BBjAPI().getSysGui()
+    methodend
+    
+    method public void createDialogWindow()
+        wnd! = #createDialogWindow("Export file")
+        if info(3,6) = "5" then
+            #addBaseLayout(wnd!)
+            #addExportLayouts(0, 40, 500, 75)
+        else
+            #addFileChooser(wnd!)
+            #addExportLayouts(0, 315, 500, 115)
+        endif
+        #fillFormWithConfigurations()
+        #setCallbacks()
+    methodend
+    
+    method public BBjWindow createDialogWindow(BBjString windowTitle$)
+        sysGui! = BBjAPI().getSysGui()
+        declare BBjTopLevelWindow wnd!
+        if info(3,6) = "5" then
+            wnd! = cast(BBjTopLevelWindow, sysGui!.addWindow(sysGui!.getAvailableContext(),10,10,500,145,windowTitle$, $40000000$))
+        else
+            wnd! = cast(BBjTopLevelWindow, sysGui!.addWindow(sysGui!.getAvailableContext(),10,10,500,425,windowTitle$, $40000000$))
+        
+        endif
+        wnd!.setCallback(BBjAPI.ON_CLOSE, #this!, "onClose")
+REM         wnd!.setResizable(0)
+        #mainWindow! = wnd!
+REM         #mainWindow!.setCallback(#mainWindow!.ON_SCREEN_RESIZE, #this!, "onResize")
+        methodret #mainWindow!
+    methodend
+    
+    method public void addFileChooser(BBjWindow wnd!)
+        #fileChooser! = wnd!.addFileChooser(1099, 0, 0, 500, 300, #PATH$, $0104$)
+        #fileChooser!.addFileFilter(#TXT_PDF$, "*.pdf")
+        #fileChooser!.addFileFilter(#TXT_XLSX$, "*.xlsx")
+        #fileChooser!.addFileFilter(#TXT_HTML$, "*.html")
+        #fileChooser!.addFileFilter(#TXT_XML$, "*.xml")
+        #fileChooser!.addFileFilter(#TXT_TXT$, "*.txt")
+        #fileChooser!.addFileFilter(#TXT_CSV$, "*.csv")
+        
+        #fileChooser!.setAcceptAllFileFilterUsed(Boolean.FALSE)
+        
+        if #customJasperReportsMap! <> null() and !#customJasperReportsMap!.isEmpty() then
+            keySet! = #customJasperReportsMap!.keySet()
+            iterator! = keySet!.iterator()
+            while iterator!.hasNext()
+                key! = iterator!.next()
+                #fileChooser!.addFileFilter(key!, "*.pdf")
+            wend
+        endif
+        
+        #fileChooser!.setCallback(#fileChooser!.ON_FILECHOOSER_FILTER, #this!, "onFileChooserFilter")
+        #fileChooser!.setCallback(#fileChooser!.ON_FILECHOOSER_CANCEL, #this!, "onFileChooserCancel")
+        #fileChooser!.setCallback(#fileChooser!.ON_FILECHOOSER_APPROVE, #this!, "onFileChooserApprove")
+    methodend
+    
+    method public void onFileChooserFilter(BBjFileChooserFilterEvent ev!)
+        #cwCurrentlyVisible!.setVisible(Boolean.FALSE)
+        filter$ = ev!.getActiveFileFilter()
+        switch filter$
+            case #TXT_PDF$
+                #cwCurrentlyVisible! = #cwPdf!
+                break
+            case #TXT_XLSX$
+                #cwCurrentlyVisible! = #cwXlsx!
+                break
+            case #TXT_HTML$
+                #cwCurrentlyVisible! = #cwHtml!
+                break
+            case #TXT_XML$
+                #cwCurrentlyVisible! = #cwXml!
+                break
+            case #TXT_TXT$
+                #cwCurrentlyVisible! = #cwTxt!
+                break
+            case #TXT_CSV$
+                #cwCurrentlyVisible! = #cwCsv!
+                break
+            case default
+                #cwCurrentlyVisible! = #cwCustomPdf!
+                break
+        swend
+        #cwCurrentlyVisible!.setVisible(Boolean.TRUE)
+    methodend
+    
+    method protected void setCallbacks()
+        if info(3,6) = "5" then
+            #btnExport!.setCallback(BBjButton.ON_BUTTON_PUSH, #this!, "onExportButtonPush")
+            #btnCancel!.setCallback(BBjButton.ON_BUTTON_PUSH, #this!, "onCancelButtonPush")
+        endif
+    methodend
+    
+    method private void addBaseLayout(BBjWindow wnd!)
+        #btnExport! = wnd!.addButton(5010, 170, 115, 145, 23, "Export")
+        #btnCancel! = wnd!.addButton(5020, 325, 115, 145, 23, "Cancel")
+        #txExportFunction! = #mainWindow!.addStaticText(6003, 8, 15, 150, 21, "Export to")
+        #lbExportFunction! = #mainWindow!.addListButton(6005, 170, 15, 300, 200, "")
+        #lbExportFunction!.addItem(#TXT_PDF$)
+        #lbExportFunction!.addItem(#TXT_XLSX$)
+        #lbExportFunction!.addItem(#TXT_HTML$)
+        #lbExportFunction!.addItem(#TXT_XML$)
+        #lbExportFunction!.addItem(#TXT_TXT$)
+        #lbExportFunction!.addItem(#TXT_CSV$)
+        #lbExportFunction!.addItem(#TXT_CUSTOM_PDF$)
+        #lbExportFunction!.selectIndex(0)
+        #lbExportFunction!.setCallback(#lbExportFunction!.ON_LIST_SELECT, #this!, "onExportFunctionSelected")
+    methodend
+    
+    method private void addExportLayouts(BBjNumber x, BBjNumber y, BBjNumber width, BBjNumber height)
+        #addPdfLayout(x, y, width, height)
+        #addXlsxLayout(x, y, width, height)
+        #addHtmlLayout(x, y, width, height)
+        #addXmlLayout(x, y, width, height)
+        #addTxtLayout(x, y, width, height)
+        #addCsvLayout(x, y, width, height)
+        #addCustomPdfLayout(x, y, width, height)
+    methodend
+    
+    method private void addPdfLayout(BBjNumber x, BBjNumber y, BBjNumber width, BBjNumber height)
+        #cwPdf! = #mainWindow!.addChildWindow(7010, x, y, width, height, "", $00000800$, #sysGui!.getAvailableContext())
+        #cwCurrentlyVisible! = #cwPdf!
+        #cwCurrentlyVisible!.setVisible(Boolean.TRUE)
+        
+        #cwPdf!.addStaticText(2010, 8, 0, 150, 23, "Page options")
+        #lbPageFittingOptions! = #cwPdf!.addListButton(3010, 170, 0, 150, 200, "")
+        #lbPageFittingOptions!.setFieldHeight(23)
+        #lbPageFittingOptions!.addItem("normal fitting")
+        #lbPageFittingOptions!.addItem("fit to width")
+        #lbPageFittingOptions!.addItem("fit to height")
+        #lbPageFittingOptions!.addItem("fit to page")
+        #lbPageFittingOptions!.selectIndex(0)
+        
+        #cwPdf!.addStaticText(2020, 8, 25, 150, 23, "Font size")
+        #lbFontSize! = #cwPdf!.addListButton(3020, 170, 25, 90, 200, "")
+        #lbFontSize!.addItem(" 7")
+        #lbFontSize!.addItem(" 8")
+        #lbFontSize!.addItem(" 9")
+        #lbFontSize!.addItem("10")
+        #lbFontSize!.addItem("11")
+        #lbFontSize!.addItem("12")
+        #lbFontSize!.selectIndex(2)
+        
+        #cwPdf!.addStaticText(2030, 8, 50, 150, 23, "Page layout")
+        #lbPageLayout! = #cwPdf!.addListButton(3030, 170, 50, 150, 200, "")
+        #lbPageLayout!.setFieldHeight(23)
+        #lbPageLayout!.addItem("portrait")
+        #lbPageLayout!.addItem("landscape")
+        #lbPageLayout!.selectIndex(0)
+        
+        if info(3,6) <> "5" then
+            #cwPdf!.addStaticText(2040, 8, 75, 150, 23, "Open file after export")
+            #cbPdfOpen! = #cwPdf!.addCheckBox(3040, 170, 75, 23, 23, "")
+        endif
+    methodend
+    
+    method private void addXlsxLayout(BBjNumber x, BBjNumber y, BBjNumber width, BBjNumber height)
+        #cwXlsx! = #mainWindow!.addChildWindow(7020, x, y, width, height, "", $00000800$,#sysGui!.getAvailableContext())
+        #cwXlsx!.setVisible(Boolean.FALSE)
+        
+        #cwXlsx!.addStaticText(2010, 8, 0, 150, 23, "Write header")
+        #cbWriteHeader! = #cwXlsx!.addCheckBox(3010, 170, 0, 23, 23, "")
+        
+        if info(3,6) <> "5" then
+            #cwXlsx!.addStaticText(2020, 8, 25, 150, 23, "Open file after export")
+            #cbXlsxOpen! = #cwXlsx!.addCheckBox(3020, 170, 25, 23, 23, "")
+        endif
+    methodend
+    
+    method private void addHtmlLayout(BBjNumber x, BBjNumber y, BBjNumber width, BBjNumber height)
+        #cwHtml! = #mainWindow!.addChildWindow(7030, x, y, width, height, "", $00000800$,#sysGui!.getAvailableContext())
+        #cwHtml!.setVisible(Boolean.FALSE)
+        
+        if info(3,6) <> "5" then
+            #cwHtml!.addStaticText(2010, 8, 0, 150, 23, "Open file after export")
+            #cbHtmlOpen! = #cwHtml!.addCheckBox(3010, 170, 0, 23, 23, "")
+        endif
+    methodend
+    
+    method private void addXmlLayout(BBjNumber x, BBjNumber y, BBjNumber width, BBjNumber height)
+        #cwXml! = #mainWindow!.addChildWindow(7040, x, y, width, height, "", $00000800$,#sysGui!.getAvailableContext())
+        #cwXml!.setVisible(Boolean.FALSE)
+        
+        #cwXml!.addStaticText(2010, 8, 0, 150, 23, "Root tag name")
+        #ieRootTagName! = #cwXml!.addInputE(3010, 170, 0, 90, 23)
+        
+        #cwXml!.addStaticText(2020, 8, 25, 150, 23, "Entity name")
+        #ieEntityName! = #cwXml!.addInputE(3020, 170, 25, 90, 23)
+        
+        if info(3,6) <> "5" then
+            #cwXml!.addStaticText(2030, 8, 50, 150, 23, "Open file after export")
+            #cbXmlOpen! = #cwXml!.addCheckBox(3030, 170, 50, 23, 23, "")
+        endif
+    methodend
+    
+    method private void addTxtLayout(BBjNumber x, BBjNumber y, BBjNumber width, BBjNumber height)
+        #cwTxt! = #mainWindow!.addChildWindow(7050, x, y, width, height, "", $00000800$,#sysGui!.getAvailableContext())
+        #cwTxt!.setVisible(Boolean.FALSE)
+        
+        if info(3,6) <> "5" then
+            #cwTxt!.addStaticText(2010, 8, 0, 150, 23, "Open file after export")
+            #cbTxtOpen! = #cwTxt!.addCheckBox(3010, 170, 0, 23, 23, "")
+        endif
+    methodend
+    
+    method private void addCsvLayout(BBjNumber x, BBjNumber y, BBjNumber width, BBjNumber height)
+        #cwCsv! = #mainWindow!.addChildWindow(7060, x, y, width, height, "", $00000800$,#sysGui!.getAvailableContext())
+        #cwCsv!.setVisible(Boolean.FALSE)
+        
+        if info(3,6) <> "5" then
+            #cwCsv!.addStaticText(2010, 8, 0, 150, 23, "Open file after export")
+            #cbCsvOpen! = #cwCsv!.addCheckBox(3010, 170, 0, 23, 23, "")
+        endif
+    methodend
+    
+    method private void addCustomPdfLayout(BBjNumber x, BBjNumber y, BBjNumber width, BBjNumber height)
+        #cwCustomPdf! = #mainWindow!.addChildWindow(7070, x, y, width, height, "", $00000800$,#sysGui!.getAvailableContext())
+        #cwCustomPdf!.setVisible(Boolean.FALSE)
+        
+        if info(3,6) <> "5" then
+            #cwCustomPdf!.addStaticText(2010, 8, 0, 150, 23, "Open file after export")
+            #cbCustomPdfOpen! = #cwCustomPdf!.addCheckBox(3010, 170, 0, 23, 23, "")
+        endif
+    methodend
+    
+    method public void onExportFunctionSelected(BBjEvent ev!)
+        #cwCurrentlyVisible!.setVisible(Boolean.FALSE)
+        switch #lbExportFunction!.getText()
+            case #TXT_PDF$
+                #cwCurrentlyVisible! = #cwPdf!
+                break
+            case #TXT_XLSX$
+                #cwCurrentlyVisible! = #cwXlsx!
+                break
+            case #TXT_HTML$
+                #cwCurrentlyVisible! = #cwHtml!
+                break
+            case #TXT_XML$
+                #cwCurrentlyVisible! = #cwXml!
+                break
+            case #TXT_TXT$
+                #cwCurrentlyVisible! = #cwTxt!
+                break
+            case #TXT_CSV$
+                #cwCurrentlyVisible! = #cwCsv!
+                break
+            case #TXT_CUSTOM_PDF$
+                #cwCurrentlyVisible! = #cwCustomPdf!
+                break
+        swend
+        #cwCurrentlyVisible!.setVisible(Boolean.TRUE)
+    methodend
+    
+    method public void onExportButtonPush(BBjEvent ev!)
+        switch #cwCurrentlyVisible!
+            case #cwPdf!
+                #exportPdf("export.pdf")
+                break
+            case #cwXlsx!
+                #exportXlsx("export.xlsx")
+                break
+            case #cwHtml!
+                #exportHtml("export.html")
+                break
+            case #cwXml!
+                #exportXml("export.xml")
+                break
+            case #cwTxt!
+                #exportTxt("export.txt")
+                break
+            case #cwCsv!
+                #exportCsv("export.csv")
+                break
+            case #cwCustomPdf!
+                isCustomReport! = Boolean.FALSE
+                selectedExportFunction! = #lbExportFunction!.getItemAt(#lbExportFunction!.getSelectedIndex()).trim()
+                if #customJasperReportsMap! <> null() and !#customJasperReportsMap!.isEmpty() then
+                    keySet! = #customJasperReportsMap!.keySet()
+                    iterator! = keySet!.iterator()
+                    while iterator!.hasNext()
+                        key$ = iterator!.next()
+                        if key$ = selectedExportFunction! then
+                            isCustomReport! = Boolean.TRUE
+                            break
+                        endif
+                    wend
+                endif
+                if isCustomReport! then
+                    customReportFilePath$ = #customJasperReportsMap!.get(selectedExportFunction!)
+                    #exportCustomReport("export.pdf", customReportFilePath$)
+                endif
+                break
+        swend
+    methodend
+    
+    method public void onCancelButtonPush(BBjEvent ev!)
+        #mainWindow!.destroy()
+    methodend
+    
+    method public void setConfigurationsBC(CustomConfigurationsBC cfgBC!)
+        #cfgBC! = cfgBC!
+    methodend
+    
+    method public void onFileChooserCancel(BBjEvent ev!)
+        #mainWindow!.destroy()
+    methodend
+    
+    method public void onFileChooserApprove(BBjFileChooserApproveEvent ev!)
+        filesVector! = ev!.getSelectedFiles()
+        fileName$ = filesVector!.getItem(0)
+        fileFilter$ = #fileChooser!.getActiveFileFilter()
+        switch fileFilter$
+            case #TXT_PDF$
+                #exportPdf(fileName$)
+                break
+            case #TXT_XLSX$
+                #exportXlsx(fileName$)
+                break
+            case #TXT_HTML$
+                #exportHtml(fileName$)
+                break
+            case #TXT_XML$
+                #exportXml(fileName$)
+                break
+            case #TXT_TXT$
+                #exportTxt(fileName$)
+                break
+            case #TXT_CSV$
+                #exportCsv(fileName$)
+                break
+            case default
+                if #customJasperReportsMap! <> null() and !#customJasperReportsMap!.isEmpty() then
+                    keySet! = #customJasperReportsMap!.keySet()
+                    iterator! = keySet!.iterator()
+                    while iterator!.hasNext()
+                        key$ = iterator!.next()
+                        if key$ = fileFilter$ then
+                            customReportFilePath$ = #customJasperReportsMap!.get(key$)
+                            break
+                        endif
+                    wend
+                endif
+                if cvs(customReportFilePath$, 3) > "" then #exportCustomReport(fileName$, customReportFilePath$)
+                break
+        swend
+    methodend
+    
+    method private void exportXlsx(BBjString outputFilePath$)
+        rs! = #grid!.getGrid().getRS()
+        
+        dr! = rs!.get(0)
+        
+        rem creating SheetConfiguration
+        declare SheetConfiguration sheetConfiguration!
+        sheetConfiguration! = new SheetConfiguration()
+
+        visibleRowsVec! = #getgrid().getGrid().getColumnState().getVisibleColumns()
+        for i = visibleRowsVec!.size() - 1 to 0 step - 1
+            fieldName$ = visibleRowsVec!.get(i)
+            header! = dr!.getDataField(fieldName$).getAttribute("LABEL")
+            if header! = null() then header! = fieldName$
+            width = 1000
+            sheetConfiguration!.insertColumn(header!, width, fieldName$, k)
+        next i
+        
+        rem exporting
+        declare File outputFile!
+        if info(3,6) = "5" then
+            outputFile! = java.io.File.createTempFile("tempFile", ".xlsx")
+            outputFile!.createNewFile()
+        else
+            outputFile! = new File(outputFilePath$)
+        endif
+        
+        writeHeader! = #cbWriteHeader!.isSelected()
+        
+        ResultSetExporter.writeXLSX(rs!, outputFile!, writeHeader!, sheetConfiguration!)
+        
+        if info(3,6) = "5" then
+            fs! = bbjapi().getThinClient().getClientFileSystem() 
+            cf! = fs!.getClientFile(outputFilePath$)
+            cf!.copyToClient(outputFile!.getAbsolutePath())
+        else
+            if #cbXlsxOpen!.isSelected() then #openExportetFile(outputFile!)
+        endif
+        
+        #saveConfiguration()
+        #mainWindow!.destroy()
+    methodend
+    
+    method private void exportHtml(BBjString outputFilePath$)
+        rs! = #grid!.getGrid().getRS()
+        if rs! = null() or rs!.isEmpty() then methodret
+        
+        declare File outputFile!
+        outputFile! = new File(outputFilePath$)
+        
+        if info(3,6) = "5" then
+            tempFile! = java.io.File.createTempFile("tempFile", ".html")
+            tempFile!.createNewFile()
+            writer! = new FileWriter(tempFile!)
+        else
+            writer! = new FileWriter(outputFile!)
+        endif
+        
+        ResultSetExporter.writeHTML(rs!, writer!)
+        writer!.flush()
+        writer!.close()
+        
+        if info(3,6) = "5" then
+            fs! = bbjapi().getThinClient().getClientFileSystem() 
+            cf! = fs!.getClientFile(outputFilePath$) 
+            cf!.copyToClient(tempFile!.getAbsolutePath())
+        else
+            if #cbHtmlOpen!.isSelected() then #openExportetFile(outputFile!)
+        endif
+        
+        #saveConfiguration()
+        #mainWindow!.destroy()
+    methodend
+    
+    method private void exportXml(BBjString outputFilePath$)
+        rs! = #grid!.getGrid().getRS()
+        
+        rootTagName! = #ieRootTagName!.getText()
+        entityName! = #ieEntityName!.getText()
+        
+        if rootTagName!.trim().equals("") or entityName!.trim().equals("") then methodret
+        
+        declare File outputFile!
+        outputFile! = new File(outputFilePath$)
+        
+        if info(3,6) = "5" then
+            tempFile! = java.io.File.createTempFile("tempFile", ".xml")
+            tempFile!.createNewFile()
+            writer! = new FileWriter(tempFile!)
+        else
+            writer! = new FileWriter(outputFile!)
+        endif
+        
+        ResultSetExporter.writeXML(rs!, rootTagName!, entityName!, writer!)
+        writer!.flush()
+        writer!.close()
+        
+        if info(3,6) = "5" then
+            fs! = bbjapi().getThinClient().getClientFileSystem() 
+            cf! = fs!.getClientFile(outputFilePath$) 
+            cf!.copyToClient(tempFile!.getAbsolutePath())
+        else
+            if #cbXmlOpen!.isSelected() then #openExportetFile(outputFile!)
+        endif
+        
+        #saveConfiguration()
+        #mainWindow!.destroy()
+    methodend
+    
+    method private void exportTxt(BBjString outputFilePath$)
+        rs! = #grid!.getGrid().getRS()
+        if rs! = null() or rs!.isEmpty() then methodret
+        
+        declare File outputFile!
+        outputFile! = new File(outputFilePath$)
+        
+        if info(3,6) = "5" then
+            tempFile! = java.io.File.createTempFile("tempFile", ".txt")
+            tempFile!.createNewFile()
+            writer! = new FileWriter(tempFile!)
+        else
+            writer! = new FileWriter(outputFile!)
+        endif
+        
+        ResultSetExporter.writeTXT(rs!, writer!)
+        writer!.flush()
+        writer!.close()
+        
+        if info(3,6) = "5" then
+            fs! = bbjapi().getThinClient().getClientFileSystem() 
+            cf! = fs!.getClientFile(outputFilePath$) 
+            cf!.copyToClient(tempFile!.getAbsolutePath())
+        else
+            if #cbTxtOpen!.isSelected() then #openExportetFile(outputFile!)
+        endif
+        
+        #saveConfiguration()
+        #mainWindow!.destroy()
+    methodend
+    
+    method private void exportCsv(BBjString outputFilePath$)
+        rs! = #grid!.getGrid().getRS()
+        
+        rem exporting
+        declare File outputFile!     
+        
+        if info(3,6) = "5" then
+            outputFile! = java.io.File.createTempFile("tempFile", ".csv")
+            outputFile!.createNewFile()
+            writer! = new FileWriter(outputFile!)
+        else
+            outputFile! = new File(outputFilePath$)
+        endif
+        
+        ResultSetExporter.exportToCSV(outputFile!, rs!)
+        
+        if info(3,6) = "5" then
+            fs! = bbjapi().getThinClient().getClientFileSystem() 
+            cf! = fs!.getClientFile(outputFilePath$) 
+            cf!.copyToClient(outputFile!.getAbsolutePath())
+        else
+            if #cbCsvOpen!.isSelected() then #openExportetFile(outputFile!)
+        endif
+        
+        #saveConfiguration()
+        #mainWindow!.destroy()
+    methodend
+    
+    method private void exportPdf(BBjString outputFilePath$)
+        declare File outputFile!
+        outputFile! = new File(outputFilePath$)
+        fileName$ = outputFile!.getName()
+        
+        rs! = #grid!.getGrid().getRS()
+        dr! = rs!.get(0)
+        
+        rem creating SheetConfiguration
+        declare SheetConfiguration sheetConfiguration!
+        sheetConfiguration! = new SheetConfiguration()
+        
+        fieldWidths! = ColumnWidthCalculator.calculateColumnWidths(rs!, num(cvs(#lbFontSize!.getItemAt(#lbFontSize!.getSelectedIndex()),3)))
+
+        visibleRowsVec! = #getgrid().getGrid().getColumnState().getVisibleColumns()
+        for i = visibleRowsVec!.size() - 1 to 0 step - 1
+            fieldName$ = visibleRowsVec!.get(i)
+            header! = dr!.getDataField(fieldName$).getAttribute("LABEL")
+            if header! = null() then header! = fieldName$
+            width = fieldWidths!.getFieldAsNumber(fieldName$)
+            sheetConfiguration!.insertColumn(header!, width, fieldName$, k)
+        next i
+        
+        sheetConfiguration!.setReportDetails(new ReportDetails(0, "reportName", "tableName", "0000000000000000000001"))
+        sheetConfiguration!.setFontSize(num(cvs(#lbFontSize!.getItemAt(#lbFontSize!.getSelectedIndex()),3)))
+        
+        fitTo = #lbPageFittingOptions!.getSelectedIndex()
+        
+        rem exporting
+        outputFile! = ResultSetExporter.exportToPDF(outputFile!, rs!, sheetConfiguration!, #showsBaristaHeader!, fitTo, #lbPageLayout!.getSelectedIndex())
+
+        if info(3,6) = "5" then
+            fs! = bbjapi().getThinClient().getClientFileSystem() 
+            cf! = fs!.getClientFile(outputFilePath$) 
+            cf!.copyToClient(outputFile!.getAbsolutePath())
+        else
+            if #cbPdfOpen!.isSelected() then #openExportetFile(outputFile!)
+        endif
+        
+        #saveConfiguration()
+        #mainWindow!.destroy()
+    methodend
+    
+    method private void exportCustomReport(BBjString outputFilePath$, BBjString customReportFilePath$)
+        rs! = #grid!.getGrid().getRS()
+        
+        reportPath$ = customReportFilePath$
+        
+        if info(3,6) = "5" then
+            fs! = bbjapi().getThinClient().getClientFileSystem() 
+            cf! = fs!.getClientFile(report!) 
+            reportPath$ = cf!.copyFromClient("customReport" + str(System.currentTimeMillis()) + ".jrxml")
+            System.out.println(reportPath$)
+        endif
+
+        rem TODO: wie triggern wir das neue resultset, welches die felder des reports beinhaltet? kein controller vorhanden!
+        rem exporting
+        declare File outputFile!
+        ouputFile! = new File(outputFilePath$)
+        declare File customReportFile!
+        customReportFile! = new File(customReportFilePath$)
+
+        if info(3,6) = "5" then
+            outputFile! = #exporter!.exportToPDFByCustomReport(outputFile!, reportPath$, rs!)
+        else
+            outputFile! = ResultSetExporter.exportToPDFByCustomReport(ouputFile!, customReportFile!, rs!)
+        endif
+
+        if info(3,6) = "5" then
+            fs! = bbjapi().getThinClient().getClientFileSystem() 
+            cf! = fs!.getClientFile(outputFilePath$) 
+            cf!.copyToClient(outputFile!.getAbsolutePath())
+        endif
+        
+        if #cbCustomPdfOpen!.isSelected() then #openExportetFile(outputFile!)
+        #saveConfiguration()
+        #mainWindow!.destroy()
+    methodend
+    
+    method private void openExportetFile(File outputFile!)
+        fileToOpen! = new File@(outputFile!.getPath())
+        java.awt.Desktop@.getDesktop().open(fileToOpen!)
+    methodend
+    
+    method private void saveConfiguration()
+        config! = new DataRow()
+        json! = new JsonObject()
+        
+        switch #cwCurrentlyVisible!
+            case #cwPdf!
+                key$ = #TXT_PDF$
+                json!.add(#TXT_PDF$, new JsonObject())
+                o! = json!.getAsJsonObject(#TXT_PDF$)
+                o!.addProperty("fitting", #lbPageFittingOptions!.getSelectedIndex())
+                o!.addProperty("fontSize", #lbFontSize!.getSelectedIndex())
+                o!.addProperty("pageLayout", #lbPageLayout!.getSelectedIndex())
+                if #cbPdfOpen! <> null() then
+                    o!.addProperty("openFileIndicator", #cbPdfOpen!.isSelected())
+                endif
+                break
+            case #cwXlsx!
+                key$ = #TXT_XLSX$
+                json!.add(#TXT_XLSX$, new JsonObject())
+                o! = json!.getAsJsonObject(#TXT_XLSX$)
+                o!.addProperty("writeHeader", #cbWriteHeader!.isSelected())
+                if #cbXlsxOpen! <> null() then
+                    o!.addProperty("openFileIndicator", #cbXlsxOpen!.isSelected())
+                endif
+                break
+            case #cwHtml!
+                key$ = #TXT_HTML$
+                json!.add(#TXT_HTML$, new JsonObject())
+                o! = json!.getAsJsonObject(#TXT_HTML$)
+                if #cbHtmlOpen! <> null() then
+                    o!.addProperty("openFileIndicator", #cbHtmlOpen!.isSelected())
+                endif
+                break
+            case #cwXml!
+                key$ = #TXT_XML$
+                json!.add(#TXT_XML$, new JsonObject())
+                o! = json!.getAsJsonObject(#TXT_XML$)
+                o!.addProperty("rootTagName", #ieRootTagName!.getText().trim())
+                o!.addProperty("entityName", #ieEntityName!.getText().trim())
+                if #cbXmlOpen! <> null() then
+                    o!.addProperty("openFileIndicator", #cbXmlOpen!.isSelected())
+                endif
+                break
+            case #cwTxt!
+                key$ = #TXT_TXT$
+                json!.add(#TXT_TXT$, new JsonObject())
+                o! = json!.getAsJsonObject(#TXT_TXT$)
+                if #cbTxtOpen! <> null() then
+                    o!.addProperty("openFileIndicator", #cbTxtOpen!.isSelected())
+                endif
+                break
+            case #cwCsv!
+                key$ = #TXT_CSV$
+                json!.add(#TXT_CSV$, new JsonObject())
+                o! = json!.getAsJsonObject(#TXT_CSV$)
+                if #cbCsvOpen! <> null() then
+                    o!.addProperty("openFileIndicator", #cbCsvOpen!.isSelected())
+                endif
+                break
+            case #cwCustomPdf!
+                key$ = #TXT_CUSTOM_PDF$
+                json!.add(#TXT_CUSTOM_PDF$, new JsonObject())
+                o! = json!.getAsJsonObject(#TXT_CUSTOM_PDF$)
+                if #cbCustomPdfOpen! <> null() then
+                    o!.addProperty("openFileIndicator", #cbCustomPdfOpen!.isSelected())
+                endif
+                break
+            case default
+                methodret
+        swend
+        
+        config!.setFieldValue(#cfgBC!.getFieldNameKeyx(), key$)
+        config!.setFieldValue(#cfgBC!.getFieldNameRealm(), "exp")
+        config!.setFieldValue(#cfgBC!.getFieldNameSetting(), "std")
+        config!.setFieldValue(#cfgBC!.getFieldNameConfig(), json!)
+        config!.setFieldValue(#cfgBC!.getFieldNameUserid(), #cfgBC!.getUserName())
+        #cfgBC!.write(config!)
+    methodend
+    
+    method protected void fillFormWithConfigurations()
+        rs! = #getConfigurations()
+        if rs! = null() or rs!.isEmpty() then methodret
+        
+        for i = 0 to rs!.size() - 1
+            config! = rs!.get(i)
+            config$ = config!.getFieldAsString("CONFIG")
+            dr! = DataRowJsonMapper.fromJson(config$)
+            switch config!.getFieldAsString("KEYX").trim()
+                case #TXT_PDF$
+                    dr! = cast(DataRow, dr!.getField(#TXT_PDF$).getValue())
+                    #lbPageFittingOptions!.selectIndex(dr!.getFieldAsNumber("fitting").intValue())
+                    #lbFontSize!.selectIndex(dr!.getFieldAsNumber("fontSize").intValue())
+                    #lbPageLayout!.selectIndex(dr!.getFieldAsNumber("pageLayout").intValue())
+                    if #cbPdfOpen! <> null() then
+                        #cbPdfOpen!.setSelected(dr!.getFieldAsNumber("openFileIndicator").intValue())
+                    endif
+                    break
+                case #TXT_XLSX$
+                    dr! = cast(DataRow, dr!.getField(#TXT_XLSX$).getValue())
+                    #cbWriteHeader!.setSelected(dr!.getFieldAsNumber("writeHeader").intValue())
+                    if #cbXlsxOpen! <> null() then
+                        #cbXlsxOpen!.setSelected(dr!.getFieldAsNumber("openFileIndicator").intValue())
+                    endif
+                    break
+                case #TXT_HTML$
+                    dr! = cast(DataRow, dr!.getField(#TXT_HTML$).getValue())
+                    if #cbHtmlOpen! <> null() then
+                        #cbHtmlOpen!.setSelected(dr!.getFieldAsNumber("openFileIndicator").intValue())
+                    endif
+                    break
+                case #TXT_XML$
+                    dr! = cast(DataRow, dr!.getField(#TXT_XML$).getValue())
+                    #ieRootTagName!.setText(dr!.getFieldAsString("rootTagName"))
+                    #ieEntityName!.setText(dr!.getFieldAsString("entityName"))
+                    if #cbXmlOpen! <> null() then
+                        #cbXmlOpen!.setSelected(dr!.getFieldAsNumber("openFileIndicator").intValue())
+                    endif
+                    break
+                case #TXT_TXT$
+                    dr! = cast(DataRow, dr!.getField(#TXT_TXT$).getValue())
+                    if #cbTxtOpen! <> null() then
+                        #cbTxtOpen!.setSelected(dr!.getFieldAsNumber("openFileIndicator").intValue())
+                    endif
+                    break
+                case #TXT_CSV$
+                    dr! = cast(DataRow, dr!.getField(#TXT_CSV$).getValue())
+                    if #cbCsvOpen! <> null() then
+                        #cbCsvOpen!.setSelected(dr!.getFieldAsNumber("openFileIndicator").intValue())
+                    endif
+                    break
+                case #TXT_CUSTOM_PDF$
+                    dr! = cast(DataRow, dr!.getField(#TXT_CUSTOM_PDF$).getValue())
+                    if #cbCustomPdfOpen! <> null() then
+                        #cbCustomPdfOpen!.setSelected(dr!.getFieldAsNumber("openFileIndicator").intValue())
+                    endif
+                    break
+                case default
+                    rem do nothing
+                    break
+            swend
+        next i
+    methodend
+    
+    method private ResultSet getConfigurations()
+        filter! = new DataRow()
+        filter!.setFieldValue("USERID", #cfgBC!.getUserName())
+REM         filter!.setFieldValue("KEYX", key$)
+        filter!.setFieldValue("REALM", "exp")
+        filter!.setFieldValue("SETTING", "std")
+        #cfgBC!.setFilter(filter!)
+        rs! = #cfgBC!.retrieve()
+        
+        methodret rs!
+    methodend
+    
+    method public void onClose(BBjEvent ev!)
+        #mainWindow!.destroy()
+    methodend
+    
+    method public void setShowsBaristaHeader(Boolean b!)
+        #showsBaristaHeader! = b!
+    methodend
+    
+classend

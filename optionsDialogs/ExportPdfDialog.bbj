@@ -208,7 +208,8 @@ REM         if rs! = null() or rs!.isEmpty() then methodret
         
         rem exporting
         declare File outputFile!
-        outputFile! = #getexporter().exportToPDF(outputFilename$, path$, rs!, sheetConfiguration!, #showsBaristaHeader!, fitTo, #lbPageLayout!.getSelectedIndex())
+        outputFile! = new File(path$ + System.getProperty("file.separator") + outputFilename$)
+        outputFile! = #getexporter().exportToPDF(outputFile!, rs!, sheetConfiguration!, #showsBaristaHeader!, fitTo, #lbPageLayout!.getSelectedIndex())
 
 		if info(3,6) = "5" then
 			fs! = bbjapi().getThinClient().getClientFileSystem() 
