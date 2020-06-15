@@ -175,6 +175,7 @@ class public BusinessGrid extends AbstractBCBoundWidget implements IPersistentSt
     rem  * This method is called by the BCBinder object after having performed a retrieval.
     rem  */
     method public void onSetData()
+    
         declare ResultSet rs!
         declare ResultSet rsa!
         declare DataRow ar!
@@ -186,7 +187,7 @@ class public BusinessGrid extends AbstractBCBoundWidget implements IPersistentSt
         rs! = #getBinder().getRS()
         ar! = #getBinder().getAttributesRecord()
         if rs! = null() or ar! = null() then methodret
-        if rs!.getColumnCount() and !(ar!.isEmpty()) then
+        if !(ar!.isEmpty()) then
 
             if !(#columnConfigurationSet!) then
             
@@ -232,9 +233,9 @@ class public BusinessGrid extends AbstractBCBoundWidget implements IPersistentSt
                 rsa!.add(ar!)
                 #grid!.setData(rsa!)
 
-                for rscol = 0 to rs!.getColumnCount() - 1
+                for rscol = 0 to ar!.getColumnCount() - 1
 
-                    fieldName$ = rs!.getColumnName(rscol)
+                    fieldName$ = ar!.getColumnName(rscol)
                     column! = #grid!.getColumn(fieldName$)
 
                     rem The type in the attributes datarow and thus the grid column type represent the 'target type'
@@ -311,8 +312,11 @@ class public BusinessGrid extends AbstractBCBoundWidget implements IPersistentSt
             endif
 
         endif
-
-        #grid!.updateData(rs!)
+        if rs!.isEmpty() then
+            #grid!.clearData()
+        else
+            #grid!.updateData(rs!)
+        endif
         rem select first row on first retrieve
         if #initialRetrieve! then
             rs! = #getBinder().getRS()
@@ -364,16 +368,16 @@ REM                 i = rs!.indexOf(rowkey$)
               rows! = x!.getSelectedRows()
               sel! = new BBjVector()
               rs! = #getBinder().getRS()
-              if rs! = null() or rs!.isEmpty() then
-REM                   #sending! = Boolean.TRUE
-                  #getBinder().setSelection(sel!)
-REM                   #sending! = Boolean.FALSE
-                  methodret
-              endif
+REM               if rs! = null() or rs!.isEmpty() then
+REM REM                   #sending! = Boolean.TRUE
+REM                   #getBinder().setSelection(sel!)
+REM REM                   #sending! = Boolean.FALSE
+REM                   methodret
+REM               endif
               it! = rows!.iterator()
               while it!.hasNext()
                   row! = it!.next()
-                  sel!.addItem(row!.asDataRow().getRowKey())
+                  sel!.addItem(row!.asDataRow().getRowKey(), err=*next)
               wend
               #sending! = Boolean.TRUE
               #getBinder().setSelection(sel!)
