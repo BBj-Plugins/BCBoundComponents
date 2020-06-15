@@ -364,9 +364,9 @@ REM                 i = rs!.indexOf(rowkey$)
               sel! = new BBjVector()
               rs! = #getBinder().getRS()
               if rs! = null() or rs!.isEmpty() then
-                  #sending! = Boolean.TRUE
+REM                   #sending! = Boolean.TRUE
                   #getBinder().setSelection(sel!)
-                  #sending! = Boolean.FALSE
+REM                   #sending! = Boolean.FALSE
                   methodret
               endif
               it! = rows!.iterator()
