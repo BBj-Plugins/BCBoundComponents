@@ -362,6 +362,13 @@ REM                 i = rs!.indexOf(rowkey$)
               x! = ev!.getObject()
               rows! = x!.getSelectedRows()
               sel! = new BBjVector()
+              rs! = #getBinder().getRS()
+              if rs! = null() or rs!.isEmpty() then
+                  #sending! = Boolean.TRUE
+                  #getBinder().setSelection(sel!)
+                  #sending! = Boolean.FALSE
+                  methodret
+              endif
               it! = rows!.iterator()
               while it!.hasNext()
                   row! = it!.next()
