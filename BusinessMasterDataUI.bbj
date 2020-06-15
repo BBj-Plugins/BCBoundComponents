@@ -8,7 +8,7 @@ use ::BusinessUIComponents/bound/SimpleFormComponent.bbj::SimpleFormComponent
 use ::BusinessUIComponents/bound/SearchBar.bbj::SearchBar
 use ::BusinessUIComponents/bound/MenuBar.bbj::MenuBar
 use ::BusinessUIComponents/bound/BCErrorHandler.bbj::BCErrorHandler
-use ::BusinessUIComponents/bound/WindowCloseHandler.bbj::WindowCloseHandler
+use ::BusinessUIComponents/bound/WindowHandler.bbj::WindowHandler
 use ::BusinessUIComponents/unbound/HorizontalSplitter.bbj::HorizontalSplitter
 use ::BusinessUIComponents/configurations/IPropertiesManager.bbj::IPropertiesManager
 use ::BusinessUIComponents/configurations/LocalizedPropertiesManager.bbj::LocalizedPropertiesManager
@@ -130,15 +130,21 @@ class public BusinessMasterDataUI
     
     method public void addBusinessGrid(BBjInt x!, BBjInt y!)
         bgrid! = new BusinessGrid(#splitter!.getTopCanvas(),160,x!,y!,960,500)
+        #splitter!.setTopCtrl(bgrid!)
         #binder!.register(bgrid!)
         #componentsWithProperties!.add(bgrid!)
     methodend
-    method public void addBCErrorHandler()
-        #binder!.register(new BCErrorHandler())
+    method public void addBCErrorHandler(String title!)
+        errorhandler! = new BCErrorHandler()
+        errorhandler!.setTitle(title!)
+        #binder!.register(errorhandler!)
     methodend
     
-    method public void addWindowCloseHandler()
-        #binder!.register(new WindowCloseHandler(#wnd!))
+    method public void addWindowHandler(String pgmName!)
+        wh! = new WindowHandler(#wnd!)
+        wh!.setProgramName(pgmName!)
+        wh!.applyWindowConfig()
+        #binder!.register(wh!)
     methodend
     
 REM     method public void addMenuBar()
@@ -166,6 +172,12 @@ REM     methodend
           cast(BBjWidget, #forms!.getItem(i)).setSize(#formTabCtrl!.getWidth(), #formTabCtrl!.getHeight())
         next i
     methodend
+    
+    
+
+    method public BBjVector getForms()
+        methodret #forms!
+    methodend
 
     method public BBjWindow getWindow()
         methodret #wnd!
@@ -179,14 +191,13 @@ rem controlPrefixMap! is optional
 controlPrefixMap! = null()
 enter form_defs!, BC$, TITLE$, controlPrefixMap!, err=*next
 
-
 md! = new BusinessMasterDataUI(BC$, TITLE$)
 
 md!.addMenuBar()
 md!.addEditToolbar(2,2)
-md!.addBusinessGrid(0,0)
-md!.addBCErrorHandler()
-md!.addWindowCloseHandler()
+md!.addBusinessGrid(0,5)
+md!.addBCErrorHandler(TITLE$)
+md!.addWindowHandler(TITLE$)
 md!.addForms(form_defs!, controlPrefixMap!)
 
 md!.doModal()

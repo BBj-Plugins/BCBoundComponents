@@ -223,9 +223,11 @@ REM                 #buttonAdmin!.setShortCue("Admin mode (currently disabled)")
             #updateProperties()
             #listEditOptions!.setCallback(#listEditOptions!.ON_GAINED_FOCUS, #this!, "controlChangeBackColorOnGainedFocus")
             #listEditOptions!.setCallback(#listEditOptions!.ON_LOST_FOCUS, #this!, "controlChangeBackColorOnLostFocus")
+REM             #setCallback(BBjAPI.ON_PAGE_LOADED, #this!, "init")
         FI
         if !#bcInitialized! and #bc!<> null() then
             #init()
+REM             BBjAPI().createTimer("configWidgetInit", 3, #this!, "timerInit")
             #bcInitialized! = Boolean.TRUE
         endif
         
@@ -261,6 +263,10 @@ REM         escape
             #togglePopupMode(Boolean.FALSE)
         endif
         
+    methodend
+    
+    method public void init(BBjEvent ev!)
+        #init()
     methodend
     
     method protected void updateProperties()

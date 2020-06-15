@@ -1,0 +1,220 @@
+REM /**
+REM  * QuickSearchField.bbj
+REM  * @author jcorea
+REM  *
+REM  */
+
+use com.basiscomponents.bc.BusinessComponent
+use com.basiscomponents.bc.BCBinder
+use com.basiscomponents.db.BBArrayList
+use com.basiscomponents.db.ResultSet
+use com.basiscomponents.db.DataRow
+
+class public QuickSearchField
+    field protected BBjInputE control!
+    field protected BBjListButton popup!
+    field protected BusinessComponent bc!
+    field protected BBjNumber delay = 1
+    field protected BBjNumber maxEntries = 10
+    field protected String searchFieldName! = "_SEARCH"
+    field protected BBArrayList idFieldNames!
+    field protected Boolean hasDesc!
+    field protected Boolean useWildCard! = Boolean.TRUE
+    field protected String uniqueID! = java.util.UUID.randomUUID().toString()
+    field protected BCBinder binder!
+    
+    field protected BBjVector optionIDs!
+    
+
+    method public QuickSearchField(BBjInputE control!, BusinessComponent bc!)
+        #control! = control!
+        #control!.setLength(#control!.getLength() + 100)
+        #bc! = bc!
+        wnd! = #control!.getParentWindow()
+        popupX = #control!.getX()
+        popupY = #control!.getY() + #control!.getHeight()
+        popupW = #control!.getWidth()
+        popupH = #control!.getHeight() * #maxEntries
+        #popup! = cast(BBjListButton, wnd!.addListButton(wnd!.getAvailableControlID(), popupX, popupY, popupW, popupH, ""))
+        #popup!.setFieldHeight(0)
+        #popup!.setVisible(0)
+        #popup!.setCallback(BBjControl.ON_LIST_SELECT, #this!, "popupSelect")
+        #control!.setCallback(BBjControl.ON_EDIT_MODIFY, #this!, "onEditModifyEvent")
+        #control!.setCallback(BBjControl.ON_INPUT_KEYPRESS, #this!, "onKeyPressed")
+        #parseAttributes()
+    methodend
+    
+    rem setters/ -------------------------------
+    
+    method public void setBinder(BCBinder binder!)
+        #binder! = binder!
+    methodend
+    
+    rem /**
+    rem  * what the field to use for the fulltext search is. default is '_SEARCH'
+    rem  */
+    method public void setSearchFieldName(String searchFieldName!)
+        #searchFieldName! = searchFieldName!
+    methodend
+    
+    rem /**
+    rem  * wether to use asterisks * before and after the search string. default is true
+    rem  */
+    method public void setUseWildCard(Boolean useWildCard!)
+        #useWildCard! = useWildCard!
+    methodend
+    
+    rem /setters -------------------------------
+    
+    rem getters/ -------------------------------
+    
+    method public BBjInputE getControl()
+        methodret #control!
+    methodend
+    
+    rem /getters -------------------------------
+    
+    rem /**
+    rem  * returns the description for an id, used to correctly display the text in the input without using quicksearch, for example when the input is filled with the id after selection change in the binder.
+    rem  */
+    method public String getDescForID(String id!)
+        if id! = null() or id!.trim().equals("") then methodret ""
+        if !#hasDesc! then methodret id! + ": no DESC"
+        ids! = id!.split($00$)
+        filter! = new DataRow()
+        for i = 0 to ids!.length - 1
+            currentID! = ids![i]
+            currentIDName! = #idFieldNames!.get(i)
+            filter!.setFieldValue(currentIDName!, currentID!)
+        endif
+        #bc!.setFilter(filter!)
+        rs! = #bc!.retrieve()
+        if rs!.size() <> 1 then methodret null()
+        dr! = rs!.get(0)
+        desc! = dr!.getFieldAsString("DESC") + " (" + id!.trim() + ")"
+        methodret desc!
+    methodend
+    
+    rem /**
+    rem  * in the input control on edit modify: after 1 second has passed without input, start the search. also resets the userdata and sends dirty signal to the binder, if binder is set, because this eventhandler
+    rem  * overwrites the old one defined in SimpleFormComponent
+    rem  */
+    method public void onEditModifyEvent(BBjEvent ev!)
+        BBjAPI().removeTimer(#uniqueID! + "startSearch",err=*next)
+        BBjAPI().createTimer(#uniqueID! + "startSearch", #delay, #this!, "startSearch")
+        #optionIDs! = null()
+        #control!.setUserData(null())
+        if #binder! <> null() then
+            #binder!.sendSignal(BCBinder.SIGNAL_DIRTY)
+        endif
+    methodend
+    
+    rem /**
+    rem  * in the input control, when arrow up or arrow down is pressed, then the popup control should be focused, so the user can navigate the search hits
+    rem  */
+    method public void onKeyPressed(BBjInputKeypressEvent ev!)
+        if !#popup!.isVisible() or #popup!.getItemCount() < 1 then methodret
+        keyCode = ev!.getKeyCode()
+        selectedIndex = #popup!.getSelectedIndex()
+        if keyCode <> 301 and keyCode <> 302 then methodret
+        #popup!.focus()
+    methodend
+    
+    
+    rem /**
+    rem  * starts the search in the bc using the search field name (default is '_SEARCH') and filling the popup control with the resultset for up to #maxEntries (default 10) items.
+    rem  * also generates description and assembles id
+    rem  * 
+    rem  */
+    method public void startSearch(BBjEvent ev!)
+        BBjAPI().removeTimer(#uniqueID! + "startSearch")
+        #popup!.removeAllItems()
+        searchString! = #control!.getText()
+        rem no search when input field empty
+        if searchString!.trim().equals("") then methodret
+        filter! = new DataRow()
+        if #useWildCard! then
+            filter!.setFieldValue(#searchFieldName!, "*" + searchString! + "*")
+        else
+            filter!.setFieldValue(#searchFieldName!, searchString!)
+        endif
+        #bc!.setFilter(filter!)
+        rs! = #bc!.retrieve()
+        if !rs!.size() then methodret
+        if rs!.size() > #maxEntries then
+            maxItems = #maxEntries
+        else
+            maxItems = rs!.size()
+        endif
+        #optionIDs! = new BBjVector()
+        
+        FOR i = 0 TO maxItems - 1
+            dr! = rs!.get(i)
+            idField! = new StringBuilder()
+            itIDNames! = #idFieldNames!.iterator()
+            while itIDNames!.hasNext()
+                idName! = itIDNames!.next()
+                idField!.append(dr!.getFieldAsString(idName!))
+                if itIDNames!.hasNext() then idField!.append($00$)
+            wend
+            idField! = idField!.toString()
+            #optionIDs!.add(idField!)
+            if #hasDesc! then
+                desc! = dr!.getFieldAsString("DESC").trim() + " (" + idField!.trim() + ")"
+            else
+                desc! = idField! + ": no DESC"
+            endif
+            #popup!.addItem(desc!)
+        NEXT i
+REM         escape
+        #popup!.setVisible(1)
+        BBjAPI().createTimer(#uniqueID! + "openList", .05, #this!, "openList")
+    methodend
+    
+    rem /**
+    rem  * expands the list of the popup control with the search hits. has to be in a timer with a delay, otherwise it will not work. called by the startSearch() method.
+    rem  */
+    method public void openList(BBjEvent ev!)
+        BBjAPI().removeTimer(#uniqueID! + "openList")
+        #popup!.openList()
+    methodend
+    
+    rem /**
+    rem  * on selection of an item in the popup screen, the userdata of the input control is set to the selected id and the text is set to the description
+    rem  */
+    method public void popupSelect(BBjListSelectEvent ev!)
+        index = ev!.getSelectedIndex()
+        if #optionIDs! = null() then methodret
+        if index < 0 then
+            #control!.setUserData(null())
+            #optionIDs! = null()
+            #popup!.setVisible(0)
+            methodret
+        endif
+        #control!.setUserData(#optionIDs!.get(index))
+        #control!.setText(ev!.getSelectedItem())
+        #optionIDs! = null()
+        #popup!.setVisible(0)
+        #control!.focus()
+    methodend
+    
+    rem /**
+    rem  * parses the id fields and determines if the field has a desc field by looking it up in the attributes record of the lookup bc
+    rem  */
+    method public void parseAttributes()
+        lookupAttributes! = #bc!.getAttributesRecord()
+        ids! = lookupAttributes!.getFieldsHavingAttributeValue("EDITABLE", "2")
+        if !ids!.isEmpty() then
+            #idFieldNames! = cast(BBArrayList, ids!.getFieldNames())
+        else
+            #idFieldNames! = new BBArrayList()
+            #idFieldNames!.add(rs!.get(0).getColumnName(0))
+        endif
+        if lookupAttributes!.contains("DESC") then
+            #hasDesc! = Boolean.TRUE
+        else
+            #hasDesc! = Boolean.FALSE
+        endif
+    methodend
+    
+classend

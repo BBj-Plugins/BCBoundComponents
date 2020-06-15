@@ -141,6 +141,7 @@ class public ChileCustomerBC implements BusinessComponent
         dr!.setFieldAttribute("FAX","MASK","(XXX) XXX-XXXX");rem alpha mask
         dr!.setFieldAttribute("SALESPERSON","EDITABLE","1")
         dr!.setFieldAttribute("SALESPERSON","LABEL","Sales person")
+        dr!.setFieldAttribute("SALESPERSON","LOOKUP","1")
         dr!.setFieldAttribute("SHIP_ZONE","EDITABLE","1")
         dr!.setFieldAttribute("SHIP_ZONE","LABEL","Ship zone")
         dr!.setFieldAttribute("SHIP_METHOD","EDITABLE","1")
@@ -750,11 +751,6 @@ REM             errormsg$ = errormsg$(1,len(errormsg$)-1)
     methodend
 
     rem override
-    method public BusinessComponent getLookup(String fieldName!, DataRow dr!)
-        methodret null()
-    methodend
-
-    rem override
     method public ResultSet getLookupData(String fieldName!, DataRow dr!)
         methodret null()
     methodend
@@ -791,6 +787,11 @@ REM             errormsg$ = errormsg$(1,len(errormsg$)-1)
     rem @Override
     method public DataRow getAllowedFilter()
         methodret #getAttributesRecord()
+    methodend
+    
+    method public BusinessComponent getLookup(String fieldName!, DataRow currentDr!)
+        if fieldName! <> null() and fieldName!.toUpperCase().equals("SALESPERSON") then methodret new ChileCustomerBC()
+        methodret null()
     methodend
 
 

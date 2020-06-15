@@ -2,6 +2,7 @@ use ::BusinessUIComponents/AbstractBCBoundWidget.bbj::AbstractBCBoundWidget
 use ::BBjGridExWidget/BBjGridExWidget.bbj::BBjGridExWidget
 use ::BusinessUIComponents/configurations/IPropertiesManager.bbj::IPropertiesManager
 use ::BusinessUIComponents/configurations/PropertiesManager.bbj::PropertiesManager
+use ::BusinessUIComponents/utils/QuickSearchField.bbj::QuickSearchField
 
 use com.basiscomponents.bc.BCBound
 use com.basiscomponents.bc.BCBinder
@@ -25,9 +26,12 @@ class public SimpleFormComponent extends AbstractBCBoundWidget
     field protected BBjVector fieldList!
     field protected BBjVector controlList!
     field protected BBjVector idControls!
+    field protected BBjVector quickSearchElements! = new BBjVector()
     field protected BBjVector calendarButtons! = new BBjVector()
     field protected BiMap controlMap!
     field protected HashMap controlPrefixMap!
+    field protected String quickSearchField! = "_SEARCH"
+    field protected Boolean quickSearchUseWildCard! = Boolean.TRUE
 REM     field private BBjColor colorFocusGained!
 REM     field private BBjColor colorFocusLost!
     
@@ -224,6 +228,29 @@ REM         it! = #fieldList!.iterator()
                 selected! = Boolean.parseBoolean(value!)
                 cast(BBjCheckBox, control!).setSelected(selected!)
                 break
+            case BBjControl.INPUTE_TYPE
+                it! = #quickSearchElements!.iterator()
+                isQS! = Boolean.FALSE
+                while it!.hasNext()
+                    qs! = cast(QuickSearchField, it!.next())
+                    if qs!.getControl().equals(control!) then 
+                        isQS! = Boolean.TRUE
+                        break
+                    endif
+                wend
+                if !isQS! then
+                    control!.setText(value!)
+                    break
+                endif
+                if value!.equals("") then
+                    control!.setUserData(null())
+                else
+                    control!.setUserData(value!)
+                endif
+                desc! = qs!.getDescForID(value!)
+                if desc! = null() then desc! = value!
+                control!.setText(desc!)
+                break
             case BBjControl.INPUTD_TYPE
             case BBjControl.STATIC_TEXT_TYPE
                 if value!.trim().equals("") then break
@@ -371,6 +398,7 @@ REM         it! = #fieldList!.iterator()
 REM                 cast(BBjInputE, c!).setLength(precision!)
                 c!.setCallback(c!.ON_GAINED_FOCUS, #this!, "controlChangeBackColorOnGainedFocus")
                 c!.setCallback(c!.ON_LOST_FOCUS, #this!, "controlChangeBackColorOnLostFocus")
+                #applyQuickSearch(cast(BBjInputE, c!), fieldName$, fieldAttributes!)
                 break
                 
             case BBjControl.INPUTN_TYPE
@@ -440,6 +468,50 @@ REM                 cast(BBjInputE, c!).setLength(precision!)
             case default
                 break
         swend
+    methodend
+    
+    method private void applyQuickSearch(BBjInputE control!, String fieldName!, HashMap fieldAttributes!)
+        if !fieldAttributes!.containsKey("LOOKUP") then methodret
+        sel! = #getBinder().getSelection()
+        if (sel!.size() = 1) then
+            rsBinder! = #getBinder().getRS()
+            rowkey$ = sel!.get(0)
+            selDr! = rsBinder!.get(rowkey$)
+        else
+            selDr! = null()
+        fi
+        rem try to call getLookup(). when it does not work or is empty, try to call getLookupData. if neither brings results, methodret.
+        lookup! = cast(BusinessComponent, #getBinder().getBC()).getLookup(fieldName!, selDr!, err=*next)
+        if lookup! = null() then methodret
+        qs! = new QuickSearchField(control!, lookup!)
+        qs!.setBinder(#getBinder())
+        qs!.setSearchFieldName(#quickSearchField!)
+        qs!.setUseWildCard(#quickSearchUseWildCard!)
+        #quickSearchElements!.add(qs!)
+    methodend
+    
+    rem /**
+    rem  * default is "_SEARCH"
+    rem  */
+    method public void setQuickSearchFieldName(String quickSearchField!)
+        #quickSearchField! = quickSearchField!
+        it! = #quickSearchElements!.iterator()
+        while it!.hasNext()
+            qs! = cast(QuickSearchField, it!.next())
+            qs!.setSearchFieldName(quickSearchField!)
+        wend
+    methodend
+    
+    rem /**
+    rem  * default is TRUE
+    rem  */
+    method public void setQuickSearchUseWildCard(Boolean useWildCard!)
+        #quickSearchUseWildCard! = useWildCard!
+        it! = #quickSearchElements!.iterator()
+        while it!.hasNext()
+            qs! = cast(QuickSearchField, it!.next())
+            qs!.setUseWildCard(useWildCard!)
+        wend
     methodend
     
     rem /**
@@ -577,13 +649,13 @@ REM         calendarButton!.setImageFile("BusinessUIComponents/icon/ic_insert_in
         sel! = #getBinder().getSelection()
         
         if (sel!.size() <> 1) then
-            #clearForm()
-            methodret new DataRow()
-        fi
-        rs! = #getBinder().getRS()
-        rowkey$ = sel!.get(0)
-        rec! = rs!.get(rowkey$)
-        
+            rec! = #getBinder().getAttributesRecord().clone()
+            rec!.clear()
+        else
+            rs! = #getBinder().getRS()
+            rowkey$ = sel!.get(0)
+            rec! = rs!.get(rowkey$)
+        endif
         dr! = new DataRow()
         controlMap! = #getControlMap()
         it! = controlMap!.values().iterator()
@@ -621,6 +693,15 @@ REM         calendarButton!.setImageFile("BusinessUIComponents/icon/ic_insert_in
     method protected String getValueFromControl(BBjControl control!)
         controlType = control!.getControlType()
         switch controlType
+            case BBjControl.INPUTE_TYPE
+                rem userdata is used for quicksearch
+                userData! = control!.getUserData()
+                if userData! <> null() then
+                    methodret userData!
+                else
+                    methodret control!.getText()
+                endif
+                break
             case BBjControl.LISTBUTTON_TYPE
                 listEdit! = cast(BBjListButton, control!)
                 selIndex = listEdit!.getSelectedIndex()

@@ -8,6 +8,7 @@ interface public IPropertiesManager
 
     method public String getProperty(String property!)
     method public BBjNumber getPropertyAsNumber(String property!)
+    method public void terminate()
 REM     method public String getEditToolbarBtnNewImage()
 REM     method public String getEditToolbarBtnNewSize()
 REM     method public String getEditToolbarBtnSaveImage()

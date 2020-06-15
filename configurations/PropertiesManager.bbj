@@ -16,12 +16,13 @@ class public PropertiesManager implements IPropertiesManager
     field protected Properties prop!
     field protected String path!
     field public static BBjVector propertyManagers! = new BBjVector()
+    field protected FileInputStream is!
 
     method private PropertiesManager(String path!)
         #path! = path!
-        is! = new FileInputStream(new File(BBjAPI().getFileSystem().resolvePath(path!)))
+        #is! = new FileInputStream(new File(BBjAPI().getFileSystem().resolvePath(path!)))
         #prop! = new Properties()
-        #prop!.load(is!)
+        #prop!.load(#is!)
         #propertyManagers!.add(#this!)
     methodend
     
@@ -46,6 +47,10 @@ class public PropertiesManager implements IPropertiesManager
     methodend
     
     method public String getProperty(String property!)
+        if #is! = null() then
+            #is! = new FileInputStream(new File(BBjAPI().getFileSystem().resolvePath(#path!)))
+            #prop!.load(#is!)
+        endif
         property! = #prop!.getProperty(property!)
         if property! = null() then property! = ""
         methodret property!
@@ -57,6 +62,19 @@ class public PropertiesManager implements IPropertiesManager
         methodret num(#getProperty(property!).trim())
         parseerr:
             methodret 0
+    methodend
+    
+    method public void terminate()
+        it! = #propertyManagers!.iterator()
+        while it!.hasNext()
+            pm! = cast(PropertiesManager, it!.next())
+            pm!.closeStream()
+        wend
+    methodend
+    
+    method public void closeStream()
+        if #is! = null() then methodret
+        #is!.close()
     methodend
     
 REM     rem -------------EditToolbarComponent

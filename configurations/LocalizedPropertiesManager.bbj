@@ -21,9 +21,10 @@ class public LocalizedPropertiesManager implements IPropertiesManager
     field protected IPropertiesManager activePropertiesManager!
     
     field protected Locale locale!
-    field protected Locale defaultLocale! = new Locale("de")
+    field protected Locale defaultLocale! = new Locale(STBL("!LOCALE"))
     
     field protected static BBjVector localizedPropertyManagers! = new BBjVector()
+    field protected static BBjVector filesInUse! = new BBjVector()
 
     method private LocalizedPropertiesManager(String folder!)
         #folder! = folder!
@@ -62,8 +63,17 @@ class public LocalizedPropertiesManager implements IPropertiesManager
     method protected void updateLocale()
         if #folder! = null() then methodret
         if #locale! = null() then #locale! = #defaultLocale!
-        path! = #folder! + #locale!.getLanguage() + #propertiesFilesPostfix!
+        localePrefix! = #locale!.getLanguage()
+        rem cut the part after '_' in locale string
+        localeDelimiterIndex = localePrefix!.indexOf("_")
+        if localeDelimiterIndex >= 0 then
+            localePrefix! = localePrefix!.substring(0, localeDelimiterIndex)
+        endif
+        path! = #folder! + localePrefix! + #propertiesFilesPostfix!
         file! = new File(BBjAPI().getFileSystem().resolvePath(path!))
+        if !#filesInUse!.contains(path!) then
+            #filesInUse!.add(path!)
+        endif
         if file!.exists() then
             #activePropertiesManager! = PropertiesManager.getInstance(path!)
             methodret
@@ -87,6 +97,11 @@ class public LocalizedPropertiesManager implements IPropertiesManager
         methodret num(#getProperty(property!).trim())
         parseerr:
             methodret 0
+    methodend
+    
+    method public void terminate()
+        if #activePropertiesManager! = null() then methodret
+        #activePropertiesManager!.terminate()
     methodend
 
 classend

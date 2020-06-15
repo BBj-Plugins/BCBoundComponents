@@ -146,6 +146,9 @@ class public EditToolbarComponent extends AbstractBCBoundWidget
         if signal! = BCBinder.SIGNAL_DIRTY then
             #dirty! = BBjAPI.TRUE
         fi
+        if signal! = BCBinder.SIGNAL_DELETE then
+            #dirty! = BBjAPI.FALSE
+        fi
         if signal! = BCBinder.SIGNAL_SAVE then
             #dirty! = BBjAPI.FALSE
         fi
