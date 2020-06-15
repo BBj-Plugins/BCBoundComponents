@@ -315,6 +315,7 @@ class public BusinessGrid extends AbstractBCBoundWidget implements IPersistentSt
         #grid!.updateData(rs!)
         rem select first row on first retrieve
         if #initialRetrieve! then
+            rs! = #getBinder().getRS()
             if rs! <> null() and rs!.size() then
                 #initialRetrieve! = Boolean.FALSE
                 #grid!.setSelectedRow(0)
