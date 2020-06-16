@@ -38,6 +38,7 @@ class public BusinessGrid extends AbstractBCBoundWidget implements IPersistentSt
     field private CustomConfigurationsBC cfgbc!
     field private ExportButton           exportButton!
     field private BBjButton              fitToGridButton!
+    field private BBjButton              autoSizeColumnsButton!
 
     field private Boolean columnConfigurationSet! = Boolean.FALSE
     field private Boolean initialRetrieve! = Boolean.TRUE
@@ -110,8 +111,10 @@ class public BusinessGrid extends AbstractBCBoundWidget implements IPersistentSt
             #exportButton!.setProgramName(pgmName$)
             
             #fitToGridButton! = #getCanvas().addButton(203, 25, 5, 20, 20, "")
-            #fitToGridButton!.setImageSize(23, 23)
             #fitToGridButton!.setCallback(#fitToGridButton!.ON_BUTTON_PUSH, #this!, "fitToGrid")
+            
+            #autoSizeColumnsButton! = #getCanvas().addButton(204, 50, 5, 20, 20, "")
+            #autoSizeColumnsButton!.setCallback(#autoSizeColumnsButton!.ON_BUTTON_PUSH, #this!, "autoSizeColumns")
 
             statusbar! = #grid!.getStatusbar()
             statusbar!.addComponent(new GxStatusBarTotalAndFilteredRowCountComponent("right"))
@@ -139,16 +142,24 @@ class public BusinessGrid extends AbstractBCBoundWidget implements IPersistentSt
     method protected void updateProperties()
         #super!.updateProperties()
         uiProperties! = #getUIPropertiesManager()
+        textProperties! = #getTextPropertiesManager()
+        
         #exportButton!.setImageFile(uiProperties!.getProperty("EXPORT_BTN_IMAGE"))
+        #exportButton!.getButton().setToolTipText(textProperties!.getProperty("BUSINESS_GRID_TOOLTIP_EXPORT"))
+        
         #fitToGridButton!.setImageFile(uiProperties!.getProperty("FIT_TO_GRID_IMAGE"))
+        #fitToGridButton!.setToolTipText(textProperties!.getProperty("BUSINESS_GRID_TOOLTIP_FIT_TO_GRID"))
+        
+        #autoSizeColumnsButton!.setImageFile(uiProperties!.getProperty("AUTO_SIZE_COLUMNS_IMAGE"))
+        #autoSizeColumnsButton!.setToolTipText(textProperties!.getProperty("BUSINESS_GRID_TOOLTIP_AUTO_SIZE_COLUMNS"))
 
         height = uiProperties!.getPropertyAsNumber("CONFIG_WIDGET_HEIGHT")
-        if height > 4 then
-            #exportButton!.setSize(height, height)
-            #exportButton!.setImageSize(height-4, height-4)
-            #fitToGridButton!.setSize(height, height)
-            #fitToGridButton!.setImageSize(height-4, height-4)
-        endif
+        #exportButton!.setSize(height, height)
+        #exportButton!.setImageSize(height-4, height-4)
+        #fitToGridButton!.setSize(height, height)
+        #fitToGridButton!.setImageSize(height-4, height-4)
+        #autoSizeColumnsButton!.setSize(height, height)
+        #autoSizeColumnsButton!.setImageSize(height-4, height-4)
     methodend
 
     rem ---------------------- Event Handlers --------------------------------
@@ -458,8 +469,22 @@ REM               endif
     rem /**
     rem  *
     rem  */
-    method private void fitToGrid()
+    method protected void fitToGrid()
         if #grid!<>null() then #grid!.setFitToGrid()
+    methodend
+    
+    rem /**
+    rem  * @param ev!  BBjEvent object
+    rem  */
+    method public void autoSizeColumns(BBjEvent ev!)
+        #autoSizeColumns()
+    methodend
+
+    rem /**
+    rem  * applies the optimal size to all columns in the grid
+    rem  */
+    method protected void autoSizeColumns()
+        if #grid!<>null() then #grid!.autoSizeColumns()
     methodend
     
     method public ExportButton getExportButton()

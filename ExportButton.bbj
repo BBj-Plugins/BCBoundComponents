@@ -91,4 +91,8 @@ class public ExportButton
         #customReports! = customReports!
     methodend
     
+    method public BBjButton getButton()
+    	methodret #exportButton!
+    methodend
+    
 classend
