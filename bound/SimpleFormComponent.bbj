@@ -213,6 +213,7 @@ REM         it! = #fieldList!.iterator()
                 vecKeys! = control!.getUserData()
                 value! = value!.trim()
                 if vecKeys! <> null() and vecKeys!.size() then
+                    cast(BBjListButton, control!).deselect()
                     for i = 0 to vecKeys!.size() - 1
                         currentKey! = vecKeys!.get(i)
                         if currentKey!.trim().equals(value!) then
@@ -221,7 +222,6 @@ REM         it! = #fieldList!.iterator()
                         endif
                     next i
                 endif
-                cast(BBjListButton, control!).deselect()
                 break
             case BBjControl.CHECKBOX_TYPE
                 value! = value!.trim()
