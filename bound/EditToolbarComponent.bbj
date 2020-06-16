@@ -55,15 +55,24 @@ class public EditToolbarComponent extends AbstractBCBoundWidget
             
             #btn_new! = #getCanvas().addToolButton(100,0,0,20,20,"NEW")
             #btn_new!.setCallback(BBjAPI.ON_TOOL_BUTTON_PUSH,#this!,"onBtnNew")
+            #btn_new!.setTabTraversable(0)
+            #btn_new!.setFocusable(0)
+            
             
             #btn_save! = #getCanvas().addToolButton(101,20,0,20,20,"SAVE")
             #btn_save!.setCallback(BBjAPI.ON_TOOL_BUTTON_PUSH,#this!,"onBtnSave")
+            #btn_save!.setTabTraversable(0)
+            #btn_save!.setFocusable(0)
             
             #btn_delete! = #getCanvas().addToolButton(102,40,0,20,20,"DELETE")
             #btn_delete!.setCallback(BBjAPI.ON_TOOL_BUTTON_PUSH,#this!,"onBtnDelete")
+            #btn_delete!.setTabTraversable(0)
+            #btn_delete!.setFocusable(0)
             
             #btn_refresh! = #getCanvas().addToolButton(103,60,0,20,20,"REFRESH")
             #btn_refresh!.setCallback(BBjAPI.ON_TOOL_BUTTON_PUSH,#this!,"onBtnRefresh")
+            #btn_refresh!.setTabTraversable(0)
+            #btn_refresh!.setFocusable(0)
             
             #enableControls()
             #updateProperties()
