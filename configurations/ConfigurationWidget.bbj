@@ -329,7 +329,6 @@ REM         #setIcons()
         if autoConfig! <> null() then
             config! = autoConfig!.getFieldAsString(#bc!.getFieldNameConfig())
             #stateHandler!.configurationChange(config!)
-            
             methodret
         endif
         rem if no autoconfig, apply the default config and select it in the list edit
