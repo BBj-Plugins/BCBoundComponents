@@ -16,7 +16,7 @@ use ::BBjGridExWidget/GxStatusBar.bbj::GxStatusBarTotalAndFilteredRowCountCompon
 use ::BBjGridExWidget/GxStatusBar.bbj::GxStatusBarSelectedRowCountComponent
 
 use ::BusinessUIComponents/AbstractBCBoundWidget.bbj::AbstractBCBoundWidget
-use ::BusinessUIComponents/ExportMenuButton.bbj::ExportMenuButton
+use ::BusinessUIComponents/ExportButton.bbj::ExportButton
 
 use ::BusinessUIComponents/configurations/ConfigurationWidget.bbj::ConfigurationWidget
 use ::BusinessUIComponents/configurations/CustomConfigurationsBC.bbj::CustomConfigurationsBC
@@ -36,8 +36,8 @@ class public BusinessGrid extends AbstractBCBoundWidget implements IPersistentSt
 
     field private ConfigurationWidget    cfgwidget!
     field private CustomConfigurationsBC cfgbc!
-    field private ExportMenuButton       exportButton!
-    field private BBjMenuButton          fitToGridButton!
+    field private ExportButton           exportButton!
+    field private BBjButton              fitToGridButton!
 
     field private Boolean columnConfigurationSet! = Boolean.FALSE
     field private Boolean initialRetrieve! = Boolean.TRUE
@@ -95,9 +95,9 @@ class public BusinessGrid extends AbstractBCBoundWidget implements IPersistentSt
             rem need to wait for next Gx release:
             rem options!.setSuppressCellSelection(Boolean.TRUE)
 
-            #exportButton! = new ExportMenuButton(#getCanvas(), 202, 0, 5, 43, 20)
+            #exportButton! = new ExportButton(#getCanvas(), 202, 0, 5, 20, 20)
             #exportButton!.setGrid(#this!)
-            #exportButton!.setBC(new CustomConfigurationsBC(info(3,2), "exportButtonConfigurations"))
+            #exportButton!.setBC(new CustomConfigurationsBC(info(3,2), "configurationWidgetConfigs"))
             
             pgmName! = pgm(-1)
             declare String[] split!
@@ -109,8 +109,7 @@ class public BusinessGrid extends AbstractBCBoundWidget implements IPersistentSt
             endif
             #exportButton!.setProgramName(pgmName$)
             
-            #fitToGridButton! = #getCanvas().addMenuButton(203, 48, 5, 20, 20, "")
-            #fitToGridButton!.setBorderPainted(Boolean.TRUE)
+            #fitToGridButton! = #getCanvas().addButton(203, 25, 5, 20, 20, "")
             #fitToGridButton!.setImageSize(23, 23)
             #fitToGridButton!.setCallback(#fitToGridButton!.ON_BUTTON_PUSH, #this!, "fitToGrid")
 
@@ -145,7 +144,7 @@ class public BusinessGrid extends AbstractBCBoundWidget implements IPersistentSt
 
         height = uiProperties!.getPropertyAsNumber("CONFIG_WIDGET_HEIGHT")
         if height > 4 then
-            #exportButton!.setSize(height*2, height)
+            #exportButton!.setSize(height, height)
             #exportButton!.setImageSize(height-4, height-4)
             #fitToGridButton!.setSize(height, height)
             #fitToGridButton!.setImageSize(height-4, height-4)
@@ -461,6 +460,10 @@ REM               endif
     rem  */
     method private void fitToGrid()
         if #grid!<>null() then #grid!.setFitToGrid()
+    methodend
+    
+    method public ExportButton getExportButton()
+        methodret #exportButton!
     methodend
     
 classend

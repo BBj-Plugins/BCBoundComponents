@@ -53,6 +53,12 @@ searchBar! = new SearchBar(wnd!,103,510, 10, 285, 20)
 bgrid! = new BusinessGrid(splitter!.getTopCanvas(),100,0,0,300,200)
 bgrid!.getGrid().getOptions().setMultipleSelection(1)
 bgrid!.setConfigurationWidgetUser("MyUser")
+
+exportButton! = bgrid!.getExportButton()
+hashMap! = new HashMap()
+hashMap!.put("My Custom Report", System.getProperty("basis.BBjHome") + "/plugins/BusinessUIComponents/Demo/myCustomReport.jrxml")
+exportButton!.setCustomReports(hashMap!)
+
 splitter!.setTopCtrl(bgrid!)
 
 tabCtrl! = splitter!.getBottomCanvas().addTabCtrl(104, 0, 0, 500, 500)

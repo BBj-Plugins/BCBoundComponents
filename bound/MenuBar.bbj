@@ -204,7 +204,7 @@ REM         #addPresetMenuItem(#MENU_ITEM_PROGRAM_INFO) rem needed?
         
         menuItem! = #findMenuItem(menuItemName$)
         if menuItem! <> null() then
-            ? "menu item '" + menuItemName$ + "' already exists."
+REM             ? "menu item '" + menuItemName$ + "' already exists."
             methodret menuItem!
         endif
         
@@ -237,7 +237,7 @@ REM         #addPresetMenuItem(#MENU_ITEM_PROGRAM_INFO) rem needed?
     method private BBjMenu createMenu(BBjString menuName$)
         menu! = #findMenu(menuName$)
         if menu! <> null() then
-            ? "menu '" + menuName$ + "' already exists"
+REM             ? "menu '" + menuName$ + "' already exists"
             methodret menu!
         endif
 

@@ -177,7 +177,8 @@ class public ExportCustomReportDialog
         declare File outputFile!
 
         if info(3,6) = "5" then
-            outputFile! = #exporter!.exportToPDFByCustomReport("report.pdf", reportPath$, rs!)
+            outputFile! = new File("report.pdf")
+            outputFile! = #exporter!.exportToPDFByCustomReport(outputFile!, reportPath$, rs!)
         else
             outputFile! = #exporter!.exportToPDFByCustomReport(chosenDirOrFilePath!, report!, rs!)
         endif

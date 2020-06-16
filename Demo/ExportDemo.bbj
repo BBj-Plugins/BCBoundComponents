@@ -4,7 +4,7 @@ REM  * @author mneu
 REM  *
 REM  */
 
-use ::BusinessUIComponents/ExportMenuButton.bbj::ExportMenuButton
+use ::BusinessUIComponents/ExportButton.bbj::ExportMenuButton
 use ::BusinessUIComponents/BusinessGrid.bbj::BusinessGrid
 use ::BusinessUIComponents/ExampleBCs/ChileCustomerBC.bbj::ChileCustomerBC
 

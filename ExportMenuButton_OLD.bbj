@@ -14,11 +14,15 @@ use ::BusinessUIComponents/optionsDialogs/ExportCustomReportDialog.bbj::ExportCu
 use ::BusinessUIComponents/optionsDialogs/OptionsDialog.bbj::OptionsDialog
 use ::BusinessUIComponents/BusinessGrid.bbj::BusinessGrid
 
+use ::BusinessUIComponents/optionsDialogs/ExportDialog.bbj::ExportDialog
+
 use ::FileChooser/FileChooser.bbj::FileChooser
 
 use java.io.File
 use java.nio.file.Paths
 use java.nio.file.Path
+
+use java.util.HashMap
 
 use ::BusinessUIComponents/configurations/CustomConfigurationsBC.bbj::CustomConfigurationsBC
 
@@ -48,6 +52,8 @@ class public ExportMenuButton
     field private OptionsDialog optionsDialog!
     field private FileChooser fileChooser!
     
+    field private ExportDialog export!
+    
     field private BBjWindow mainWindow!
     
     field private Boolean baristaHeaderVisible! = Boolean.FALSE
@@ -68,6 +74,7 @@ class public ExportMenuButton
         popupMenu!.insertMenuItem(4, 1400, "Export TXT").setCallback(BBjPopupMenu.ON_POPUP_ITEM_SELECT, #this!, "exportTxt")
         popupMenu!.insertMenuItem(5, 1400, "Export CSV").setCallback(BBjPopupMenu.ON_POPUP_ITEM_SELECT, #this!, "exportCsv")
         popupMenu!.insertMenuItem(6, 1500, "Export custom report").setCallback(BBjPopupMenu.ON_POPUP_ITEM_SELECT, #this!, "exportCustomReport")
+        popupMenu!.insertMenuItem(7, 1600, "Export ...").setCallback(BBjPopupMenu.ON_POPUP_ITEM_SELECT, #this!, "export")
 REM         popupMenu!.insertSeparator(7)
 REM         popupMenu!.insertMenuItem(8, 1600, "Options ...").setCallback(BBjPopupMenu.ON_POPUP_ITEM_SELECT, #this!, "showOptions")
         
@@ -278,6 +285,17 @@ REM     methodend
         endif
     
         #exportCustomReportDialog!.createDialogWindow()
+    methodend
+    
+    method public void export(BBjPopupSelectEvent ev!)
+        if #export! = null() then
+            hashMap! = new HashMap()
+            hashMap!.put("Prodin test report", "C:\Users\mneu\JaspersoftWorkspace\PDF\projectPhasesCustomReport.jrxml")
+            #export! = new ExportDialog(#pgmName$, #grid!, hashMap!)
+            #export!.setConfigurationsBC(#cfgBC!)
+        endif
+    
+        #export!.createDialogWindow()
     methodend
     
     method public void setBaristaHeaderVisible(Boolean visible!)
