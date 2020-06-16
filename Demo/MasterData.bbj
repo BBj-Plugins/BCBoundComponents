@@ -4,7 +4,7 @@ use ::BusinessUIComponents/bound/TestComponent.bbj::TestComponent
 use ::BusinessUIComponents/bound/NavigatorComponent.bbj::NavigatorComponent
 use ::BusinessUIComponents/bound/EditToolbarComponent.bbj::EditToolbarComponent
 use ::BusinessUIComponents/bound/SimpleFormComponent.bbj::SimpleFormComponent
-use ::BusinessUIComponents/bound/WindowCloseHandler.bbj::WindowCloseHandler
+use ::BusinessUIComponents/bound/WindowHandler.bbj::WindowHandler
 use ::BusinessUIComponents/bound/SearchBar.bbj::SearchBar
 use ::BusinessUIComponents/bound/BCErrorHandler.bbj::BCErrorHandler
 use ::BusinessUIComponents/bound/MenuBar.bbj::MenuBar
@@ -64,7 +64,7 @@ splitter!.setTopCtrl(bgrid!)
 tabCtrl! = splitter!.getBottomCanvas().addTabCtrl(104, 0, 0, 500, 500)
 
 errorHandler! = new BCErrorHandler()
-windowCloseHandler! = new WindowCloseHandler(wnd!)
+windowHandler! = new WindowHandler(wnd!)
 
 localeManager! = LocalizedPropertiesManager.getInstance()
 
@@ -138,7 +138,7 @@ binder!.register(edittb!)
 binder!.register(bgrid!)
 binder!.register(searchBar!)
 binder!.register(errorHandler!)
-binder!.register(windowCloseHandler!)
+binder!.register(windowHandler!)
 binder!.register(menuBar!)
 
 menuBar!.setBinder(binder!)
