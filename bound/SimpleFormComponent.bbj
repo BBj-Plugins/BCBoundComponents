@@ -221,6 +221,7 @@ REM         it! = #fieldList!.iterator()
                         endif
                     next i
                 endif
+                cast(BBjListButton, control!).deselect()
                 break
             case BBjControl.CHECKBOX_TYPE
                 value! = value!.trim()
