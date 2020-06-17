@@ -227,7 +227,7 @@ REM         escape
         buttonY = #control!.getY() + 1
         wnd! = #control!.getParentWindow()
         
-        #searchButton! = wnd!.addButton(wnd!.getAvailableControlID(), buttonX, buttonY, buttonSize, buttonSize, "")
+        #searchButton! = cast(BBjButton, wnd!.addButton(wnd!.getAvailableControlID(), buttonX, buttonY, buttonSize, buttonSize, ""))
         #searchButton!.setCallback(#searchButton!.ON_BUTTON_PUSH,#this!,"searchButtonClick")
     methodend
     
