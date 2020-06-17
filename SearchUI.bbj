@@ -39,9 +39,9 @@ REM     field protected BBjTabCtrl formTabCtrl!
         #sysgui!.setRepaintEnabled(0)
         
         if info(3,6)="5" then
-            #wnd! = #sysgui!.addWindow(#sysgui!.getAvailableContext(),100,1020,760,"",$01001010$)
+            #wnd! = #sysgui!.addWindow(#sysgui!.getAvailableContext(), 100,100,1020,760,"",$01001010$)
         else
-            #wnd! = #sysgui!.addWindow(#sysgui!.getAvailableContext(),100,1020,760,"",$00000093$)
+            #wnd! = #sysgui!.addWindow(#sysgui!.getAvailableContext(), 100,100,1020,760,"",$00000093$)
         fi
         
         #wnd!.setCallback(BBjAPI.ON_RESIZE, #this!,"resize")
