@@ -89,7 +89,7 @@ REM     field protected BBjTabCtrl formTabCtrl!
         gridSelect:
             rowModel! = #bgrid!.getGrid().getSelectedRow()
             if rowModel! = null() then methodret
-            #selectedRecord! = rowModel!.asDataRow()
+            #selectedRecord! = cast(DataRow, rowModel!.asDataRow())
             #wnd!.setVisible(0)
             methodret
         onClose:
