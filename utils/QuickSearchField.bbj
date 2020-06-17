@@ -22,6 +22,7 @@ class public QuickSearchField
     field protected Boolean hasDesc!
     field protected Boolean useWildCard! = Boolean.TRUE
     field protected String uniqueID! = java.util.UUID.randomUUID().toString()
+    field private IPropertiesManager uiPropertiesManager!
     field protected BCBinder binder!
     field protected BBjButton searchButton!
     field protected SearchUI searchUI!
@@ -229,6 +230,7 @@ REM         escape
         
         #searchButton! = cast(BBjButton, wnd!.addButton(wnd!.getAvailableControlID(), buttonX, buttonY, buttonSize, buttonSize, ""))
         #searchButton!.setCallback(#searchButton!.ON_BUTTON_PUSH,#this!,"searchButtonClick")
+        #updateProperties()
     methodend
     
     method public void searchButtonClick(BBjEvent ev!)
@@ -257,6 +259,18 @@ REM         escape
         endif
         #control!.setUserData(idField!)
         #control!.setText(desc!)
+    methodend
+    
+    method public void setUIPropertiesManager(IPropertiesManager uiPropertiesManager!)
+        #uiPropertiesManager! = uiPropertiesManager!
+        #updateProperties()
+    methodend
+    
+    method protected void updateProperties()
+        if #uiPropertiesManager! = null() then #uiPropertiesManager! = PropertiesManager.getInstance()
+        #searchButton!.setImageFile(#uiPropertiesManager!.getProperty("SIMPLE_FORM_BTN_QUICK_SEARCH"))
+        size = #searchButton!.getWidth() - 4
+        #searchButton!.setImageSize(size, size)
     methodend
     
     
