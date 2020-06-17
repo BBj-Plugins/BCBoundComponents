@@ -237,8 +237,11 @@ REM         escape
             #searchUI!.initComponents()
             #searchUI!.setBC(#bc!)
         endif
+        #bc!.setFilter(new DataRow())
         #searchUI!.doModal()
         selectedRecord! = #searchUI!.getSelectedRecord()
+        if selectedRecord! = null() then methodret
+        #binder!.sendSignal(BCBinder.SIGNAL_DIRTY)
         idField! = new StringBuilder()
         itIDNames! = #idFieldNames!.iterator()
         while itIDNames!.hasNext()
