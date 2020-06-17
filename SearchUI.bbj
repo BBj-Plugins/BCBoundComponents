@@ -123,7 +123,7 @@ REM     field protected BBjTabCtrl formTabCtrl!
     method public void addBusinessGrid(BBjInt x!, BBjInt y!)
         #bgrid! = new BusinessGrid(#wnd!,160,x!,y!,960,500)
         #componentsWithProperties!.add(#bgrid!)
-        #bgrid!.getGrid().setCallback(#bgrid!.getGrid().ON_GRID_DOUBLE_CLICK(), "")
+        #bgrid!.getGrid().setCallback(#bgrid!.getGrid().ON_GRID_DOUBLE_CLICK(), "gridSelect")
 REM         #binder!.register(#bgrid!)
     methodend
     method public void addBCErrorHandler(String title!)
