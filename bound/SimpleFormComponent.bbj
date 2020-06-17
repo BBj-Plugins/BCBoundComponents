@@ -777,5 +777,15 @@ REM         calendarButton!.setImageFile("BusinessUIComponents/icon/ic_insert_in
                 break
         swend
     methodend
+    
+    method public void setUIPropertiesManager(IPropertiesManager uiPropertiesManager!)
+        #super!.setUIPropertiesManager(uiPropertiesManager!)
+        it! = #quickSearchElements!.iterator()
+        while it!.hasNext()
+            qs! = cast(QuickSearchField, it!.next())
+            qs!.setUIPropertiesManager(uiPropertiesManager!)
+        wend
+        #updateProperties()
+    methodend
 
 classend
