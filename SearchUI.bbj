@@ -1,0 +1,179 @@
+use ::BBjWidget/BBjWidget.bbj::BBjWidget
+use ::BusinessUIComponents/AbstractBCBoundWidget.bbj::AbstractBCBoundWidget
+use ::BusinessUIComponents/BusinessGrid.bbj::BusinessGrid
+REM use ::BusinessUIComponents/bound/TestComponent.bbj::TestComponent
+REM use ::BusinessUIComponents/bound/NavigatorComponent.bbj::NavigatorComponent
+REM use ::BusinessUIComponents/bound/EditToolbarComponent.bbj::EditToolbarComponent
+REM use ::BusinessUIComponents/bound/SimpleFormComponent.bbj::SimpleFormComponent
+REM use ::BusinessUIComponents/bound/SearchBar.bbj::SearchBar
+REM use ::BusinessUIComponents/bound/MenuBar.bbj::MenuBar
+use ::BusinessUIComponents/bound/BCErrorHandler.bbj::BCErrorHandler
+use ::BusinessUIComponents/bound/WindowHandler.bbj::WindowHandler
+REM use ::BusinessUIComponents/unbound/HorizontalSplitter.bbj::HorizontalSplitter
+use ::BusinessUIComponents/configurations/IPropertiesManager.bbj::IPropertiesManager
+use ::BusinessUIComponents/configurations/LocalizedPropertiesManager.bbj::LocalizedPropertiesManager
+use com.basiscomponents.bc.BCBinder
+use com.basiscomponents.bc.BusinessComponent
+use com.basiscomponents.db.DataRow
+use com.basiscomponents.db.ResultSet
+use java.util.HashMap
+
+class public SearchUI
+
+    field protected BBjTopLevelWindow wnd!
+REM     field protected HorizontalSplitter splitter!
+REM     field protected BBjVector forms!
+REM     field protected BBjTabCtrl formTabCtrl!
+    field protected BCBinder binder!
+    field protected BBjSysGui sysgui!
+    field protected BBjVector componentsWithProperties! = new BBjVector()
+    
+    field protected BusinessGrid bgrid!
+    field protected BCErrorHandler errorhandler!
+    field protected WindowHandler windowHandler!
+    field protected DataRow selectedRecord!
+
+    method public SearchUI()
+        ? 'HIDE'
+        #sysgui! = BBjAPI().openSysGui("X0")
+        #sysgui!.setRepaintEnabled(0)
+        
+        if info(3,6)="5" then
+            #wnd! = #sysgui!.addWindow(100,100,1020,760,"",$01001010$)
+        else
+            #wnd! = #sysgui!.addWindow(100,100,1020,760,"",$00000093$)
+        fi
+        
+        #wnd!.setCallback(BBjAPI.ON_RESIZE, #this!,"resize")
+    methodend
+    
+    method public void initComponents()
+        #addBusinessGrid(5,5)
+        #addBCErrorHandler("")
+        #addWindowHandler("SearchUI")
+    methodend
+    
+    method public void setBC(String bcName!)
+        bc! = eval("new "+BC$+"()")
+        #setBC(bc!)
+    methodend
+    
+    method public void setBC(BusinessComponent bc!)
+        #binder! = new BCBinder(bc!)
+        #binder!.setDebugLevel(1)
+        #registerComponentsToBinder()
+    methodend
+    
+    method public void setTitle(String title!)
+        #wnd!.setTitle(title!)
+        if #errorhandler! <> null() then #errorhandler!.setTitle(title!)
+    methodend
+    
+    method protected void registerComponentsToBinder()
+        if #binder! = null() then methodret
+        if #bgrid! <> null() then           #binder!.register(#bgrid!)
+        if #errorhandler! <> null() then    #binder!.register(#errorhandler!)
+        if #windowHandler! <> null() then   #binder!.register(#windowHandler!)
+    methodend
+    
+    method public void doModal()
+        #selectedRecord! = null()
+        #binder!.retrieve()
+        
+        #delayed_resize(null())
+        
+        #sysgui!.setRepaintEnabled(1)
+        #wnd!.setVisible(1)
+        
+        process_events
+        gridSelect:
+            rowModel! = #bgrid!.getGrid().getSelectedRow()
+            if rowModel! = null() then methodret
+            #selectedRecord! = rowModel!.asDataRow()
+            #wnd!.setVisible(0)
+            methodret
+        onClose:
+            #wnd!.setVisible(0)
+    methodend
+    
+    rem ######### propertiesManager Setters #########
+    
+    method public void setTextPropertiesManager(IPropertiesManager pm!)
+        it! = #componentsWithProperties!.iterator()
+        while it!.hasNext()
+            component! = it!.next()
+            cast(AbstractBCBoundWidget, component!).setTextPropertiesManager(pm!)
+        wend
+    methodend
+    
+    method public void setUIPropertiesManager(IPropertiesManager pm!)
+        it! = #componentsWithProperties!.iterator()
+        while it!.hasNext()
+            component! = it!.next()
+            cast(AbstractBCBoundWidget, component!).setUIPropertiesManager(pm!)
+        wend
+    methodend
+    
+    rem ######### add methods for BC bound components #########
+    
+    method public BCBinder getBinder()
+        methodret #binder!
+    methodend
+
+    method public void addBusinessGrid(BBjInt x!, BBjInt y!)
+        #bgrid! = new BusinessGrid(#wnd!,160,x!,y!,960,500)
+        #componentsWithProperties!.add(#bgrid!)
+        #bgrid!.getGrid().setCallback(#bgrid!.getGrid().ON_GRID_DOUBLE_CLICK(), "")
+REM         #binder!.register(#bgrid!)
+    methodend
+    method public void addBCErrorHandler(String title!)
+        #errorhandler! = new BCErrorHandler()
+        #errorhandler!.setTitle(title!)
+REM         #binder!.register(#errorhandler!)
+    methodend
+    
+    method public void addWindowHandler(String pgmName!)
+        #windowHandler! = new WindowHandler(#wnd!)
+        #windowHandler!.setProgramName(pgmName!)
+        #windowHandler!.applyWindowConfig()
+        #windowHandler!.setCloseMode(#windowHandler!.CLOSE_MODE_OFF())
+        #wnd!.setCallback(BBjAPI().ON_CLOSE, "onClose")
+REM         #binder!.register(#windowHandler!)
+    methodend
+    
+REM     method public void addMenuBar()
+REM         menubar! = #wnd!.addMenuBar()
+REM         fileMenu! = menubar!.addMenu(401, "File")
+REM         recordMenu! = menubar!.addMenu(402, "Record")
+REM         helpMenu! = menubar!.addMenu(403, "Help")
+REM         statusbar! = #wnd!.addStatusBar(450)
+REM     methodend
+    
+    rem ############## Events ######################
+    
+    method public void resize(BBjEvent ev!)
+        BBjAPI().removeTimer("resize",err=*next)
+        BBjAPI().createTimer("resize", .4, #this!, "delayed_resize")
+    methodend
+    
+    method public void delayed_resize(BBjEvent ev!)
+        BBjAPI().removeTimer("resize",err=*next)
+REM         w = #wnd!.getWidth()
+REM         h = #wnd!.getHeight()
+REM         for i = 0 to #forms!.size() - 1
+REM           cast(BBjWidget, #forms!.getItem(i)).setSize(w-4, h-25)
+REM         next i
+    methodend
+    
+
+    method public BBjWindow getWindow()
+        methodret #wnd!
+    methodend
+
+    method public DataRow getSelectedRecord()
+        methodret #selectedRecord!
+    methodend
+    
+    
+
+classend
