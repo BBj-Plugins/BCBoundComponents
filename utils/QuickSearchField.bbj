@@ -248,7 +248,7 @@ REM         escape
         wend
         idField! = idField!.toString()
         if #hasDesc! then
-            desc! = dr!.getFieldAsString("DESC").trim() + " (" + idField!.trim() + ")"
+            desc! = selectedRecord!.getFieldAsString("DESC").trim() + " (" + idField!.trim() + ")"
         else
             desc! = idField! + ": no DESC"
         endif
