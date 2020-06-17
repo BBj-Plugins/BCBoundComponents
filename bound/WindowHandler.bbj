@@ -26,11 +26,38 @@ class public WindowHandler implements IBCBound, IPersistentState
     field protected BBjWindow wnd!
     field protected IConfigurationsBC configBC!
     field protected String programName! = ""
+    field protected BBjNumber closeMode
+    
+    field protected static BBjNumber CLOSE_MODE_DESTROY = 100
+    field protected static BBjNumber CLOSE_MODE_RELEASE = 110
+    field protected static BBjNumber CLOSE_MODE_OFF = 120
 
     method public WindowHandler(BBjWindow wnd!)
         #wnd! = wnd!
         wnd!.setCallback(BBjAPI.ON_CLOSE, #this!,"onClose")
         #configBC! = new CustomConfigurationsBC(info(3,2))
+        #closeMode = #CLOSE_MODE_RELEASE
+    methodend
+    
+    rem -----------------------Close mode----------------------------------------
+    
+    method public void setCloseMode(BBjNumber closeMode)
+        #closeMode = closeMode
+        if #closeMode = #CLOSE_MODE_OFF then
+            #wnd!.clearCallback(BBJAAPI.ON_CLOSE)
+        endif
+    methodend
+    
+    method public BBjNumber CLOSE_MODE_DESTROY()
+        methodret #CLOSE_MODE_DESTROY
+    methodend
+    
+    method public BBjNumber CLOSE_MODE_RELEASE()
+        methodret #CLOSE_MODE_RELEASE
+    methodend
+    
+    method public BBjNumber CLOSE_MODE_OFF()
+        methodret #CLOSE_MODE_OFF
     methodend
     
     rem -------------------------BCBinder methods--------------------------------
@@ -62,7 +89,11 @@ class public WindowHandler implements IBCBound, IPersistentState
             #saveWindowConfig()
         endif
         if signal!=BCBinder.SIGNAL_DESTROY then
-            release
+            if #closeMode = #CLOSE_MODE_RELEASE then
+                 release
+             else
+                #wnd!.destroy()
+            endif
         endif
     methodend
     
@@ -74,7 +105,11 @@ class public WindowHandler implements IBCBound, IPersistentState
     
     method public void onClose(BBjCloseEvent ev!)
         if #binder! = null() then methodret
-        #binder!.sendSignal(BCBinder.SIGNAL_INITIATE_TERMINATE)
+        if #closeMode = #CLOSE_MODE_HIDE then
+            wnd!.setVisible(0)
+        else
+            #binder!.sendSignal(BCBinder.SIGNAL_INITIATE_TERMINATE)
+        endif
     methodend
     
     rem IPersistentState for configuration BC to save window position and size

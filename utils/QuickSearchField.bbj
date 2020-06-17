@@ -9,6 +9,7 @@ use com.basiscomponents.bc.BCBinder
 use com.basiscomponents.db.BBArrayList
 use com.basiscomponents.db.ResultSet
 use com.basiscomponents.db.DataRow
+use ::BusinessUIComponents/SearchUI.bbj::SearchUI
 
 class public QuickSearchField
     field protected BBjInputE control!
@@ -22,6 +23,8 @@ class public QuickSearchField
     field protected Boolean useWildCard! = Boolean.TRUE
     field protected String uniqueID! = java.util.UUID.randomUUID().toString()
     field protected BCBinder binder!
+    field protected BBjButton searchButton!
+    field protected SearchUI searchUI!
     
     field protected BBjVector optionIDs!
     
@@ -42,6 +45,7 @@ class public QuickSearchField
         #control!.setCallback(BBjControl.ON_EDIT_MODIFY, #this!, "onEditModifyEvent")
         #control!.setCallback(BBjControl.ON_INPUT_KEYPRESS, #this!, "onKeyPressed")
         #parseAttributes()
+        #addSearchButton()
     methodend
     
     rem setters/ -------------------------------
@@ -216,5 +220,41 @@ REM         escape
             #hasDesc! = Boolean.FALSE
         endif
     methodend
+    
+    method protected void addSearchButton()
+        buttonSize = #control!.getHeight() - 2
+        buttonX = #control!.getX() + #control!.getWidth() - buttonSize + 1
+        buttonY = #control!.getY() + 1
+        wnd! = #control!.getParentWindow()
+        
+        #searchButton! = wnd!.addButton(wnd!.getAvailableControlID(), buttonX, buttonY, buttonSize, buttonSize, "")
+        #searchButton!.setCallback(#searchButton!.ON_BUTTON_PUSH,#this!,"searchButtonClick")
+    methodend
+    
+    method public void searchButtonClick(BBjEvent ev!)
+        if #searchUI! = null() then
+            #searchUI! = new SearchUI()
+            #searchUI!.initComponents()
+            #searchUI!.setBC(#bc!)
+        endif
+        #searchUI!.doModal()
+        selectedRecord! = #searchUI!.getSelectedRecord()
+        idField! = new StringBuilder()
+        itIDNames! = #idFieldNames!.iterator()
+        while itIDNames!.hasNext()
+            idName! = itIDNames!.next()
+            idField!.append(selectedRecord!.getFieldAsString(idName!))
+            if itIDNames!.hasNext() then idField!.append($00$)
+        wend
+        idField! = idField!.toString()
+        if #hasDesc! then
+            desc! = dr!.getFieldAsString("DESC").trim() + " (" + idField!.trim() + ")"
+        else
+            desc! = idField! + ": no DESC"
+        endif
+        #control!.setUserData(idField!)
+        #control!.setText(desc!)
+    methodend
+    
     
 classend
