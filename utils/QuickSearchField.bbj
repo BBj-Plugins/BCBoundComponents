@@ -269,7 +269,7 @@ REM         escape
     methodend
     
     method protected void updateProperties()
-        if #uiPropertiesManager! = null() then #uiPropertiesManager! = PropertiesManager.getInstance()
+        if #uiPropertiesManager! = null() then #uiPropertiesManager! = cast(IPropertiesManager, PropertiesManager.getInstance())
         #searchButton!.setImageFile(#uiPropertiesManager!.getProperty("SIMPLE_FORM_BTN_QUICK_SEARCH"))
         size = #searchButton!.getWidth() - 4
         #searchButton!.setImageSize(size, size)
