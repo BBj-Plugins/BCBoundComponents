@@ -44,7 +44,7 @@ class public WindowHandler implements IBCBound, IPersistentState
     method public void setCloseMode(BBjNumber closeMode)
         #closeMode = closeMode
         if #closeMode = #CLOSE_MODE_OFF then
-            #wnd!.clearCallback(BBJAAPI.ON_CLOSE)
+            #wnd!.clearCallback(BBjAPI().ON_CLOSE)
         endif
     methodend
     
