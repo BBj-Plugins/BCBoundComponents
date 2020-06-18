@@ -264,6 +264,11 @@ REM         escape
         #control!.setText(desc!)
     methodend
     
+    method public void terminateSearchUI()
+        if #searchUI! = null() then methodret
+        #searchUI!.getBinder().sendSignal(#searchUI!.getBinder().SIGNAL_TERMINATE)
+    methodend
+    
     method public void setUIPropertiesManager(IPropertiesManager uiPropertiesManager!)
         #uiPropertiesManager! = uiPropertiesManager!
         #updateProperties()
