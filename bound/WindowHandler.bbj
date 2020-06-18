@@ -210,7 +210,7 @@ REM         windowFilter!.setFieldValue(#configBC!.getFieldNameUserid(), #config
     methodend
     
     method protected void updateProperties()
-        if #uiPropertiesManager! = null() then #uiPropertiesManager! = PropertiesManager.getInstance()
+        if #uiPropertiesManager! = null() then #uiPropertiesManager! = cast(IPropertiesManager, PropertiesManager.getInstance())
         windowLogo! = #uiPropertiesManager!.getProperty("WINDOW_LOGO")
         if windowLogo!.equals("") then methodret
         #wnd!.setIcon(windowLogo!)
