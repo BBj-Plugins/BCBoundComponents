@@ -241,6 +241,7 @@ REM         escape
             #searchUI!.initComponents()
             #searchUI!.setBC(#bc!)
             #searchUI!.applyWindowConfig()
+            #searchUI!.setUIPropertiesManager(#uiPropertiesManager!)
         endif
         #bc!.setFilter(new DataRow())
         #searchUI!.doModal()
