@@ -240,6 +240,7 @@ REM         escape
             #searchUI! = new SearchUI()
             #searchUI!.initComponents()
             #searchUI!.setBC(#bc!)
+            #searchUI!.applyWindowConfig()
         endif
         #bc!.setFilter(new DataRow())
         #searchUI!.doModal()
