@@ -98,7 +98,7 @@ class public QuickSearchField
         rs! = #bc!.retrieve()
         if rs!.size() <> 1 then methodret null()
         dr! = rs!.get(0)
-        desc! = dr!.getFieldAsString("DESC") + " (" + id!.trim() + ")"
+        desc! = dr!.getFieldAsString("DESC").trim() + " (" + id!.trim() + ")"
         methodret desc!
     methodend
     
@@ -272,6 +272,7 @@ REM         escape
     method public void setUIPropertiesManager(IPropertiesManager uiPropertiesManager!)
         #uiPropertiesManager! = uiPropertiesManager!
         #updateProperties()
+        if #searchUI! <> null() then #searchUI!.setUIPropertiesManager(uiPropertiesManager!)
     methodend
     
     method protected void updateProperties()

@@ -10,6 +10,7 @@ use ::BBjGridExWidget/BBjGridExWidget.bbj::BBjGridExWidget
 use ::BusinessUIComponents/configurations/PropertiesManager.bbj::PropertiesManager
 use ::BusinessUIComponents/configurations/CustomConfigurationsBC.bbj::CustomConfigurationsBC
 use ::BusinessUIComponents/configurations/IPersistentState.bbj::IPersistentState
+use ::BusinessUIComponents/configurations/IPropertiesManager.bbj::IPropertiesManager
 use com.basiscomponents.bc.IConfigurationsBC
 use com.basiscomponents.bc.BCBound
 use com.basiscomponents.bc.IBCBound
@@ -31,12 +32,16 @@ class public WindowHandler implements IBCBound, IPersistentState
     field protected static BBjNumber CLOSE_MODE_DESTROY = 100
     field protected static BBjNumber CLOSE_MODE_RELEASE = 110
     field protected static BBjNumber CLOSE_MODE_OFF = 120
+    
+    
+    field protected IPropertiesManager uiPropertiesManager!
 
     method public WindowHandler(BBjWindow wnd!)
         #wnd! = wnd!
         wnd!.setCallback(BBjAPI.ON_CLOSE, #this!,"onClose")
         #configBC! = new CustomConfigurationsBC(info(3,2))
         #closeMode = #CLOSE_MODE_RELEASE
+        #updateProperties()
     methodend
     
     rem -----------------------Close mode----------------------------------------
@@ -85,7 +90,7 @@ class public WindowHandler implements IBCBound, IPersistentState
     
     method public void onSignal(int signal!, Object payload!)
         if signal!=BCBinder.SIGNAL_TERMINATE then
-            PropertiesManager.getInstance().terminate()
+            PropertiesManager.getInstance().terminate();rem kills all instances of PropertiesManager, not just default instance
             #saveWindowConfig()
         endif
         if signal!=BCBinder.SIGNAL_DESTROY then
@@ -197,6 +202,18 @@ REM         windowFilter!.setFieldValue(#configBC!.getFieldNameUserid(), #config
     method public void setStateChangeCallback(String methodName!, CustomObject callable!)
         #wnd!.setCallback(#wnd!.ON_RESIZE, callable!, methodName!)
         #wnd!.setCallback(#wnd!.ON_WINDOW_MOVE, callable!, methodName!)
+    methodend
+    
+    method public void setUIPropertiesManager(IPropertiesManager uiPropertiesManager!)
+        #uiPropertiesManager! = uiPropertiesManager!
+        #updateProperties()
+    methodend
+    
+    method protected void updateProperties()
+        if #getUIPropertiesManager() = null() then #setUIPropertiesManager(PropertiesManager.getInstance())
+        windowLogo! = #uiPropertiesManager!.getProperty("WINDOW_LOGO")
+        if windowLogo!.equals("") then methodret
+        #wnd!.setIcon(windowLogo!)
     methodend
     
 
