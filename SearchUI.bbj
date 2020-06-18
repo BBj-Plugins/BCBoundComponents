@@ -38,7 +38,7 @@ class public SearchUI
         fi
         #buttonOK! = #wnd!.addButton(#wnd!.getAvailableControlID(),560,950,100,20,"OK")
         #buttonOK!.setCallback(#buttonOK!.ON_BUTTON_PUSH, "gridSelect")
-        #buttonCancel! = #wnd!.addButton(#wnd!.getAvailableControlID(),660,950,100,20,"OK")
+        #buttonCancel! = #wnd!.addButton(#wnd!.getAvailableControlID(),660,950,100,20,"Cancel")
         #buttonCancel!.setCallback(#buttonCancel!.ON_BUTTON_PUSH, "onClose")
         
         #wnd!.setCallback(BBjAPI.ON_RESIZE, #this!,"resize")
