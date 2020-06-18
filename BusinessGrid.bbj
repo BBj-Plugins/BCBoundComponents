@@ -244,11 +244,13 @@ class public BusinessGrid extends AbstractBCBoundWidget implements IPersistentSt
 
                 #grid!.getClientContext().addProperty("numberGroupSep",numberGroupSeparator$, err=*next)        
                 #grid!.getClientContext().addProperty("numberDecimalSep",numberDecimalSeparator$, err=*next)
-
+                #grid!.setTheme( #grid!.GRID_THEME_BALHAM() )
                 rem Render grid columns based on the attributes record (w/o any data)
                 rsa! = new ResultSet()
                 rsa!.add(ar!)
                 #grid!.setData(rsa!)
+                
+                cgroups! = new java.util.HashMap()
 
                 for rscol = 0 to ar!.getColumnCount() - 1
 
@@ -265,6 +267,14 @@ class public BusinessGrid extends AbstractBCBoundWidget implements IPersistentSt
                     label$ = fieldName$
                     if fa!.containsKey("LABEL") then label$ = fa!.get("LABEL")
                     column!.setLabel(label$)
+                    
+                    if fa!.containsKey("GROUP") then cgroup$ = fa!.get("GROUP")
+                    cgroup! = cgroups!.get(cgroup$)
+                    if cgroup! = null() then
+                        cgroup! = new BBjVector()
+                        cgroups!.put(cgroup$,cgroup!)
+                    fi
+                    cgroup!.addItem(fieldName$)
 
                     mask$ = ""
                     if fa!.containsKey("MASK") then mask$ = cvs(fa!.get("MASK"),3)
@@ -329,6 +339,15 @@ class public BusinessGrid extends AbstractBCBoundWidget implements IPersistentSt
             endif
 
         endif
+        
+        if cgroups!.size()>0 then
+              it! = cgroups!.keySet().iterator()
+              while it!.hasNext()
+                  cgroup$=it!.next()
+                  #grid!.addColumnGroup(cgroup$ , cgroup$, cgroups!.get(cgroup$) , 0 , "")
+              wend
+        fi
+        
         if rs!.isEmpty() then
             #grid!.clearData()
         else
@@ -343,6 +362,7 @@ class public BusinessGrid extends AbstractBCBoundWidget implements IPersistentSt
                 #grid!.focus()
             endif
         endif
+
     methodend
     
     

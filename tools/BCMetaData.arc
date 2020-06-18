@@ -13,10 +13,16 @@ BEGIN
         NOT WORDWRAP
     END
 
-    LISTBUTTON 102, "List Button\n", 67, 7, 217, 100
+    LISTBUTTON 102, "List Button\n", 70, 8, 217, 700
     BEGIN
         NAME "LB_CLASS"
-        SELECTIONHEIGHT 25
+        SELECTIONHEIGHT 22
+        OPENWIDTH 400
+    END
+
+    BUTTON 103, "Save", 294, 6, 90, 25
+    BEGIN
+        NAME "BTN_SAVE"
     END
 
 END
