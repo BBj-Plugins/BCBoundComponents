@@ -20,6 +20,7 @@ use java.util.HashMap
 class public BusinessMasterDataUI
 
     field protected BBjTopLevelWindow wnd!
+    field protected WindowHandler wh!
     field protected HorizontalSplitter splitter!
     field protected BBjVector forms!
     field protected BBjTabCtrl formTabCtrl!
@@ -82,6 +83,7 @@ class public BusinessMasterDataUI
             component! = it!.next()
             cast(AbstractBCBoundWidget, component!).setUIPropertiesManager(pm!)
         wend
+        if #wh! <> null() then #wh!.setUIPropertiesManager(pm!)
     methodend
     
     rem ######### add methods for BC bound components #########
@@ -141,10 +143,10 @@ class public BusinessMasterDataUI
     methodend
     
     method public void addWindowHandler(String pgmName!)
-        wh! = new WindowHandler(#wnd!)
-        wh!.setProgramName(pgmName!)
-        wh!.applyWindowConfig()
-        #binder!.register(wh!)
+        #wh! = new WindowHandler(#wnd!)
+        #wh!.setProgramName(pgmName!)
+        #wh!.applyWindowConfig()
+        #binder!.register(#wh!)
     methodend
     
 REM     method public void addMenuBar()

@@ -790,6 +790,7 @@ REM         calendarButton!.setImageFile("BusinessUIComponents/icon/ic_insert_in
         #super!.setUIPropertiesManager(uiPropertiesManager!)
         it! = #quickSearchElements!.iterator()
         while it!.hasNext()
+        
             qs! = cast(QuickSearchField, it!.next())
             qs!.setUIPropertiesManager(uiPropertiesManager!)
         wend
