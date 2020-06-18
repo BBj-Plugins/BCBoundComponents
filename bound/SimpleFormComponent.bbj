@@ -773,6 +773,13 @@ REM         calendarButton!.setImageFile("BusinessUIComponents/icon/ic_insert_in
                 #toggleIDFieldEnabled(Boolean.TRUE)
                 #focusFirstIDField()
                 break
+            case binder!.SIGNAL_TERMINATE
+                it! = #quickSearchElements!.iterator()
+                while it!.hasNext()
+                    qs! = cast(QuickSearchField, it!.next())
+                    qs!.terminateSearchUI()
+                wend
+                break
             case default
                 break
         swend
