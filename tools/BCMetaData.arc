@@ -1,0 +1,23 @@
+//#charset: windows-1252
+
+VERSION "4.0"
+
+WINDOW 101 "BCMetaData" 10 10 1000 700
+BEGIN
+    EVENTMASK 0
+    KEYBOARDNAVIGATION
+    NAME "BCMetaData"
+    STATICTEXT 100, "Class:", 24, 15, 90, 20
+    BEGIN
+        NAME "LBL_CLASS"
+        NOT WORDWRAP
+    END
+
+    LISTBUTTON 102, "List Button\n", 67, 7, 217, 100
+    BEGIN
+        NAME "LB_CLASS"
+        SELECTIONHEIGHT 25
+    END
+
+END
+

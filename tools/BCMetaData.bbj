@@ -1,0 +1,348 @@
+use com.basiscomponents.db.DataRow
+use com.basiscomponents.db.ResultSet
+
+
+use ::BBjGridExWidget/GxColumns.bbj::GxColumn
+use ::BBjGridExWidget/GxColumns.bbj::GxColumnGroup
+use ::BBjGridExWidget/GxRenderers.bbj::GxRendererBoolean
+
+use ::BBjGridExWidget/BBjGridExWidget.bbj::BBjGridExWidget
+
+use ::DialogWizard/BBDialog.bbj::BBDialog
+use ::DialogWizard/DialogUtils.bbj::DialogUtils
+use ::DialogWizard/DialogWizardRun.bbj::DialogWizardRun
+use ::bbwindowutils.bbj::BBWindowUtils
+
+class public BCMetaData extends BBDialog
+
+    field protected BBjAPI        API! = BBjAPI()
+    field protected BBjNumber     TRUE = #API!.TRUE
+    field protected BBjNumber     FALSE = #API!.FALSE
+    field protected BBjSysGui     SysGui! = #API!.openSysGui("X0")
+    field protected BBjThinClient ThinClient! = #API!.getThinClient()
+    field protected BBjString     ClientLocale$ = #ThinClient!.getClientLocale()
+    field protected BBjString     PgmDirectory$ = pgm(-2)(1,max(pos("\"=pgm(-2),-1),pos("/"=pgm(-2),-1)))
+    
+    field protected BBjNamespace  GroupNS! = #API!.getGroupNamespace()
+    field protected BBjMDI        MDI!
+
+	rem /** DLGWIZ_RES BCMetaData.arc 101 **/
+
+	rem /** DLGWIZ_FLD_BEGIN **/
+	rem /** DLGWIZ_FLD_END **/
+
+
+	rem /** DLGWIZ_FLC_BEGIN **/
+	field protected BBjTopLevelWindow C_BCMetaData!
+	field protected BBjStaticText C_BCMetaData__LBL_CLASS!
+	field protected BBjListButton C_BCMetaData__LB_CLASS!
+	rem /** DLGWIZ_FLC_END **/
+
+	field private BBjGridExWidget grid!
+	field public ResultSet BCList! 
+
+
+    field public BBjTopLevelWindow Wnd!
+
+    rem /**
+    rem * Constructor BCMetaData
+    rem */
+    method public BCMetaData()
+        #super!("BCMetaData.arc",101)
+
+        rem Check if BBjSysGui object is still valid. If not re-create it.
+        #SysGui!.getContext(err=*next); sg_ok=1
+        if !sg_ok then
+            #SysGui!=#API!.openSysGui("X0")
+        endif
+
+        if stbl("+USER_LOCALE",err=*endif)<>"" then
+            #ClientLocale$ = stbl("+USER_LOCALE")
+        endif
+
+        #Wnd!=#super!.getWndTop()
+        if #API!.isInMDI() then #MDI!=#API!.getMDI()
+
+        if #Wnd!<>null() then
+            #setCallbacks()
+        endif
+    methodend
+
+    rem /**
+    rem * Method setCallbacks:
+    rem * Set control callbacks
+    rem */
+    method protected void setCallbacks()
+        if #API!.isInMDI() then #MDI!.registerMDIClosingCallback(#this!,"onMDIClosing")
+		rem /** DLGWIZ_CBS_BEGIN **/
+		#super!.getControlByName("BCMetaData").setCallback(BBjAPI.ON_CLOSE,#this!,"BCMetaData__ON_CLOSE")
+		#super!.getControlByName("BCMetaData").setCallback(BBjAPI.ON_RESIZE,#this!,"BCMetaData__ON_RESIZE")
+		#super!.getControlByName("LB_CLASS").setCallback(BBjAPI.ON_LIST_SELECT,#this!,"LB_CLASS__ON_LIST_SELECT")
+		rem /** DLGWIZ_CBS_END **/
+
+    methodend
+
+    rem /**
+    rem * Method doDataExchange:
+    rem * Set controls with program variables
+    rem * @param BBjNumber pInitFlag: Controls are initialized, if true
+    rem */
+    method protected void doDataExchange(BBjNumber pInitFlag)
+		rem /** DLGWIZ_DDX_BEGIN **/
+		rem /** DLGWIZ_DDX_END **/
+
+    methodend
+
+    rem /**
+    rem * Method doModal:
+    rem * Initialize and display dialog (contains PROCESS_EVENTS)
+    rem * @see doDataExchange(BBjNumber pInitFlag)
+    rem * @see onInitDialog()
+    rem * @see onExitDialog()
+    rem * @return BBjNumber Answer: 0=Passed required fields check, 1=Dialog canceled/closed
+    rem */
+    method public BBjNumber doModal()
+
+        #API!.setCustomEventCallback("ReturnAnswer","do_return")
+        #API!.setCustomEventCallback("CancelAnswer","do_cancel")
+
+        #doDataExchange(#TRUE)
+        #super!.setAllValidated(#TRUE)
+
+        #onInitDialog()
+        #Wnd!.setVisible(#TRUE)
+
+        do_process_events:
+            process_events,err=*same
+
+        do_return:
+            #doDataExchange(#FALSE)
+            if #super!.getAllValidated()=0 then
+                #super!.setAllValidated(#TRUE)
+                goto do_process_events
+            endif
+
+        do_cancel:
+            #onExitDialog()
+            #Wnd!.destroy()
+
+        methodret #super!.getAnswer()
+    methodend
+
+    rem /**
+    rem * Method onInitDialog:
+    rem * Your custom initialization
+    rem */
+    method public void onInitDialog()
+    
+    
+	rem /** DLGWIZ_INI_BEGIN **/
+	#C_BCMetaData! = cast(BBjTopLevelWindow,#super!.getControlByName("BCMetaData"))
+	#C_BCMetaData__LBL_CLASS! = cast(BBjStaticText,#super!.getControlByName("LBL_CLASS"))
+	#C_BCMetaData__LB_CLASS! = cast(BBjListButton,#super!.getControlByName("LB_CLASS"))
+	rem /** DLGWIZ_INI_END **/
+
+	
+	v! = new BBjVector()
+	it! = #BCList!.iterator()
+	while it!.hasNext()
+	    v!.addItem(it!.next().getFieldAsString("DESC"))
+	wend 
+	#C_BCMetaData__LB_CLASS!.removeAllItems()
+	#C_BCMetaData__LB_CLASS!.insertItems(0,v!)
+	#C_BCMetaData__LB_CLASS!.deselect()
+
+	#grid! = new BBjGridExWidget(#C_BCMetaData!,500,0,80,#C_BCMetaData!.getWidth(),#C_BCMetaData!.getHeight()-80)
+	#grid!.setTheme("Balham")
+	
+    methodend
+
+    rem /**
+    rem * Method onExitDialog:
+    rem * Your custom exit code
+    rem */
+    method public void onExitDialog()
+    methodend
+
+    rem /**
+    rem * Method postCancelAnswer:
+    rem * Set dialog answer to "canceled"
+    rem */
+    method public void postCancelAnswer()
+        #super!.setAnswer(0)
+        #API!.postCustomEvent("CancelAnswer",null())
+    methodend
+
+    rem /**
+    rem * Method postReturnAnswer:
+    rem * Set dialog answer to "normal return"
+    rem */
+    method public void postReturnAnswer()
+        #super!.setAnswer(1)
+        #API!.postCustomEvent("ReturnAnswer",null())
+    methodend
+
+    rem /**
+    rem * Method onMDIClosing:
+    rem * Handler for the MDI closing
+    rem */
+    method public void onMDIClosing(BBjMDIClosingEvent pEvent!)
+        rem uncomment the next line to veto the MDI Close
+        rem #MDI!.vetoMDIClose()
+        #MDI!.approveMDIClose()
+        #postCancelAnswer()
+    methodend
+
+	rem /**
+	rem  * Method BCMetaData__ON_CLOSE: 
+	rem  * Event handler for the ON_CLOSE event for BCMetaData
+	rem  * @param BBjCloseEvent
+	rem  */
+	method public void BCMetaData__ON_CLOSE(BBjCloseEvent pEvent!)
+		#postCancelAnswer()
+	methodend
+
+	rem /**
+	rem  * Method BCMetaData__ON_RESIZE: 
+	rem  * Event handler for the ON_RESIZE event for BCMetaData
+	rem  * @param BBjResizeEvent
+	rem  */
+	method public void BCMetaData__ON_RESIZE(BBjResizeEvent ev!)
+		  
+		  w=ev!.getWidth()
+		  h=ev!.getHeight()
+		  #grid!.setSize(w,h)
+	methodend
+
+	rem /**
+	rem  * Method LB_CLASS__ON_LIST_SELECT: 
+	rem  * Event handler for the ON_LIST_SELECT event for LB_CLASS
+	rem  * @param BBjListSelectEvent
+	rem  */
+	method public void LB_CLASS__ON_LIST_SELECT(BBjListSelectEvent pEvent!)
+		id = pEvent!.getSelectedIndex()
+		bc! = #BCList!.get(id)
+		#loadData(bc!)
+
+	methodend
+	
+	method private void loadData(DataRow bc_def!)
+	       
+	       class$= bc_def!.getFieldAsString("CLASS")
+	       bc! = eval("new "+class$+"()")
+	       ar! = bc!.getAttributesRecord()
+	       
+	       locales! = #getLocales()
+
+          rs! = new ResultSet()
+          it! = ar!.getFieldNames().iterator()
+          while it!.hasNext()
+              f$=it!.next()
+              
+              f! = new DataRow()
+              f!.setFieldValue("FIELDNAME",f$)
+              f!.setFieldValue("TYPE",ar!.getFieldTypeName(f$))
+              f!.setFieldValue("HIDE",Boolean.FALSE)
+              f!.setFieldValue("ALIGN","L")
+              f!.setFieldValue("MASK","")
+              
+              it1! = locales!.iterator()
+              while it1!.hasNext()
+                  loc$ = it1!.next()
+                  f!.setFieldValue(loc$+"_LABEL","")
+                  f!.setFieldValue(loc$+"_SHORTLABEL","")
+                  f!.setFieldValue(loc$+"_GROUP","")
+                  f!.setFieldValue(loc$+"_SHORTC","")
+                  f!.setFieldValue(loc$+"_LONGC","")
+              wend
+              
+              rs!.add(f!)
+              
+          wend
+          
+          grid! = #grid!
+          
+          grid!.addColumn("FIELDNAME","Field Name")
+          grid!.addColumn("TYPE","Type")
+          grid!.addColumn("HIDE","Hide")
+          
+          grid!.addColumn("ALIGN","Align")
+          grid!.addColumn("MASK","Mask")
+          
+          grid!.setColumnWidth("FIELDNAME",150)
+          grid!.setColumnWidth("TYPE",100)
+          grid!.setColumnWidth("HIDE",80)
+          
+          grid!.setColumnWidth("ALIGN",80)
+          grid!.setColumnWidth("MASK",100)
+          
+          it1! = locales!.iterator()
+          while it1!.hasNext()
+              loc$ = it1!.next()
+              grid!.addColumn(loc$+"_LABEL","Label")
+              grid!.addColumn(loc$+"_SHORTLABEL","Short")
+              grid!.addColumn(loc$+"_GROUP","Group")
+              grid!.addColumn(loc$+"_SHORTC","Short Cue")
+              grid!.addColumn(loc$+"_LONGC","Long Cue")
+          wend
+          
+          checkboxRenderer! = new GxRendererBoolean()
+          checkboxRenderer!.setTrueValue("<font size=+1>&#9745;</font>")
+          checkboxRenderer!.setFalseValue("<font size=+1>&#9744;</font>")
+          grid!.getColumn("HIDE").setCellRenderer(checkboxRenderer!)
+          
+          
+          it1! = locales!.iterator()
+          while it1!.hasNext()
+              loc$ = it1!.next()
+              group! = new BBjVector()
+              group!.add(loc$+"_LABEL")
+              group!.add(loc$+"_SHORTLABEL")
+              group!.add(loc$+"_GROUP")
+              group!.add(loc$+"_SHORTC")
+              group!.add(loc$+"_LONGC")
+              grid!.addColumnGroup(loc$ , loc$, group! , 0 , "")
+          wend
+          
+          grid!.setData(rs!)  
+                     
+	methodend
+	
+	method private BBjVector getLocales()
+  	       v! = new BBjVector()
+           v!.addItem("de_DE")
+           v!.addItem("en_GB")
+           v!.addItem("nl_NL")
+           methodret v!
+	methodend
+
+classend
+
+declare BCMetaData myDialog!
+myDialog! = new BCMetaData()
+
+rem /** DLGWIZ_SET_BEGIN **/
+rem /** DLGWIZ_SET_END **/
+
+BCList! = new ResultSet()
+bc! = new DataRow()
+bc!.setFieldValue("DESC","ChileCustomerBC")
+bc!.setFieldValue("CLASS","::BusinessUIComponents/ExampleBCs/ChileCustomerBC.bbj::ChileCustomerBC")
+BCList!.add(bc!)
+
+bc! = new DataRow()
+bc!.setFieldValue("DESC","ChileCustomerBC2")
+bc!.setFieldValue("CLASS","::BusinessUIComponents/ExampleBCs/ChileCustomerBC.bbj::ChileCustomerBC")
+BCList!.add(bc!)
+
+myDialog!.setBCList(BCList!)
+if myDialog!.doModal() and info(3,6)<>"5" then
+    print 'show',
+    print "Passed required fields check"
+rem /** DLGWIZ_GET_BEGIN **/
+rem /** DLGWIZ_GET_END **/
+
+    input "Press ENTER to release",dummy$
+endif
+
+release
