@@ -123,6 +123,7 @@ class public SearchUI
         #componentsWithProperties!.add(#bgrid!)
         #bgrid!.getGrid().setCallback(#bgrid!.getGrid().ON_GRID_DOUBLE_CLICK(), "gridSelect")
     methodend
+    
     method public void addBCErrorHandler(String title!)
         #errorhandler! = new BCErrorHandler()
         #errorhandler!.setTitle(title!)
