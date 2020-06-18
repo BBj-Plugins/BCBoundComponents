@@ -368,9 +368,9 @@ REM         it! = #fieldList!.iterator()
                 #formatField(c!)
             fi
         wend
-        #updateProperties()
+REM         #updateProperties()
         #fieldList! = CAST(BBjVector,fieldList!)
-REM         #setUIPropertiesManager(#getUIPropertiesManager())
+        #setUIPropertiesManager(#getUIPropertiesManager())
     methodend
     
     method public void controlChangeBackColorOnGainedFocus(BBjGainedFocusEvent ev!)
