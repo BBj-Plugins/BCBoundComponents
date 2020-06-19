@@ -35,9 +35,9 @@ class public BusinessMonitorUI
         #sysgui!.setRepaintEnabled(0)
         
         if info(3,6)="5" then
-            #wnd! = #sysgui!.addWindow(100,100,1020,760,TITLE$,$01001010$)
+            #wnd! = #sysgui!.addWindow(100,100,1200,760,TITLE$,$01001010$)
         else
-            #wnd! = #sysgui!.addWindow(100,100,1020,760,TITLE$,$00000093$)
+            #wnd! = #sysgui!.addWindow(100,100,1200,760,TITLE$,$00000093$)
         fi
         
         #wnd!.setCallback(BBjAPI.ON_RESIZE, #this!,"resize")
