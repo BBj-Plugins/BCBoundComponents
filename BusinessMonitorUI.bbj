@@ -46,7 +46,7 @@ class public BusinessMonitorUI
         
         #splitter!.setBottomCtrl(bgrid!)
         
-        #formTabCtrl! = #splitter!.getTopCanvas().addTabCtrl(115, 0, 5, 500, 500)
+        #formTabCtrl! = #splitter!.getTopCanvas().addTabCtrl(115, 0, 10, 500, 500)
         #forms! = new BBjVector()
         #splitter!.setTopCtrl(#formTabCtrl!)
         
