@@ -89,6 +89,12 @@ REM         #addPresetMenuItem(#MENU_ITEM_PROGRAM_INFO) rem needed?
         #setMenuItemEnabled(#MENU_ITEM_NAME_SAVE$, Boolean.FALSE)
     methodend
     
+    method public void initMonitor()
+        #addPresetMenuItem(#MENU_ITEM_CLOSE)
+        #setPresetMenuItemCallback(#MENU_ITEM_CLOSE, #this!, "closeProgram")
+        #addPresetMenuItem(#MENU_ITEM_CLEAR)
+    methodend
+    
     method public void addPresetMenuItem(BBjNumber menuItemID)
         switch menuItemID
             case #MENU_ITEM_RUN
@@ -284,7 +290,7 @@ REM         CAST(ProdinUIControllerIF, #getUIController()).showProgramInfo()
     methodend
     
     method public void clearAll(BBjEvent ev!)
-REM         #getBinder().sendSignal(SIGNAL_INITIATE_TERMINATE)
+        #getBinder().sendSignal(BCBinder.SIGNAL_BLANK)
         rem TODO: need signal
     methodend
     

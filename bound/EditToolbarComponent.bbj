@@ -13,10 +13,17 @@ rem  * A sample BBj Widget Implementation
 rem  */
 class public EditToolbarComponent extends AbstractBCBoundWidget
 
-    field private BBjToolButton btn_new!
-    field private BBjToolButton btn_save!
-    field private BBjToolButton btn_delete!
-    field private BBjToolButton btn_refresh!
+    field protected BBjToolButton btn_new!
+    field protected BBjToolButton btn_save!
+    field protected BBjToolButton btn_delete!
+    field protected BBjToolButton btn_refresh!
+    field protected BBjToolButton btn_blank!
+    
+    field protected Boolean btn_new_enabled! = Boolean.TRUE
+    field protected Boolean btn_save_enabled! = Boolean.TRUE
+    field protected Boolean btn_delete_enabled! = Boolean.TRUE
+    field protected Boolean btn_refresh_enabled! = Boolean.TRUE
+    field protected Boolean btn_blank_enabled! = Boolean.FALSE
     
     field private Boolean dirty! = BBjAPI.FALSE
         
@@ -74,6 +81,11 @@ class public EditToolbarComponent extends AbstractBCBoundWidget
             #btn_refresh!.setTabTraversable(0)
             #btn_refresh!.setFocusable(0)
             
+            #btn_blank! = #getCanvas().addToolButton(104,60,0,20,20,"BLANK")
+            #btn_blank!.setCallback(BBjAPI.ON_TOOL_BUTTON_PUSH,#this!,"onBtnBlank")
+            #btn_blank!.setTabTraversable(0)
+            #btn_blank!.setFocusable(0)
+            
             #enableControls()
             #updateProperties()
         FI
@@ -90,23 +102,69 @@ class public EditToolbarComponent extends AbstractBCBoundWidget
             #btn_save!.setImageFile(uiProperties!.getProperty("EDIT_TOOLBAR_BTN_SAVE_IMAGE"))
             #btn_delete!.setImageFile(uiProperties!.getProperty("EDIT_TOOLBAR_BTN_DELETE_IMAGE"))
             #btn_refresh!.setImageFile(uiProperties!.getProperty("EDIT_TOOLBAR_BTN_REFRESH_IMAGE"))
-            
-            height = uiProperties!.getPropertyAsNumber("EDIT_TOOLBAR_HEIGHT")
+            #btn_blank!.setImageFile(uiProperties!.getProperty("EDIT_TOOLBAR_BTN_BLANK_IMAGE"))
+            #alignAndSizeButtons()
+    methodend
+    
+    method protected void alignAndSizeButtons()
+            height = #getUIPropertiesManager().getPropertyAsNumber("EDIT_TOOLBAR_HEIGHT")
             imageSize = height - 4
-            if height > 0 then 
+            currentXpos = 0
+            if #btn_blank_enabled! then
+                #btn_blank!.setImageSize(imageSize, imageSize)
+                #btn_blank!.setSize(height, height)
+                #btn_blank!.setLocation(currentXpos, 0)
+                #btn_blank!.setVisible(1)
+                currentXpos = currentXpos + height
+            else
+                #btn_blank!.setVisible(0)
+            endif
+            if #btn_new_enabled! then
                 #btn_new!.setImageSize(imageSize, imageSize)
                 #btn_new!.setSize(height, height)
+                #btn_new!.setLocation(currentXpos, 0)
+                #btn_new!.setVisible(1)
+                currentXpos = currentXpos + height
+            else
+                #btn_new!.setVisible(0)
+            endif
+            
+            if #btn_save_enabled! then
                 #btn_save!.setImageSize(imageSize, imageSize)
                 #btn_save!.setSize(height, height)
-                #btn_save!.setLocation(height, 0)
+                #btn_save!.setLocation(currentXpos, 0)
+                #btn_save!.setVisible(1)
+                currentXpos = currentXpos + height
+            else
+                #btn_save!.setVisible(0)
+            endif
+            if #btn_delete_enabled! then
                 #btn_delete!.setImageSize(imageSize, imageSize)
                 #btn_delete!.setSize(height, height)
-                #btn_delete!.setLocation(height * 2, 0)
+                #btn_delete!.setLocation(currentXpos, 0)
+                #btn_delete!.setVisible(1)
+                currentXpos = currentXpos + height
+            else
+                #btn_delete!.setVisible(0)
+            endif
+            if #btn_refresh_enabled! then
                 #btn_refresh!.setImageSize(imageSize, imageSize)
                 #btn_refresh!.setSize(height, height)
-                #btn_refresh!.setLocation(height * 3, 0)
+                #btn_refresh!.setLocation(currentXpos, 0)
+                #btn_refresh!.setVisible(1)
+                currentXpos = currentXpos + height
+            else
+                #btn_refresh!.setVisible(0)
             endif
+    methodend
     
+    method public void setEnabledButtons(Boolean btn_blank_enabled!, Boolean btn_new_enabled!, Boolean btn_save_enabled!, Boolean btn_delete_enabled!, Boolean btn_refresh_enabled!)
+        #btn_new_enabled! = btn_new_enabled!
+        #btn_save_enabled! = btn_save_enabled!
+        #btn_delete_enabled! = btn_delete_enabled!
+        #btn_refresh_enabled! = btn_refresh_enabled!
+        #btn_blank_enabled! = btn_blank_enabled!
+        #alignAndSizeButtons()
     methodend
 
     method private void enableControls()
@@ -123,6 +181,10 @@ class public EditToolbarComponent extends AbstractBCBoundWidget
     
     method public void onBtnRefresh( BBjToolButtonPushEvent ev! )
         #getBinder().retrieve()
+    methodend
+    
+    method public void onBtnBlank( BBjToolButtonPushEvent ev! )
+        #getBinder().sendSignal(BCBinder.SIGNAL_BLANK)
     methodend
 
     method public void onBtnSave( BBjToolButtonPushEvent ev! )

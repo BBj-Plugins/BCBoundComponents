@@ -121,11 +121,12 @@ class public BusinessMonitorUI
         menuBar!.setBinder(#binder!)
         REM #componentsWithProperties!.add(menuBar!) ; rem currently useless
         menuBar!.setTextPropertiesManager(LocalizedPropertiesManager.getInstance())
-        menuBar!.initMasterData()
+        menuBar!.initMonitor()
     methodend
     
     method public void addEditToolbar(BBjInt x!, BBjInt y!)
         edittb! = new EditToolbarComponent(#wnd!,111,x!,y!,100,32)
+        edittb!.setEnabledButtons(1, 0, 0, 0, 1)
         #binder!.register(edittb!)
         #componentsWithProperties!.add(edittb!)
     methodend
