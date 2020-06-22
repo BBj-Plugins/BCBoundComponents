@@ -94,7 +94,7 @@ class public BusinessGrid extends AbstractBCBoundWidget implements IPersistentSt
             options!.setContextMenu(menu!)
 
             rem need to wait for next Gx release:
-            rem options!.setSuppressCellSelection(Boolean.TRUE)
+            options!.setSuppressCellSelection(Boolean.TRUE)
 
             #exportButton! = new ExportButton(#getCanvas(), 202, 0, 5, 20, 20)
             #exportButton!.setGrid(#this!)
