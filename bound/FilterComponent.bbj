@@ -1,0 +1,106 @@
+use ::BusinessUIComponents/AbstractBCBoundWidget.bbj::AbstractBCBoundWidget
+use ::BBjGridExWidget/BBjGridExWidget.bbj::BBjGridExWidget
+use ::BusinessUIComponents/configurations/IPropertiesManager.bbj::IPropertiesManager
+use ::BusinessUIComponents/configurations/PropertiesManager.bbj::PropertiesManager
+use ::BusinessUIComponents/utils/QuickSearchField.bbj::QuickSearchField
+use ::BusinessUIComponents/bound/SimpleFormComponent.bbj::SimpleFormComponent
+
+use com.basiscomponents.bc.BCBound
+use com.basiscomponents.bc.BCBinder
+use com.basiscomponents.bc.BusinessComponent
+use com.basiscomponents.db.ResultSet
+use com.basiscomponents.db.DataRow
+
+use com.google.common.collect.BiMap
+use com.google.common.collect.HashBiMap
+use java.util.HashMap
+use java.util.ArrayList
+use java.time.LocalDateTime
+use java.time.format.DateTimeFormatter
+
+rem /**
+rem  * A sample BBj Widget Implementation
+rem  */
+class public FilterComponent extends SimpleFormComponent
+
+
+    rem --------------------- constructors -------------------------------------
+    
+    rem /**
+    rem  * disabled default constructor
+    rem  */
+    method private FilterComponent()
+    methodend
+
+    rem /**
+    rem  * The constructor that creates the widget on wnd!
+    rem * @param BBjWindow wnd!: parent window
+    rem * @param BBjInt id: the control ID
+    rem * @param BBjInt x: x-location
+    rem * @param BBjInt y: y-location
+    rem * @param BBjInt w: width
+    rem * @param BBjInt h: height
+    rem */
+    method public FilterComponent(BBjWindow wnd!, BBjInt id!, BBjInt x!, BBjInt y!, BBjInt w!, BBjInt h!)
+        #super!(wnd!,id!,x!,y!,w!,h!)
+    methodend
+    
+    method public void onSetData()
+    methodend
+
+    method public void onSetSelection()
+    methodend
+    
+    method public DataRow getFieldsForWrite()
+        methodret new DataRow()
+    methodend
+    
+    method public void buildControlMap()
+        #super!.buildControlMap()
+        #removeCallbacks()
+    methodend
+    
+    method protected void removeCallbacks()
+        it! = #getcontrolList().iterator()
+        while it!.hasNext()
+            c! = cast(BBjControl, it!.next())
+            switch c!.getControlType()
+                case BBjControl.INPUTE_TYPE
+                case BBjControl.INPUTN_TYPE
+                case BBjControl.INPUTD_TYPE
+                    c!.clearCallback(BBjAPI.ON_EDIT_MODIFY, err=*next) 
+                    break
+                case BBjControl.LISTBUTTON_TYPE
+                case BBjControl.LISTEDIT_TYPE
+                    c!.clearCallback(BBjAPI.ON_LIST_SELECT, err=*next) 
+                    break
+                case default
+                    c!.clearCallback(BBjAPI.ON_GAINED_FOCUS, err=*next) 
+                    break
+            swend
+        wend
+    methodend
+
+    rem ---------------------- methods from BBjWidget -------------------------------- 
+
+    
+    method public void onSignal(int signal!, Object payload!)
+        binder! = #getBinder()
+        switch signal!
+            case binder!.SIGNAL_BLANK
+                #clearForm()
+                break
+            case binder!.SIGNAL_TERMINATE
+                it! = #getquickSearchElements().iterator()
+                while it!.hasNext()
+                    qs! = cast(QuickSearchField, it!.next())
+                    qs!.terminateSearchUI()
+                wend
+                break
+            case default
+                break
+        swend
+    methodend
+    
+
+classend

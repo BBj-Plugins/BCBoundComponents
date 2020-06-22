@@ -32,8 +32,6 @@ class public SimpleFormComponent extends AbstractBCBoundWidget
     field protected HashMap controlPrefixMap!
     field protected String quickSearchField! = "_SEARCH"
     field protected Boolean quickSearchUseWildCard! = Boolean.TRUE
-REM     field private BBjColor colorFocusGained!
-REM     field private BBjColor colorFocusLost!
     
 
     rem --------------------- constructors -------------------------------------
@@ -100,15 +98,15 @@ REM     field private BBjColor colorFocusLost!
         #controlPrefixMap! = controlPrefixMap!
     methodend
     
-    method private BiMap getControlMap()
+    method protected BiMap getControlMap()
         if #controlMap! = null() then
-            #controlMap! = #buildControlMap()
+            #buildControlMap()
         endif
         
         methodret #controlMap!
     methodend
     
-    method private BiMap buildControlMap()
+    method public void buildControlMap()
         map! = HashBiMap.create()
         
         if #controlList! = null() then
@@ -144,10 +142,10 @@ REM     field private BBjColor colorFocusLost!
                 endif
             wend
         endif        
-        methodret map!
+        #controlMap! = cast(BiMap, map!)
     methodend
 
-    method private void clearForm()
+    method protected void clearForm()
         if (#fieldList! = null()) then #buildFieldList()
         controlMap! = #getControlMap()
         
@@ -160,7 +158,7 @@ REM     field private BBjColor colorFocusLost!
         #cw!.setEnabled(1)
     methodend
     
-    method private void clearControl(BBjControl control!)
+    method protected void clearControl(BBjControl control!)
         switch control!.getControlType()
             case BBjControl.LISTBUTTON_TYPE
                 cast(BBjListButton, control!).deselect()
@@ -174,7 +172,7 @@ REM     field private BBjColor colorFocusLost!
         swend
     methodend
 
-    method private void updateScreen()
+    method protected void updateScreen()
         if (#cw!= null()) then methodret
         
 REM         if (#fieldList! = null()) then #buildFieldList()
@@ -314,7 +312,7 @@ REM         it! = #fieldList!.iterator()
         #updateScreen()
     methodend
     
-    method private BBjVector getAllControlsRecursive(BBjVector controls!, BBjWindow window!)
+    method protected BBjVector getAllControlsRecursive(BBjVector controls!, BBjWindow window!)
         currentControls! = window!.getAllControls()
         it! = currentControls!.iterator()
         while it!.hasNext()
@@ -329,7 +327,7 @@ REM         it! = #fieldList!.iterator()
         methodret controls!
     methodend
     
-    method private BBjControl getControlFromControlList(String controlName!)
+    method protected BBjControl getControlFromControlList(String controlName!)
         it! = #controlList!.iterator()
         while it!.hasNext()
             control! = it!.next()
@@ -341,7 +339,7 @@ REM         it! = #fieldList!.iterator()
         methodret null()
     methodend
 
-    method private void buildFieldList()
+    method protected void buildFieldList()
         attributes! = #getBinder().getAttributesRecord()
         attrList! = attributes!.getFieldNames()
         
@@ -368,8 +366,9 @@ REM         it! = #fieldList!.iterator()
                 #formatField(c!)
             fi
         wend
-        #updateProperties()
+REM         #updateProperties()
         #fieldList! = CAST(BBjVector,fieldList!)
+        #setUIPropertiesManager(#getUIPropertiesManager())
     methodend
     
     method public void controlChangeBackColorOnGainedFocus(BBjGainedFocusEvent ev!)
@@ -385,7 +384,7 @@ REM         it! = #fieldList!.iterator()
     rem /**
     rem  * formats a control by parsing the attributes record and appliying those attributes.
     rem  */
-    method private void formatField(BBjControl c!)
+    method protected void formatField(BBjControl c!)
         attributes! = #getBinder().getAttributesRecord()
 
         controlMap! = #getControlMap()
@@ -471,7 +470,7 @@ REM                 cast(BBjInputE, c!).setLength(precision!)
         swend
     methodend
     
-    method private void applyQuickSearch(BBjInputE control!, String fieldName!, HashMap fieldAttributes!)
+    method protected void applyQuickSearch(BBjInputE control!, String fieldName!, HashMap fieldAttributes!)
         if !fieldAttributes!.containsKey("LOOKUP") then methodret
         sel! = #getBinder().getSelection()
         if (sel!.size() = 1) then
@@ -518,7 +517,7 @@ REM                 cast(BBjInputE, c!).setLength(precision!)
     rem /**
     rem  * calls retrieveLookup and tries to apply resultset to listbutton
     rem  */
-    method private void applyLookupForListEdit(BBjListButton control!, HashMap fieldAttributes!)
+    method protected void applyLookupForListEdit(BBjListButton control!, HashMap fieldAttributes!)
         if !fieldAttributes!.containsKey("LOOKUP") or !fieldAttributes!.get("LOOKUP").equals("1") then methodret
         fieldName! = #getFieldNameForControl(control!)
         if fieldName! = "" then methodret
@@ -581,7 +580,7 @@ REM         ids! = rs!.get(0).getFieldsHavingAttributeValue("EDITABLE", "2")
         control!.insertItems(0, vectorValues!)
     methodend
     
-    method private void addCalendarButton(BBjInputD control!)
+    method protected void addCalendarButton(BBjInputD control!)
         calendarButton! = #getCanvas().addButton(#getCanvas().getAvailableControlID(), control!.getX() + control!.getWidth() - control!.getHeight() + 1, control!.getY() + 1, control!.getHeight() - 2, control!.getHeight() - 2, "")
         #calendarButtons!.add(calendarButton!)
 REM         calendarButton!.setImageFile("BusinessUIComponents/icon/ic_insert_invitation_black_24dp.png")
@@ -590,7 +589,7 @@ REM         calendarButton!.setImageFile("BusinessUIComponents/icon/ic_insert_in
         calendarButton!.setCallback(BBjAPI.ON_BUTTON_PUSH,#this!,"onCalendarButtonPush") 
     methodend
     
-    method private void registerCallbacks(BBjControl c!)
+    method protected void registerCallbacks(BBjControl c!)
         switch c!.getControlType()
             case BBjControl.INPUTE_TYPE
             case BBjControl.INPUTN_TYPE
@@ -768,10 +767,18 @@ REM         calendarButton!.setImageFile("BusinessUIComponents/icon/ic_insert_in
     method public void onSignal(int signal!, Object payload!)
         binder! = #getBinder()
         switch signal!
+            case binder!.SIGNAL_BLANK
             case binder!.SIGNAL_NEW
                 #clearForm()
                 #toggleIDFieldEnabled(Boolean.TRUE)
                 #focusFirstIDField()
+                break
+            case binder!.SIGNAL_TERMINATE
+                it! = #quickSearchElements!.iterator()
+                while it!.hasNext()
+                    qs! = cast(QuickSearchField, it!.next())
+                    qs!.terminateSearchUI()
+                wend
                 break
             case default
                 break
@@ -782,6 +789,7 @@ REM         calendarButton!.setImageFile("BusinessUIComponents/icon/ic_insert_in
         #super!.setUIPropertiesManager(uiPropertiesManager!)
         it! = #quickSearchElements!.iterator()
         while it!.hasNext()
+        
             qs! = cast(QuickSearchField, it!.next())
             qs!.setUIPropertiesManager(uiPropertiesManager!)
         wend

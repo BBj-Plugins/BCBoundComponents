@@ -1,15 +1,8 @@
 use ::BBjWidget/BBjWidget.bbj::BBjWidget
 use ::BusinessUIComponents/AbstractBCBoundWidget.bbj::AbstractBCBoundWidget
 use ::BusinessUIComponents/BusinessGrid.bbj::BusinessGrid
-REM use ::BusinessUIComponents/bound/TestComponent.bbj::TestComponent
-REM use ::BusinessUIComponents/bound/NavigatorComponent.bbj::NavigatorComponent
-REM use ::BusinessUIComponents/bound/EditToolbarComponent.bbj::EditToolbarComponent
-REM use ::BusinessUIComponents/bound/SimpleFormComponent.bbj::SimpleFormComponent
-REM use ::BusinessUIComponents/bound/SearchBar.bbj::SearchBar
-REM use ::BusinessUIComponents/bound/MenuBar.bbj::MenuBar
 use ::BusinessUIComponents/bound/BCErrorHandler.bbj::BCErrorHandler
 use ::BusinessUIComponents/bound/WindowHandler.bbj::WindowHandler
-REM use ::BusinessUIComponents/unbound/HorizontalSplitter.bbj::HorizontalSplitter
 use ::BusinessUIComponents/configurations/IPropertiesManager.bbj::IPropertiesManager
 use ::BusinessUIComponents/configurations/LocalizedPropertiesManager.bbj::LocalizedPropertiesManager
 use com.basiscomponents.bc.BCBinder
@@ -21,9 +14,6 @@ use java.util.HashMap
 class public SearchUI
 
     field protected BBjTopLevelWindow wnd!
-REM     field protected HorizontalSplitter splitter!
-REM     field protected BBjVector forms!
-REM     field protected BBjTabCtrl formTabCtrl!
     field protected BCBinder binder!
     field protected BBjSysGui sysgui!
     field protected BBjVector componentsWithProperties! = new BBjVector()
@@ -32,6 +22,9 @@ REM     field protected BBjTabCtrl formTabCtrl!
     field protected BCErrorHandler errorhandler!
     field protected WindowHandler windowHandler!
     field protected DataRow selectedRecord!
+    
+    field protected BBjButton buttonOK!
+    field protected BBjButton buttonCancel!
 
     method public SearchUI()
         ? 'HIDE'
@@ -39,10 +32,14 @@ REM     field protected BBjTabCtrl formTabCtrl!
         #sysgui!.setRepaintEnabled(0)
         
         if info(3,6)="5" then
-            #wnd! = #sysgui!.addWindow(#sysgui!.getAvailableContext(), 100,100,1020,760,"",$01001010$)
+            #wnd! = #sysgui!.addWindow(#sysgui!.getAvailableContext(), 100,100,1020,760,"",$41001010$)
         else
-            #wnd! = #sysgui!.addWindow(#sysgui!.getAvailableContext(), 100,100,1020,760,"",$00000093$)
+            #wnd! = #sysgui!.addWindow(#sysgui!.getAvailableContext(), 100,100,1020,760,"",$40000093$)
         fi
+        #buttonOK! = #wnd!.addButton(#wnd!.getAvailableControlID(),560,950,100,20,"OK")
+        #buttonOK!.setCallback(#buttonOK!.ON_BUTTON_PUSH, "gridSelect")
+        #buttonCancel! = #wnd!.addButton(#wnd!.getAvailableControlID(),660,950,100,20,"Cancel")
+        #buttonCancel!.setCallback(#buttonCancel!.ON_BUTTON_PUSH, "onClose")
         
         #wnd!.setCallback(BBjAPI.ON_RESIZE, #this!,"resize")
     methodend
@@ -112,6 +109,7 @@ REM     field protected BBjTabCtrl formTabCtrl!
             component! = it!.next()
             cast(AbstractBCBoundWidget, component!).setUIPropertiesManager(pm!)
         wend
+        #windowHandler!.setUIPropertiesManager(pm!)
     methodend
     
     rem ######### add methods for BC bound components #########
@@ -124,12 +122,11 @@ REM     field protected BBjTabCtrl formTabCtrl!
         #bgrid! = new BusinessGrid(#wnd!,160,x!,y!,960,500)
         #componentsWithProperties!.add(#bgrid!)
         #bgrid!.getGrid().setCallback(#bgrid!.getGrid().ON_GRID_DOUBLE_CLICK(), "gridSelect")
-REM         #binder!.register(#bgrid!)
     methodend
+    
     method public void addBCErrorHandler(String title!)
         #errorhandler! = new BCErrorHandler()
         #errorhandler!.setTitle(title!)
-REM         #binder!.register(#errorhandler!)
     methodend
     
     method public void addWindowHandler(String pgmName!)
@@ -138,16 +135,8 @@ REM         #binder!.register(#errorhandler!)
         #windowHandler!.applyWindowConfig()
         #windowHandler!.setCloseMode(#windowHandler!.CLOSE_MODE_OFF())
         #wnd!.setCallback(BBjAPI().ON_CLOSE, "onClose")
-REM         #binder!.register(#windowHandler!)
     methodend
     
-REM     method public void addMenuBar()
-REM         menubar! = #wnd!.addMenuBar()
-REM         fileMenu! = menubar!.addMenu(401, "File")
-REM         recordMenu! = menubar!.addMenu(402, "Record")
-REM         helpMenu! = menubar!.addMenu(403, "Help")
-REM         statusbar! = #wnd!.addStatusBar(450)
-REM     methodend
     
     rem ############## Events ######################
     
@@ -158,11 +147,12 @@ REM     methodend
     
     method public void delayed_resize(BBjEvent ev!)
         BBjAPI().removeTimer("resize",err=*next)
-REM         w = #wnd!.getWidth()
-REM         h = #wnd!.getHeight()
-REM         for i = 0 to #forms!.size() - 1
-REM           cast(BBjWidget, #forms!.getItem(i)).setSize(w-4, h-25)
-REM         next i
+        w = #wnd!.getWidth()
+        h = #wnd!.getHeight()
+        #bgrid!.setSize(w-4 ,h-50)
+        
+        #buttonOK!.setLocation(w-204, h-25)
+        #buttonCancel!.setLocation(w-104, h-25)
     methodend
     
 
@@ -172,6 +162,10 @@ REM         next i
 
     method public DataRow getSelectedRecord()
         methodret #selectedRecord!
+    methodend
+    
+    method public void applyWindowConfig()
+        #windowHandler!.applyWindowConfig()
     methodend
     
     

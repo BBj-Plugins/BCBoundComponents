@@ -70,6 +70,7 @@ class public PropertiesManager implements IPropertiesManager
             pm! = cast(PropertiesManager, it!.next())
             pm!.closeStream()
         wend
+        #propertyManagers! = new BBjVector()
     methodend
     
     method public void closeStream()
