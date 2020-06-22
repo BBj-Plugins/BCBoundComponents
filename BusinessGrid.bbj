@@ -433,7 +433,7 @@ REM               endif
     rem  * @param state! state string previously stored by the widget
     rem  */
     method public void applyState(String state!)
-        #grid!.setColumnState(new GxState(state!))
+        #grid!.setState(new GxState(state!))
     methodend
 
     rem /**
@@ -443,7 +443,7 @@ REM               endif
     rem  * @return String containing the current state of all columns
     rem  */
     method public String retrieveState()
-        methodret #grid!.getColumnState().toString()
+        methodret #grid!.getState().toString()
     methodend
 
     rem /**
