@@ -126,8 +126,8 @@ class public BusinessGrid extends AbstractBCBoundWidget implements IPersistentSt
             statusbar! = #grid!.getStatusbar()
             statusbar!.addComponent(new GxStatusBarTotalAndFilteredRowCountComponent("right"))
             statusbar!.addComponent(new GxStatusBarSelectedRowCountComponent("center"))
-            statusbar!.setComponentVisibility(GxStatusBarTotalAndFilteredRowCountComponent.NAME(), Boolean.TRUE)
-            statusbar!.setComponentVisibility(GxStatusBarSelectedRowCountComponent.NAME(), Boolean.TRUE)
+            statusbar!.setComponentVisibility(GxStatusBarTotalAndFilteredRowCountComponent.getId(), Boolean.TRUE)
+            statusbar!.setComponentVisibility(GxStatusBarSelectedRowCountComponent.getId(), Boolean.TRUE)
 
             #updateProperties()
         fi
