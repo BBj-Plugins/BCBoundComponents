@@ -56,7 +56,7 @@ class public BCMetaData extends BBDialog
     rem * Constructor BCMetaData
     rem */
     method public BCMetaData()
-        #super!("BCMetaData.arc",101)
+        #super!("BusinessUIComponents/tools/BCMetaData.arc",101)
 
         rem Check if BBjSysGui object is still valid. If not re-create it.
         #SysGui!.getContext(err=*next); sg_ok=1

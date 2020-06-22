@@ -187,8 +187,10 @@ class public ChileCustomerBC implements BusinessComponent
             read record (ch,siz=128000)json$
             close (ch)
             meta! = DataRow.fromJson(json$)
-            locmeta! = meta!.getField(loc$,err=*break).getObject()
-            
+            locmeta! = meta!.getField(loc$,err=*next).getObject()
+            if locmeta! = null() then
+                locmeta! = meta!.getField(loc$(1,2),err=*next).getObject()
+            fi
             if locmeta! <> null() then
                 it! = dr!.getFieldNames().iterator()
                 while it!.hasNext()
