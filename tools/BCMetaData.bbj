@@ -7,6 +7,7 @@ use ::BBjGridExWidget/GxColumns.bbj::GxColumnGroup
 use ::BBjGridExWidget/GxRenderers.bbj::GxRendererBoolean
 use ::BBjGridExWidget/BBjGridExWidget.bbj::BBjGridExWidget
 use ::BBjGridExWidget/GxCellEditors.bbj::GxCellEditorRichSelect
+use ::BBjGridExWidget/GxCellEditors.bbj::GxCellEditorSelect
 use ::BBjGridExWidget/GxClientEvents.bbj::GxClientEventsCell
 use ::BBjGridExWidget/GxClientModels.bbj::GxClientCellModel
 
@@ -166,12 +167,14 @@ class public BCMetaData extends BBDialog
 	#grid! = new BBjGridExWidget(#C_BCMetaData!,500,0,80,#C_BCMetaData!.getWidth(),#C_BCMetaData!.getHeight()-80)
 	grid! = #grid!
     grid!.setTheme( grid!.GRID_THEME_BALHAM() )
-    grid!.getOptions().setSingleClickEdit(1)
+    rem grid!.getOptions().setSingleClickEdit(1)
 
     grid!.setCallback(grid!.ON_GRID_CELL_EDITING_STOPPED(),#this!,"cellEditingStopped")
 
     locales! = #getLocales()
-      filedNameColumn! = grid!.addColumn("FIELDNAME")
+    isEditableExp! = "data.FIELDNAME && (data.FIELDNAME !== '_ENTITY' && data.FIELDNAME !== '_ENTITIES')"
+    
+        filedNameColumn! = grid!.addColumn("FIELDNAME")
         filedNameColumn!.setLabel("Field Name")
         filedNameColumn!.setWidth(150)
         filedNameColumn!.setPinned(GxColumn.PINNED_LEFT())
@@ -181,23 +184,33 @@ class public BCMetaData extends BBDialog
         typeColumn!.setLabel("Type")
         typeColumn!.setWidth(80)
         typeColumn!.setPinned(GxColumn.PINNED_LEFT())
-
+                
         hideColumn! = grid!.addColumn("HIDE")
         hideColumn!.setLabel("Hide")
         hideColumn!.setWidth(150)
         hideColumn!.setType(java.sql.Types.BOOLEAN)
         hideColumn!.setPinned(GxColumn.PINNED_LEFT())
         hideColumn!.setEditable(1)
+        hideColumn!.setEditableExpression(isEditableExp!)
 
         alignColumn! = grid!.addColumn("ALIGN")
         alignColumn!.setLabel("Align")
         alignColumn!.setEditable(1)
+        alignColumn!.setEditableExpression(isEditableExp!)
 
         alignColumn!.setWidth(80)
         alignColumn!.setPinned(GxColumn.PINNED_LEFT())
 
-
-         edselect! = new GxCellEditorRichSelect()
+        
+        rem GxCellEditorRichSelect is only available in the enhanced version
+        rem you can fallback to GxCellEditorSelect like this 
+        rem  if(!grid!.isLicensed()) then
+        rem     edselect! = new GxCellEditorRichSelect()
+        rem  else 
+        rem     edselect! = new GxCellEditorSelect()
+        rem  fi
+            
+         edselect! = new GxCellEditorSelect()
          values! = new JsonArray()
          values!.add("L")
          values!.add("C")
@@ -205,21 +218,32 @@ class public BCMetaData extends BBDialog
          edselect!.setValues(values!)
          alignColumn!.setCellEditor(edselect!)
 
+    
         it1! = locales!.iterator()
         while it1!.hasNext()
             loc$ = it1!.next()
             col! = grid!.addColumn(loc$+"_LABEL","Label")
             col!.setEditable(1)
+
             col! = grid!.addColumn(loc$+"_SHORTLABEL","Short")
             col!.setEditable(1)
+            col!.setEditableExpression(isEditableExp!)
+            
             col! = grid!.addColumn(loc$+"_GROUP","Group")
             col!.setEditable(1)
+            col!.setEditableExpression(isEditableExp!)
+
             col! = grid!.addColumn(loc$+"_SHORTC","Short Cue")
             col!.setEditable(1)
+            col!.setEditableExpression(isEditableExp!)
+
             col! = grid!.addColumn(loc$+"_LONGC","Long Cue")
             col!.setEditable(1)
+            col!.setEditableExpression(isEditableExp!)
+            
             col! = grid!.addColumn(loc$+"_MASK","Mask")
             col!.setEditable(1)
+            col!.setEditableExpression(isEditableExp!)
         wend
 
 
@@ -392,9 +416,8 @@ class public BCMetaData extends BBDialog
 
           wend
 
-          grid! = #grid!
-          grid!.getOptions().setImmutableColumns(1)
-          grid!.updateData(rs!)
+        grid! = #grid!
+        grid!.updateData(rs!)
 
 	methodend
 
