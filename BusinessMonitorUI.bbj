@@ -97,7 +97,7 @@ class public BusinessMonitorUI
             if (dr!.contains("CLASSNAME")) then
                 filter! = eval("new "+dr!.getFieldAsString("CLASSNAME")+"(filterCW!,100,0,5,300,300)")
             else
-                filter! = new FilterComponent(filterCW!,100,0,10,300,300)
+                filter! = new FilterComponent(#binder!, filterCW!,100,0,10,300,300)
                 filter!.setForm(dr!.getFieldAsString("ARC"), dr!.getFieldAsNumber("CWID"))
                 #componentsWithProperties!.add(filter!)
             fi
@@ -105,7 +105,7 @@ class public BusinessMonitorUI
                 filter!.setControlPrefixMap(controlPrefixMap!)
             endif
             #filters!.addItem(filter!)
-            #binder!.register(filter!)
+REM             #binder!.register(filter!)
             filter!.buildControlMap()
             
             methodret
@@ -120,7 +120,7 @@ class public BusinessMonitorUI
             if (dr!.contains("CLASSNAME")) then
                 filter! = eval("new "+dr!.getFieldAsString("CLASSNAME")+"(filterCW!,100,0,5,300,300)")
             else
-                filter! = new FilterComponent(filterCW!,100,0,10,300,300)
+                filter! = new FilterComponent(#binder!, filterCW!,100,0,10,300,300)
                 filter!.setForm(dr!.getFieldAsString("ARC"), dr!.getFieldAsNumber("CWID"))
                 #componentsWithProperties!.add(filter!)
             fi
@@ -128,7 +128,7 @@ class public BusinessMonitorUI
                 filter!.setControlPrefixMap(controlPrefixMap!)
             endif
             #filters!.addItem(filter!)
-            #binder!.register(filter!)
+REM             #binder!.register(filter!)
             filter!.buildControlMap()
             cwIdStart = cwIdStart + 1
         wend

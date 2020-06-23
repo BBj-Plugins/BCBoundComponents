@@ -19,11 +19,19 @@ dr!.setFieldValue("ARC", "BusinessUIComponents/Demo/MasterDataForm2.arc")
 dr!.setFieldValue("CWID", 100)
 dr!.setFieldValue("TABNAME", "Business")
 forms!.add(dr!)
+filter! = new DataRow()
+filter!.setFieldValue("ARC", "BusinessUIComponents/Demo/MasterDataForm1.arc")
+filter!.setFieldValue("CWID", 100)
 
 BC$="::BusinessUIComponents/ExampleBCs/ChileCustomerBC.bbj::ChileCustomerBC"
 TITLE$ = "ChileCustomer Demo"
 
-CALL "BusinessUIComponents/BusinessMasterDataUI.bbj", forms!, BC$, TITLE$
+pgm! = pgm(-2)
+if pgm!.length() > 40 then
+    pgm! = pgm!.substring(pgm!.length() -40)
+endif
+PGMNAME$ = pgm!
+CALL "BusinessUIComponents/BusinessMasterDataUI.bbj", forms!, filter!, BC$, TITLE$, PGMNAME$
 
 REM resize:
 REM REM   if timerActive! then return

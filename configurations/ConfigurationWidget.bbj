@@ -95,6 +95,10 @@ REM     field protected String iconButtonAdminDisabled! =   "BusinessUIComponent
         #adminModeEnabled! = Boolean.FALSE
         #allowAdmin! = allowAdmin!
         #realm! = realm!
+        rem trim key to max length
+        if keyx!.length() > 40 then
+            keyx! = keyx!.substring(keyx!.length() - 40)
+        endif
         #keyx! = keyx!
         #container! = container!
         if bc! <> null() then

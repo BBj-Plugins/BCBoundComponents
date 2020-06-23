@@ -2,6 +2,7 @@ use ::BusinessUIComponents/AbstractBCBoundWidget.bbj::AbstractBCBoundWidget
 use ::BBjGridExWidget/BBjGridExWidget.bbj::BBjGridExWidget
 use ::BusinessUIComponents/configurations/IPropertiesManager.bbj::IPropertiesManager
 use ::BusinessUIComponents/configurations/PropertiesManager.bbj::PropertiesManager
+use ::BusinessUIComponents/configurations/SelectionBC.bbj::SelectionBC
 use ::BusinessUIComponents/utils/QuickSearchField.bbj::QuickSearchField
 use ::BusinessUIComponents/bound/SimpleFormComponent.bbj::SimpleFormComponent
 
@@ -23,7 +24,9 @@ rem  * A sample BBj Widget Implementation
 rem  */
 class public FilterComponent extends SimpleFormComponent
 
-
+    field protected BCBinder mainBinder!
+    field protected SelectionBC selectionBC!
+    field protected BBjButton fetchButton!
     rem --------------------- constructors -------------------------------------
     
     rem /**
@@ -41,9 +44,54 @@ class public FilterComponent extends SimpleFormComponent
     rem * @param BBjInt w: width
     rem * @param BBjInt h: height
     rem */
-    method public FilterComponent(BBjWindow wnd!, BBjInt id!, BBjInt x!, BBjInt y!, BBjInt w!, BBjInt h!)
+    method public FilterComponent(BCBinder mainBinder!, BBjWindow wnd!, BBjInt id!, BBjInt x!, BBjInt y!, BBjInt w!, BBjInt h!)
         #super!(wnd!,id!,x!,y!,w!,h!)
+        #mainBinder! = mainBinder!
+        #selectionBC! = new SelectionBC(#mainBinder!.getBC())
+        selectionBinder! = new BCBinder(#selectionBC!)
+        #setBinder(selectionBinder!)
+        selectionBinder!.register(#this!)
     methodend
+    
+    method public void setKey(String key!)
+        #selectionBC!.setKey(key!)
+    methodend
+    
+    method public void setForm(BBjString res_name$, BBjNumber id)
+        res = BBjAPI().getSysGui().resOpen(res_name$)
+        #setcw(#getCanvas().createChildWindow(res, id, 100, 0, 20))
+        #getCanvas().setSize(#getcw().getWidth(), #getcw().getHeight() + 20)
+        #getcw().setVisible(Boolean.TRUE)
+        #addButtons()
+    methodend
+    
+    method public BBjNumber getHeight()
+        methodret #getCanvas().getHeight()
+    methodend
+    
+    method protected void addButtons()
+        #fetchButton! = #getCanvas().addButton(#getCanvas().getAvailableControlID(),5,5,20,20,"")
+        #fetchButton!.setCallback(#fetchButton!.ON_BUTTON_PUSH,#this!,"buttonPushFetch")
+        #updateProperties()
+    methodend
+    
+    method public void buttonPushFetch(BBjEvent ev!)
+        #fetch()
+    methodend
+    
+    method protected void fetch()
+        #getBinder().getSelection().clear();rem clear to only have the write dr in the result set
+        #getBinder().getRS().clear();rem clear to only have the write dr in the result set
+REM         #getBinder().setDebugLevel(1)
+REM         ?#getBinder().getDataRowForWrite()
+REM         escape
+        #getBinder().sendSignal(BCBinder.SIGNAL_SAVE)
+        filter! = #getBinder().getRS().get(0)
+        #mainBinder!.getBC().setFilter(filter!)
+        #mainBinder!.retrieve()
+    methodend
+    
+    
     
     method public void onSetData()
     methodend
@@ -51,56 +99,72 @@ class public FilterComponent extends SimpleFormComponent
     method public void onSetSelection()
     methodend
     
+    
     method public DataRow getFieldsForWrite()
-        methodret new DataRow()
+        fields! = #super!.getFieldsForWrite()
+        fields!.setFieldValue(SelectionBC.FIELDNAME_SELECTION_DESC(), "test")
+        methodret fields!
     methodend
     
-    method public void buildControlMap()
-        #super!.buildControlMap()
-        #removeCallbacks()
+    method public void setUIPropertiesManager(IPropertiesManager uiPropertiesManager!)
+        #super!.setUIPropertiesManager(uiPropertiesManager!)
+        #updateProperties()
     methodend
     
-    method protected void removeCallbacks()
-        it! = #getcontrolList().iterator()
-        while it!.hasNext()
-            c! = cast(BBjControl, it!.next())
-            switch c!.getControlType()
-                case BBjControl.INPUTE_TYPE
-                case BBjControl.INPUTN_TYPE
-                case BBjControl.INPUTD_TYPE
-                    c!.clearCallback(BBjAPI.ON_EDIT_MODIFY, err=*next) 
-                    break
-                case BBjControl.LISTBUTTON_TYPE
-                case BBjControl.LISTEDIT_TYPE
-                    c!.clearCallback(BBjAPI.ON_LIST_SELECT, err=*next) 
-                    break
-                case default
-                    c!.clearCallback(BBjAPI.ON_GAINED_FOCUS, err=*next) 
-                    break
-            swend
-        wend
+    method protected void updateProperties()
+        #super!.updateProperties()
+        if #fetchButton! <> null() then 
+            #fetchButton!.setImageFile(#getUIPropertiesManager().getProperty("FILTER_BTN_FETCH"))
+            #fetchButton!.setImageSize(16, 16)
+        endif
     methodend
-
-    rem ---------------------- methods from BBjWidget -------------------------------- 
-
-    
-    method public void onSignal(int signal!, Object payload!)
-        binder! = #getBinder()
-        switch signal!
-            case binder!.SIGNAL_BLANK
-                #clearForm()
-                break
-            case binder!.SIGNAL_TERMINATE
-                it! = #getquickSearchElements().iterator()
-                while it!.hasNext()
-                    qs! = cast(QuickSearchField, it!.next())
-                    qs!.terminateSearchUI()
-                wend
-                break
-            case default
-                break
-        swend
-    methodend
+REM     
+REM     method public void buildControlMap()
+REM         #super!.buildControlMap()
+REM         #removeCallbacks()
+REM     methodend
+REM     
+REM     method protected void removeCallbacks()
+REM         it! = #getcontrolList().iterator()
+REM         while it!.hasNext()
+REM             c! = cast(BBjControl, it!.next())
+REM             switch c!.getControlType()
+REM                 case BBjControl.INPUTE_TYPE
+REM                 case BBjControl.INPUTN_TYPE
+REM                 case BBjControl.INPUTD_TYPE
+REM                     c!.clearCallback(BBjAPI.ON_EDIT_MODIFY, err=*next) 
+REM                     break
+REM                 case BBjControl.LISTBUTTON_TYPE
+REM                 case BBjControl.LISTEDIT_TYPE
+REM                     c!.clearCallback(BBjAPI.ON_LIST_SELECT, err=*next) 
+REM                     break
+REM                 case default
+REM                     c!.clearCallback(BBjAPI.ON_GAINED_FOCUS, err=*next) 
+REM                     break
+REM             swend
+REM         wend
+REM     methodend
+REM 
+REM     rem ---------------------- methods from BBjWidget -------------------------------- 
+REM 
+REM     
+REM     method public void onSignal(int signal!, Object payload!)
+REM         binder! = #getBinder()
+REM         switch signal!
+REM             case binder!.SIGNAL_BLANK
+REM                 #clearForm()
+REM                 break
+REM             case binder!.SIGNAL_TERMINATE
+REM                 it! = #getquickSearchElements().iterator()
+REM                 while it!.hasNext()
+REM                     qs! = cast(QuickSearchField, it!.next())
+REM                     qs!.terminateSearchUI()
+REM                 wend
+REM                 break
+REM             case default
+REM                 break
+REM         swend
+REM     methodend
     
 
 classend

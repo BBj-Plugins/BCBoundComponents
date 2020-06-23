@@ -384,7 +384,7 @@ REM         endif
 
         if #Filter! <> null() then
             filter! = #Filter!
-            sql$ = sql$ + " AND "
+            sql$ = sql$ + " WHERE "
             it! = filter!.getFieldNames().iterator()
             while it!.hasNext()
                 fieldName$ = it!.next()
