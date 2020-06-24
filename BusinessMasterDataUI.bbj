@@ -220,6 +220,11 @@ declare ResultSet form_defs!
 rem controlPrefixMap! is optional
 controlPrefixMap! = null()
 enter form_defs!, filter!, BC$, TITLE$, PGMNAME$, controlPrefixMap!, err=*next
+pgm! = PGMNAME$
+if pgm!.length() > 40 then
+    pgm! = pgm!.substring(pgm!.length() -35)
+endif
+PGMNAME$ = pgm!
 
 md! = new BusinessMasterDataUI(BC$, TITLE$, PGMNAME$)
 

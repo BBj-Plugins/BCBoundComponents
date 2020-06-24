@@ -142,8 +142,8 @@ class public HorizontalSplitter extends BBjWidget
             #UiwBottom!.setSize(#W,#H-#SplitPos-4)
         fi
     
-    #Split!.setLocation(0,#SplitPos)
-    #Split!.setSize(#W,4)
+        #Split!.setLocation(0,#SplitPos)
+        #Split!.setSize(#W,4)
     
     methodend
     
@@ -171,6 +171,11 @@ class public HorizontalSplitter extends BBjWidget
         fi
         
     methodend  
+    
+    method public void setPosition(BBjNumber Ypos)
+        #SplitPos = Ypos
+        #delayedResize(null())
+    methodend
 
 
 classend
