@@ -33,6 +33,7 @@ class public SimpleFormComponent extends AbstractBCBoundWidget implements IPersi
     field protected HashMap controlPrefixMap!
     field protected String quickSearchField! = "_SEARCH"
     field protected Boolean quickSearchUseWildCard! = Boolean.TRUE
+    field protected Boolean listButtonFirstRowEmpty! = Boolean.FALSE
     
 
     rem --------------------- constructors -------------------------------------
@@ -89,6 +90,12 @@ class public SimpleFormComponent extends AbstractBCBoundWidget implements IPersi
             calendarButton! = it!.next()
             cast(BBjButton, calendarButton!).setImageFile(#getUIPropertiesManager().getProperty("SIMPLE_FORM_BTN_CALENDAR"))
         wend
+    methodend
+    
+    
+    
+    method public void setListButtonFirstRowEmpty(Boolean listButtonFirstRowEmpty!)
+        #listButtonFirstRowEmpty! = listButtonFirstRowEmpty!
     methodend
     
     method public void setControlMap(BiMap controlMap!)
@@ -559,6 +566,10 @@ REM         ids! = rs!.get(0).getFieldsHavingAttributeValue("EDITABLE", "2")
         endif
         vectorKeys! = new BBjVector()
         vectorValues! = new BBjVector()
+        if #listButtonFirstRowEmpty! then
+            vectorKeys!.add("")
+            vectorValues!.add("")
+        endif
         itResultSet! = rs!.iterator()
         while itResultSet!.hasNext()
             dr! = itResultSet!.next()

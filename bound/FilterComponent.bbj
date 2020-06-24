@@ -51,6 +51,7 @@ class public FilterComponent extends SimpleFormComponent
     method public FilterComponent(BCBinder mainBinder!, BBjWindow wnd!, BBjInt id!, BBjInt x!, BBjInt y!, BBjInt w!, BBjInt h!)
         #super!(wnd!,id!,x!,y!,w!,h!)
         #mainBinder! = mainBinder!
+        #setListButtonFirstRowEmpty(Boolean.TRUE)
         #selectionBC! = new SelectionBC(#mainBinder!.getBC())
         selectionBinder! = new BCBinder(#selectionBC!)
         #setBinder(selectionBinder!)
