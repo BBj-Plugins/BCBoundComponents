@@ -119,6 +119,16 @@ class public HorizontalSplitter extends BBjWidget
         BBjAPI().removeTimer("delay",err=*next)
         #getCanvas().setSize(#W,#H)
         
+        minY = #CwTop!.getY() + 3
+        maxY = #CwBottom!.getY() + #CwBottom!.getHeight() - #CwTop!.getY() - 3
+        
+        if #SplitPos < minY then
+            #SplitPos = minY
+        endif
+        if #SplitPos > maxY then
+            #SplitPos = maxY
+        endif
+        
         #CwTop!.setSize(#W,#SplitPos-4)
         #CwBottom!.setLocation(0,#SplitPos+4)
         #CwBottom!.setSize(#W,#H-#SplitPos-4)
