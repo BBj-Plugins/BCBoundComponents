@@ -5,6 +5,7 @@ use ::BusinessUIComponents/bound/TestComponent.bbj::TestComponent
 use ::BusinessUIComponents/bound/NavigatorComponent.bbj::NavigatorComponent
 use ::BusinessUIComponents/bound/EditToolbarComponent.bbj::EditToolbarComponent
 use ::BusinessUIComponents/bound/SimpleFormComponent.bbj::SimpleFormComponent
+use ::BusinessUIComponents/bound/FilterComponent.bbj::FilterComponent
 use ::BusinessUIComponents/bound/SearchBar.bbj::SearchBar
 use ::BusinessUIComponents/bound/MenuBar.bbj::MenuBar
 use ::BusinessUIComponents/bound/BCErrorHandler.bbj::BCErrorHandler
@@ -22,8 +23,8 @@ class public BusinessMonitorUI
     field protected BBjTopLevelWindow wnd!
     field protected WindowHandler wh!
     field protected HorizontalSplitter splitter!
-    field protected BBjVector forms!
-    field protected BBjTabCtrl formTabCtrl!
+    field protected BBjVector filters!
+    field protected BBjTabCtrl filterTabCtrl!
     field protected BCBinder binder!
     field protected BBjSysGui sysgui!
     field protected BBjVector componentsWithProperties! = new BBjVector()
@@ -46,9 +47,8 @@ class public BusinessMonitorUI
         
         #splitter!.setBottomCtrl(bgrid!)
         
-        #formTabCtrl! = #splitter!.getTopCanvas().addTabCtrl(115, 0, 10, 500, 500)
-        #forms! = new BBjVector()
-        #splitter!.setTopCtrl(#formTabCtrl!)
+        
+        #filters! = new BBjVector()
         
         bc! = eval("new "+BC$+"()")
         
@@ -88,25 +88,48 @@ class public BusinessMonitorUI
     
     rem ######### add methods for BC bound components #########
     
-    method public void addForms(ResultSet form_defs!, HashMap controlPrefixMap!)
+    method public void addFilters(ResultSet filter_defs!, HashMap controlPrefixMap!)
         cwIdStart = 200
-        it! = form_defs!.iterator()
-        while it!.hasNext()
-            dr! = it!.next()
-            formCW! = #splitter!.getTopCanvas().addChildWindow(cwIdStart + i,0,0,500,500,"",$00000800$, #sysgui!.getAvailableContext(),$$)
-            #formTabCtrl!.addTab(dr!.getFieldAsString("TABNAME"), formCW!)
+        
+        if filter_defs!.size() = 1 then
+            dr! = filter_defs!.get(0)
+            filterCW! = #splitter!.getTopCanvas()
             if (dr!.contains("CLASSNAME")) then
-                form! = eval("new "+dr!.getFieldAsString("CLASSNAME")+"(formCW!,100,0,5,300,300)")
+                filter! = eval("new "+dr!.getFieldAsString("CLASSNAME")+"(filterCW!,100,0,5,300,300)")
             else
-                form! = new SimpleFormComponent(formCW!,100,0,5,300,300)
-                form!.setForm(dr!.getFieldAsString("ARC"), dr!.getFieldAsNumber("CWID"))
-                #componentsWithProperties!.add(form!)
+                filter! = new FilterComponent(#binder!, filterCW!,100,0,10,300,300)
+                filter!.setForm(dr!.getFieldAsString("ARC"), dr!.getFieldAsNumber("CWID"))
+                #componentsWithProperties!.add(filter!)
             fi
             if controlPrefixMap! <> null() then
-                form!.setControlPrefixMap(controlPrefixMap!)
+                filter!.setControlPrefixMap(controlPrefixMap!)
             endif
-            #forms!.addItem(form!)
-            #binder!.register(form!)
+            #filters!.addItem(filter!)
+REM             #binder!.register(filter!)
+            filter!.buildControlMap()
+            
+            methodret
+        endif
+        #filterTabCtrl! = #splitter!.getTopCanvas().addTabCtrl(115, 0, 10, 500, 500)
+        #splitter!.setTopCtrl(#filterTabCtrl!)
+        it! = filter_defs!.iterator()
+        while it!.hasNext()
+            dr! = it!.next()
+            filterCW! = #splitter!.getTopCanvas().addChildWindow(cwIdStart + i,0,0,500,500,"",$00000800$, #sysgui!.getAvailableContext(),$$)
+            #filterTabCtrl!.addTab(dr!.getFieldAsString("TABNAME"), filterCW!)
+            if (dr!.contains("CLASSNAME")) then
+                filter! = eval("new "+dr!.getFieldAsString("CLASSNAME")+"(filterCW!,100,0,5,300,300)")
+            else
+                filter! = new FilterComponent(#binder!, filterCW!,100,0,10,300,300)
+                filter!.setForm(dr!.getFieldAsString("ARC"), dr!.getFieldAsNumber("CWID"))
+                #componentsWithProperties!.add(filter!)
+            fi
+            if controlPrefixMap! <> null() then
+                filter!.setControlPrefixMap(controlPrefixMap!)
+            endif
+            #filters!.addItem(filter!)
+REM             #binder!.register(filter!)
+            filter!.buildControlMap()
             cwIdStart = cwIdStart + 1
         wend
     methodend
@@ -150,14 +173,6 @@ class public BusinessMonitorUI
         #binder!.register(#wh!)
     methodend
     
-REM     method public void addMenuBar()
-REM         menubar! = #wnd!.addMenuBar()
-REM         fileMenu! = menubar!.addMenu(401, "File")
-REM         recordMenu! = menubar!.addMenu(402, "Record")
-REM         helpMenu! = menubar!.addMenu(403, "Help")
-REM         statusbar! = #wnd!.addStatusBar(450)
-REM     methodend
-    
     rem ############## Events ######################
     
     method public void resize(BBjEvent ev!)
@@ -170,15 +185,15 @@ REM     methodend
         w = #wnd!.getWidth()
         h = #wnd!.getHeight()
         #splitter!.setSize(w-4 ,h-25)
-        for i = 0 to #forms!.size() - 1
-          cast(BBjWidget, #forms!.getItem(i)).setSize(w-4, h-25)
+        for i = 0 to #filters!.size() - 1
+          cast(BBjWidget, #filters!.getItem(i)).setSize(w-4, h-25)
         next i
     methodend
     
     
 
-    method public BBjVector getForms()
-        methodret #forms!
+    method public BBjVector getFilters()
+        methodret #filters!
     methodend
 
     method public BBjWindow getWindow()
@@ -187,11 +202,11 @@ REM     methodend
 
 classend
 
-declare ResultSet form_defs!
+declare ResultSet filter_defs!
 
 rem controlPrefixMap! is optional
 controlPrefixMap! = null()
-enter form_defs!, BC$, TITLE$, controlPrefixMap!, err=*next
+enter filter_defs!, BC$, TITLE$, controlPrefixMap!, err=*next
 
 md! = new BusinessMonitorUI(BC$, TITLE$)
 
@@ -200,6 +215,6 @@ md!.addEditToolbar(2,2)
 md!.addBusinessGrid(0,5)
 md!.addBCErrorHandler(TITLE$)
 md!.addWindowHandler(TITLE$)
-md!.addForms(form_defs!, controlPrefixMap!)
+md!.addFilters(filter_defs!, controlPrefixMap!)
 
 md!.doModal()

@@ -95,6 +95,10 @@ REM     field protected String iconButtonAdminDisabled! =   "BusinessUIComponent
         #adminModeEnabled! = Boolean.FALSE
         #allowAdmin! = allowAdmin!
         #realm! = realm!
+        rem trim key to max length
+        if keyx!.length() > 40 then
+            keyx! = keyx!.substring(keyx!.length() - 40)
+        endif
         #keyx! = keyx!
         #container! = container!
         if bc! <> null() then
@@ -431,7 +435,7 @@ REM         #listEditOptions!.addItem("")
     rem /**
     rem  * returns the configuration as datarow which is currently selected in the list edit
     rem  */
-    method protected DataRow getSelectedConfig()
+    method public DataRow getSelectedConfig()
         if #availableConfigs! = null() or #availableConfigs!.isEmpty() or #selectedIndex < 0 then
             methodret null()
         endif
