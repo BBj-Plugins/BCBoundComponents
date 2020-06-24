@@ -10,15 +10,15 @@ forms! = new ResultSet()
 
 declare DataRow dr!
 dr! = new DataRow()
-dr!.setFieldValue("ARC", "BusinessUIComponents/Demo/MasterDataForm1.arc")
+dr!.setFieldValue("ARC", "BusinessUIComponents/Demo/MasterDataFilter.arc")
 dr!.setFieldValue("CWID", 100)
 dr!.setFieldValue("TABNAME", "Personal")
 forms!.add(dr!)
-dr! = new DataRow()
-dr!.setFieldValue("ARC", "BusinessUIComponents/Demo/MasterDataForm2.arc")
-dr!.setFieldValue("CWID", 100)
-dr!.setFieldValue("TABNAME", "Business")
-forms!.add(dr!)
+REM dr! = new DataRow()
+REM dr!.setFieldValue("ARC", "BusinessUIComponents/Demo/MasterDataForm2.arc")
+REM dr!.setFieldValue("CWID", 100)
+REM dr!.setFieldValue("TABNAME", "Business")
+REM forms!.add(dr!)
 
 BC$="::BusinessUIComponents/ExampleBCs/ChileCustomerBC.bbj::ChileCustomerBC"
 TITLE$ = "ChileCustomer Demo"
