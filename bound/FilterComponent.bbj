@@ -63,8 +63,8 @@ class public FilterComponent extends SimpleFormComponent
     
     method public void setForm(BBjString res_name$, BBjNumber id)
         res = BBjAPI().getSysGui().resOpen(res_name$)
-        #setcw(#getCanvas().createChildWindow(res, id, 100, 0, 20))
-        #getCanvas().setSize(#getcw().getWidth(), #getcw().getHeight() + 20)
+        #setcw(#getCanvas().createChildWindow(res, id, 100, 5, 27))
+        #getCanvas().setSize(#getcw().getWidth(), #getcw().getHeight() + 27)
         #getcw().setVisible(Boolean.TRUE)
         #buildControlMap()
         #addButtons()
@@ -76,7 +76,7 @@ class public FilterComponent extends SimpleFormComponent
     methodend
     
     method protected void addButtons()
-        #fetchButton! = #getCanvas().addButton(#getCanvas().getAvailableControlID(),5,5,20,20,"")
+        #fetchButton! = #getCanvas().addButton(#getCanvas().getAvailableControlID(),2,2,20,20,"")
         #fetchButton!.setCallback(#fetchButton!.ON_BUTTON_PUSH,#this!,"buttonPushFetch")
         #updateProperties()
     methodend
@@ -166,7 +166,7 @@ REM                     c!.clearCallback(BBjAPI.ON_GAINED_FOCUS)
     methodend
     
     method protected void addConfigurationWidget()
-        #configWidget! = new ConfigurationWidget(#getCanvas(),#getCanvas().getAvailableControlID(), 25, 5 , #this!, Boolean.TRUE, "SEL", #selectionBC!.getKey(), #selectionBC!.getConfigurationsBC() )
+        #configWidget! = new ConfigurationWidget(#getCanvas(),#getCanvas().getAvailableControlID(), 22, 2 , #this!, Boolean.TRUE, "SEL", #selectionBC!.getKey(), #selectionBC!.getConfigurationsBC() )
     methodend
     
 REM     

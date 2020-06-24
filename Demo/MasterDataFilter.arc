@@ -2,26 +2,26 @@
 
 VERSION "4.0"
 
-CHILD-WINDOW 100 0 0 776 37
+CHILD-WINDOW 100 0 0 776 44
 BEGIN
     BORDERLESS
     ENTERASTAB
     EVENTMASK 0
     KEYBOARDNAVIGATION
     NAME "Child Window100"
-    STATICTEXT 106, "State:", 73, 11, 90, 25
+    STATICTEXT 106, "State:", 10, 20, 90, 25
     BEGIN
         NAME "Static Text106"
         NOT WORDWRAP
     END
 
-    STATICTEXT 110, "Country:", 411, 11, 90, 25
+    STATICTEXT 110, "Country:", 370, 20, 90, 25
     BEGIN
         NAME "Static Text110"
         NOT WORDWRAP
     END
 
-    INPUTE 116, "", 161, 6, 206, 25
+    INPUTE 116, "", 110, 15, 206, 25
     BEGIN
         NAME "STATE"
         PADCHARACTER 32
@@ -29,7 +29,7 @@ BEGIN
         NOT DRAGENABLED
     END
 
-    INPUTE 117, "", 499, 6, 206, 25
+    INPUTE 117, "", 458, 15, 206, 25
     BEGIN
         NAME "COUNTRY"
         PADCHARACTER 32
