@@ -25,12 +25,8 @@ filter!.setFieldValue("CWID", 100)
 
 BC$="::BusinessUIComponents/ExampleBCs/ChileCustomerBC.bbj::ChileCustomerBC"
 TITLE$ = "ChileCustomer Demo"
+PGMNAME$ = pgm(-2)
 
-pgm! = pgm(-2)
-if pgm!.length() > 40 then
-    pgm! = pgm!.substring(pgm!.length() -35)
-endif
-PGMNAME$ = pgm!
 CALL "BusinessUIComponents/BusinessMasterDataUI.bbj", forms!, filter!, BC$, TITLE$, PGMNAME$
 
 REM resize:
