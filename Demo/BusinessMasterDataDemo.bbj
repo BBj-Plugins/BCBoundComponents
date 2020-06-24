@@ -20,7 +20,7 @@ dr!.setFieldValue("CWID", 100)
 dr!.setFieldValue("TABNAME", "Business")
 forms!.add(dr!)
 filter! = new DataRow()
-filter!.setFieldValue("ARC", "BusinessUIComponents/Demo/MasterDataForm1.arc")
+filter!.setFieldValue("ARC", "BusinessUIComponents/Demo/MasterDataFilter.arc")
 filter!.setFieldValue("CWID", 100)
 
 BC$="::BusinessUIComponents/ExampleBCs/ChileCustomerBC.bbj::ChileCustomerBC"
@@ -28,7 +28,7 @@ TITLE$ = "ChileCustomer Demo"
 
 pgm! = pgm(-2)
 if pgm!.length() > 40 then
-    pgm! = pgm!.substring(pgm!.length() -40)
+    pgm! = pgm!.substring(pgm!.length() -35)
 endif
 PGMNAME$ = pgm!
 CALL "BusinessUIComponents/BusinessMasterDataUI.bbj", forms!, filter!, BC$, TITLE$, PGMNAME$

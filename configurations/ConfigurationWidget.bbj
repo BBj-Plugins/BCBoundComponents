@@ -435,7 +435,7 @@ REM         #listEditOptions!.addItem("")
     rem /**
     rem  * returns the configuration as datarow which is currently selected in the list edit
     rem  */
-    method protected DataRow getSelectedConfig()
+    method public DataRow getSelectedConfig()
         if #availableConfigs! = null() or #availableConfigs!.isEmpty() or #selectedIndex < 0 then
             methodret null()
         endif

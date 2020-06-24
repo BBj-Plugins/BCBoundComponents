@@ -225,7 +225,7 @@ md! = new BusinessMasterDataUI(BC$, TITLE$, PGMNAME$)
 
 md!.addMenuBar()
 md!.addEditToolbar(2,2)
-md!.addBusinessGrid(0,5)
+md!.addBusinessGrid(0,0)
 md!.addBCErrorHandler(TITLE$)
 md!.addWindowHandler(TITLE$)
 md!.addForms(form_defs!, controlPrefixMap!)

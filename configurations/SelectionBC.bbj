@@ -78,8 +78,16 @@ REM         selectedAR!.setFieldAttribute(#FIELDNAME_SELECTION_ID!,  "EDITABLE",
         #keyx! = key!
     methodend
     
+    method public String getKey()
+        methodret #keyx!
+    methodend
+    
     method public static String FIELDNAME_SELECTION_DESC()
         methodret #FIELDNAME_SELECTION_DESC!
+    methodend
+    
+    method public IConfigurationsBC getConfigurationsBC()
+        methodret #configurationsBC!
     methodend
 
     rem /**
@@ -270,28 +278,28 @@ REM         endif
 
     methodend
 
-    method protected void validateFieldContent(ResultSet rsErrors!, DataRow dr!, String fieldName!)
-        attributes! = #getAttributesRecord()
-        fieldAttributes! = attributes!.getFieldAttributes(fieldName!)
-        if !attributes!.contains(fieldName!) then methodret
-        type! = fieldAttributes!.get("ColumnTypeName")
-        switch type!
-            case "DATE";rem ColumnTypeName DATE
-                sdf! = new SimpleDateFormat("yyyy-MM-dd")
-                exc = 1; sdf!.parse(dr!.getFieldAsString(fieldName!),err=*next); exc = 0
-                if exc then
-                    #addValidationError(rsErrors!,fieldName!,fieldName! + " not valid. must be yyyy-MM-dd format.")
-                endif
-                break
-            case "NUMERIC"
-                exc = 1; a = num(dr!.getFieldAsString(fieldName!),err=*next); exc = 0
-                if exc then
-                    #addValidationError(rsErrors!,fieldName!,fieldName! + " not valid. must be numeric.")
-                endif
-            case default
-                break
-        swend
-    methodend
+REM     method protected void validateFieldContent(ResultSet rsErrors!, DataRow dr!, String fieldName!)
+REM         attributes! = #getAttributesRecord()
+REM         fieldAttributes! = attributes!.getFieldAttributes(fieldName!)
+REM         if !attributes!.contains(fieldName!) then methodret
+REM         type! = fieldAttributes!.get("ColumnTypeName")
+REM         switch type!
+REM             case "DATE";rem ColumnTypeName DATE
+REM                 sdf! = new SimpleDateFormat("yyyy-MM-dd")
+REM                 exc = 1; sdf!.parse(dr!.getFieldAsString(fieldName!),err=*next); exc = 0
+REM                 if exc then
+REM                     #addValidationError(rsErrors!,fieldName!,fieldName! + " not valid. must be yyyy-MM-dd format.")
+REM                 endif
+REM                 break
+REM             case "NUMERIC"
+REM                 exc = 1; a = num(dr!.getFieldAsString(fieldName!),err=*next); exc = 0
+REM                 if exc then
+REM                     #addValidationError(rsErrors!,fieldName!,fieldName! + " not valid. must be numeric.")
+REM                 endif
+REM             case default
+REM                 break
+REM         swend
+REM     methodend
 
     rem /**
     rem  * Write/persist a customer.
@@ -397,7 +405,7 @@ REM             errormsg$ = errormsg$(1,len(errormsg$)-1)
 
     rem override
     method public ResultSet getLookupData(String fieldName!, DataRow dr!)
-        methodret null()
+        methodret #selectedBC!.getLookupData(fieldName!, currentDr!)
     methodend
 
     rem /**
@@ -435,7 +443,7 @@ REM             errormsg$ = errormsg$(1,len(errormsg$)-1)
     methodend
     
     method public BusinessComponent getLookup(String fieldName!, DataRow currentDr!)
-        methodret null()
+        methodret #selectedBC!.getLookup(fieldName!, currentDr!)
     methodend
 
 

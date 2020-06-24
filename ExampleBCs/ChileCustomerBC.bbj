@@ -393,7 +393,12 @@ REM         endif
                 endif
                 sql$ = sql$ + fieldName$ + "=? AND "
             wend
-            sql$ = sql$(1,len(sql$)-5)
+            sql! = sql$
+            if sql!.endsWith(" WHERE ") then
+                sql$ = sql$(1,len(sql$)-7)
+            else
+                sql$ = sql$(1,len(sql$)-5)
+            endif
         endif
         rem Prepare the statement
         con! = BBjAPI().getJDBCConnection(#Database$)
