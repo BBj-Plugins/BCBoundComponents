@@ -1,3 +1,4 @@
+use com.basiscomponents.bc.BCBinder
 use com.basiscomponents.db.DataRow
 use com.basiscomponents.db.ResultSet
 
@@ -10,6 +11,10 @@ use ::BBjGridExWidget/GxCellEditors.bbj::GxCellEditorRichSelect
 use ::BBjGridExWidget/GxCellEditors.bbj::GxCellEditorSelect
 use ::BBjGridExWidget/GxClientEvents.bbj::GxClientEventsCell
 use ::BBjGridExWidget/GxClientModels.bbj::GxClientCellModel
+
+use ::BusinessUIComponents/BusinessGrid.bbj::BusinessGrid
+use ::BusinessUIComponents/configurations/ConfigurationWidget.bbj::ConfigurationWidget
+
 
 use com.google.gson.JsonArray
 
@@ -43,6 +48,7 @@ class public BCMetaData extends BBDialog
 	field protected BBjStaticText C_BCMetaData__LBL_CLASS!
 	field protected BBjListButton C_BCMetaData__LB_CLASS!
 	field protected BBjButton C_BTN_SAVE!
+	field protected BBjButton C_BTN_GRID!
 	rem /** DLGWIZ_FLC_END **/
 
 	field private BBjGridExWidget grid!
@@ -50,6 +56,7 @@ class public BCMetaData extends BBDialog
 	field public ResultSet BCList!
 	field public BBjString Dir$
 
+	field private BusinessGrid preview_grid!
 
     field public BBjTopLevelWindow Wnd!
 
@@ -57,7 +64,7 @@ class public BCMetaData extends BBDialog
     rem * Constructor BCMetaData
     rem */
     method public BCMetaData()
-        #super!("BusinessUIComponents/tools/BCMetaData.arc",101)
+        #super!("BCMetaData.arc",101)
 
         rem Check if BBjSysGui object is still valid. If not re-create it.
         #SysGui!.getContext(err=*next); sg_ok=1
@@ -88,6 +95,7 @@ class public BCMetaData extends BBDialog
 		#super!.getControlByName("BCMetaData").setCallback(BBjAPI.ON_RESIZE,#this!,"BCMetaData__ON_RESIZE")
 		#super!.getControlByName("LB_CLASS").setCallback(BBjAPI.ON_LIST_SELECT,#this!,"LB_CLASS__ON_LIST_SELECT")
 		#super!.getControlByName("BTN_SAVE").setCallback(BBjAPI.ON_BUTTON_PUSH,#this!,"BTN_SAVE__ON_BUTTON_PUSH")
+		#super!.getControlByName("BTN_GRID").setCallback(BBjAPI.ON_BUTTON_PUSH,#this!,"BTN_GRID__ON_BUTTON_PUSH")
 		rem /** DLGWIZ_CBS_END **/
 
     methodend
@@ -151,6 +159,7 @@ class public BCMetaData extends BBDialog
 	#C_BCMetaData__LBL_CLASS! = cast(BBjStaticText,#super!.getControlByName("LBL_CLASS"))
 	#C_BCMetaData__LB_CLASS! = cast(BBjListButton,#super!.getControlByName("LB_CLASS"))
 	#C_BTN_SAVE! = cast(BBjButton,#super!.getControlByName("BTN_SAVE"))
+	#C_BTN_GRID! = cast(BBjButton,#super!.getControlByName("BTN_GRID"))
 	rem /** DLGWIZ_INI_END **/
 
 
@@ -173,7 +182,7 @@ class public BCMetaData extends BBDialog
 
     locales! = #getLocales()
     isEditableExp! = "data.FIELDNAME && (data.FIELDNAME !== '_ENTITY' && data.FIELDNAME !== '_ENTITIES')"
-    
+
         filedNameColumn! = grid!.addColumn("FIELDNAME")
         filedNameColumn!.setLabel("Field Name")
         filedNameColumn!.setWidth(150)
@@ -184,7 +193,7 @@ class public BCMetaData extends BBDialog
         typeColumn!.setLabel("Type")
         typeColumn!.setWidth(80)
         typeColumn!.setPinned(GxColumn.PINNED_LEFT())
-                
+
         hideColumn! = grid!.addColumn("HIDE")
         hideColumn!.setLabel("Hide")
         hideColumn!.setWidth(150)
@@ -201,7 +210,7 @@ class public BCMetaData extends BBDialog
         alignColumn!.setWidth(80)
         alignColumn!.setPinned(GxColumn.PINNED_LEFT())
 
-        
+
         rem GxCellEditorRichSelect is only available in the enhanced version
         rem you can fallback to GxCellEditorSelect like this 
         rem  if(!grid!.isLicensed()) then
@@ -209,7 +218,7 @@ class public BCMetaData extends BBDialog
         rem  else 
         rem     edselect! = new GxCellEditorSelect()
         rem  fi
-            
+
          edselect! = new GxCellEditorSelect()
          values! = new JsonArray()
          values!.add("L")
@@ -218,7 +227,7 @@ class public BCMetaData extends BBDialog
          edselect!.setValues(values!)
          alignColumn!.setCellEditor(edselect!)
 
-    
+
         it1! = locales!.iterator()
         while it1!.hasNext()
             loc$ = it1!.next()
@@ -228,7 +237,7 @@ class public BCMetaData extends BBDialog
             col! = grid!.addColumn(loc$+"_SHORTLABEL","Short")
             col!.setEditable(1)
             col!.setEditableExpression(isEditableExp!)
-            
+
             col! = grid!.addColumn(loc$+"_GROUP","Group")
             col!.setEditable(1)
             col!.setEditableExpression(isEditableExp!)
@@ -240,7 +249,7 @@ class public BCMetaData extends BBDialog
             col! = grid!.addColumn(loc$+"_LONGC","Long Cue")
             col!.setEditable(1)
             col!.setEditableExpression(isEditableExp!)
-            
+
             col! = grid!.addColumn(loc$+"_MASK","Mask")
             col!.setEditable(1)
             col!.setEditableExpression(isEditableExp!)
@@ -354,7 +363,7 @@ class public BCMetaData extends BBDialog
 	       while 1
     	       ch=unt
     	       open (ch,err=*break)#Dir$+"/"+desc$+".json"
-    	       
+
     	       read record (ch,siz=128000)json$
     	       close (ch)
     	       meta! = DataRow.fromJson(json$)
@@ -501,7 +510,7 @@ class public BCMetaData extends BBDialog
                     if value$>"" then
                         fdr!.setFieldValue("MASK",value$)
                     fi
-                    
+
                     if fdr!.getFieldNames().size()>0 then
                         loc!.setFieldValue(row!.getFieldAsString("FIELDNAME"),fdr!)
                     fi
@@ -509,7 +518,7 @@ class public BCMetaData extends BBDialog
 
 
 	        wend
-	        
+
 	        ch=unt
 	        open (ch,mode="O_CREATE,O_TRUNC")#Dir$+"/"+#CurrBC!.getFieldAsString("DESC")+".json"
 	        write (ch)save!.toJson(0)
@@ -534,6 +543,46 @@ class public BCMetaData extends BBDialog
 
 	methodend
 
+	rem /**
+	rem  * Method BTN_GRID__ON_BUTTON_PUSH: 
+	rem  * Event handler for the ON_BUTTON_PUSH event for BTN_GRID
+	rem  * @param BBjButtonPushEvent
+	rem  */
+	method public void BTN_GRID__ON_BUTTON_PUSH(BBjButtonPushEvent pEvent!)
+		if #CurrBC! <> null() THEN
+
+		    ConfigurationWidget.setAllowAdmin(1)
+
+            BC$=#CurrBC!.getFieldAsString("DESC")
+            CLASS$=#CurrBC!.getFieldAsString("CLASS")
+
+            bc! = eval("new "+CLASS$+"()")
+            binder! = new BCBinder(bc!)
+		    wnd! = BBjAPI().getSysGui().addWindow(BBjAPI().getSysGui().getAvailableContext(),10,10,1024,700,"Grid Setup for "+BC$,$00080083$)
+		    wnd!.setCallback(BBjAPI.ON_CLOSE,#this!,"destroyGridPreview")
+		    wnd!.setCallback(BBjAPI.ON_RESIZE,#this!,"resizeGridPreview")
+		    #preview_grid! = new BusinessGrid(wnd!,200,0,0,1024,700)
+		    binder!.register(#preview_grid!)
+		    ar!= binder!.getAttributesRecord()
+		    binder!.retrieve()
+		fi
+		
+	methodend
+
+
+	method public void destroyGridPreview(BBjCloseEvent ev!)
+	    ev!.getWindow().destroy()
+	    #preview_grid!=null()
+	methodend
+	
+	method public void resizeGridPreview(BBjResizeEvent ev!)
+	    if #preview_grid! <> null() then
+	        w = ev!.getWidth()
+	        h = ev!.getHeight()
+	        #preview_grid!.setSize(w,h)
+	    fi
+    methodend
+
 classend
 
 declare BCMetaData myDialog!
@@ -548,14 +597,8 @@ bc!.setFieldValue("DESC","ChileCustomerBC")
 bc!.setFieldValue("CLASS","::BusinessUIComponents/ExampleBCs/ChileCustomerBC.bbj::ChileCustomerBC")
 BCList!.add(bc!)
 
-bc! = new DataRow()
-bc!.setFieldValue("DESC","ChileCustomerBC2")
-bc!.setFieldValue("CLASS","::BusinessUIComponents/ExampleBCs/ChileCustomerBC.bbj::ChileCustomerBC")
-BCList!.add(bc!)
-
 myDialog!.setBCList(BCList!)
 myDialog!.setDir(BBjAPI().getFileSystem().resolvePath("BusinessUIComponents/ExampleBCs/meta"))
-
 
 if myDialog!.doModal() and info(3,6)<>"5" then
     print 'show',

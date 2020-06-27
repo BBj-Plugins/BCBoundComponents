@@ -20,9 +20,14 @@ BEGIN
         OPENWIDTH 400
     END
 
-    BUTTON 103, "Save", 294, 6, 90, 25
+    BUTTON 103, "Save", 457, 8, 90, 25
     BEGIN
         NAME "BTN_SAVE"
+    END
+
+    BUTTON 104, "Grid Setup", 558, 8, 90, 25
+    BEGIN
+        NAME "BTN_GRID"
     END
 
 END
