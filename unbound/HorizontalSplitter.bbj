@@ -1,8 +1,6 @@
 use ::BBjWidget/BBjWidget.bbj::BBjWidget
 
-rem /**
-rem  * A sample BBj Widget Implementation
-rem  */
+
 class public HorizontalSplitter extends BBjWidget
 
     field private BBjButton btnClick!
@@ -119,6 +117,16 @@ class public HorizontalSplitter extends BBjWidget
         BBjAPI().removeTimer("delay",err=*next)
         #getCanvas().setSize(#W,#H)
         
+        minY = #CwTop!.getY() + 3
+        maxY = #CwBottom!.getY() + #CwBottom!.getHeight() - #CwTop!.getY() - 3
+        
+        if #SplitPos < minY then
+            #SplitPos = minY
+        endif
+        if #SplitPos > maxY then
+            #SplitPos = maxY
+        endif
+        
         #CwTop!.setSize(#W,#SplitPos-4)
         #CwBottom!.setLocation(0,#SplitPos+4)
         #CwBottom!.setSize(#W,#H-#SplitPos-4)
@@ -132,8 +140,8 @@ class public HorizontalSplitter extends BBjWidget
             #UiwBottom!.setSize(#W,#H-#SplitPos-4)
         fi
     
-    #Split!.setLocation(0,#SplitPos)
-    #Split!.setSize(#W,4)
+        #Split!.setLocation(0,#SplitPos)
+        #Split!.setSize(#W,4)
     
     methodend
     
@@ -161,14 +169,17 @@ class public HorizontalSplitter extends BBjWidget
         fi
         
     methodend  
+    
+    method public void setPosition(BBjNumber Ypos)
+        #SplitPos = Ypos
+        #delayedResize(null())
+    methodend
 
 
 classend
 
-
-
 ? 'HIDE'
-wnd! = BBjAPI().openSysGui("X0").addWindow(10,10,900,600,"BBj Grid Ex Demo")
+wnd! = BBjAPI().openSysGui("X0").addWindow(10,10,900,600,"Horizontal Splitter Demo")
 wnd!        .setCallback(BBjAPI.ON_CLOSE,"byebye")
 wnd!        .setCallback(BBjAPI.ON_RESIZE,"resize")
 

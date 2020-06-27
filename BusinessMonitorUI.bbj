@@ -29,8 +29,12 @@ class public BusinessMonitorUI
     field protected BBjSysGui sysgui!
     field protected BBjVector componentsWithProperties! = new BBjVector()
     
+    
+    field protected String title! = ""
+    field protected String pgm! = ""
+    
 
-    method public BusinessMonitorUI( BBjString BC$, BBjString TITLE$)
+    method public BusinessMonitorUI( BBjString BC$, BBjString TITLE$, BBjString PGMNAME$)
         ? 'HIDE'
         #sysgui! = BBjAPI().openSysGui("X0")
         #sysgui!.setRepaintEnabled(0)
@@ -54,6 +58,8 @@ class public BusinessMonitorUI
         
         #binder! = new BCBinder(bc!)
         #binder!.setDebugLevel(1)
+        #title! = TITLE$
+        #pgm! = PGMNAME$
     methodend
     
     method public void doModal()
@@ -97,7 +103,8 @@ class public BusinessMonitorUI
             if (dr!.contains("CLASSNAME")) then
                 filter! = eval("new "+dr!.getFieldAsString("CLASSNAME")+"(filterCW!,100,0,5,300,300)")
             else
-                filter! = new FilterComponent(filterCW!,100,0,10,300,300)
+                filter! = new FilterComponent(#binder!, filterCW!,100,0,10,300,300)
+                filter!.setKey(#pgm!)
                 filter!.setForm(dr!.getFieldAsString("ARC"), dr!.getFieldAsNumber("CWID"))
                 #componentsWithProperties!.add(filter!)
             fi
@@ -105,7 +112,7 @@ class public BusinessMonitorUI
                 filter!.setControlPrefixMap(controlPrefixMap!)
             endif
             #filters!.addItem(filter!)
-            #binder!.register(filter!)
+REM             #binder!.register(filter!)
             filter!.buildControlMap()
             
             methodret
@@ -120,7 +127,8 @@ class public BusinessMonitorUI
             if (dr!.contains("CLASSNAME")) then
                 filter! = eval("new "+dr!.getFieldAsString("CLASSNAME")+"(filterCW!,100,0,5,300,300)")
             else
-                filter! = new FilterComponent(filterCW!,100,0,10,300,300)
+                filter! = new FilterComponent(#binder!, filterCW!,100,0,10,300,300)
+                filter!.setKey(#pgm!)
                 filter!.setForm(dr!.getFieldAsString("ARC"), dr!.getFieldAsNumber("CWID"))
                 #componentsWithProperties!.add(filter!)
             fi
@@ -128,7 +136,7 @@ class public BusinessMonitorUI
                 filter!.setControlPrefixMap(controlPrefixMap!)
             endif
             #filters!.addItem(filter!)
-            #binder!.register(filter!)
+REM             #binder!.register(filter!)
             filter!.buildControlMap()
             cwIdStart = cwIdStart + 1
         wend
@@ -149,7 +157,7 @@ class public BusinessMonitorUI
     
     method public void addEditToolbar(BBjInt x!, BBjInt y!)
         edittb! = new EditToolbarComponent(#wnd!,111,x!,y!,100,32)
-        edittb!.setEnabledButtons(1, 0, 0, 0, 1)
+        edittb!.setEnabledButtons(0, 0, 0, 0, 1)
         #binder!.register(edittb!)
         #componentsWithProperties!.add(edittb!)
     methodend
@@ -206,9 +214,14 @@ declare ResultSet filter_defs!
 
 rem controlPrefixMap! is optional
 controlPrefixMap! = null()
-enter filter_defs!, BC$, TITLE$, controlPrefixMap!, err=*next
+enter filter_defs!, BC$, TITLE$, PGMNAME$, controlPrefixMap!, err=*next
 
-md! = new BusinessMonitorUI(BC$, TITLE$)
+pgm! = PGMNAME$
+if pgm!.length() > 40 then
+    pgm! = pgm!.substring(pgm!.length() -35)
+endif
+PGMNAME$ = pgm!
+md! = new BusinessMonitorUI(BC$, TITLE$, PGMNAME$)
 
 md!.addMenuBar()
 md!.addEditToolbar(2,2)

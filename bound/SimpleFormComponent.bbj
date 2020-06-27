@@ -3,6 +3,7 @@ use ::BBjGridExWidget/BBjGridExWidget.bbj::BBjGridExWidget
 use ::BusinessUIComponents/configurations/IPropertiesManager.bbj::IPropertiesManager
 use ::BusinessUIComponents/configurations/PropertiesManager.bbj::PropertiesManager
 use ::BusinessUIComponents/utils/QuickSearchField.bbj::QuickSearchField
+use ::BusinessUIComponents/configurations/IPersistentState.bbj::IPersistentState
 
 use com.basiscomponents.bc.BCBound
 use com.basiscomponents.bc.BCBinder
@@ -20,7 +21,7 @@ use java.time.format.DateTimeFormatter
 rem /**
 rem  * A sample BBj Widget Implementation
 rem  */
-class public SimpleFormComponent extends AbstractBCBoundWidget
+class public SimpleFormComponent extends AbstractBCBoundWidget implements IPersistentState
 
     field protected BBjWindow cw!
     field protected BBjVector fieldList!
@@ -32,6 +33,7 @@ class public SimpleFormComponent extends AbstractBCBoundWidget
     field protected HashMap controlPrefixMap!
     field protected String quickSearchField! = "_SEARCH"
     field protected Boolean quickSearchUseWildCard! = Boolean.TRUE
+    field protected Boolean listButtonFirstRowEmpty! = Boolean.FALSE
     
 
     rem --------------------- constructors -------------------------------------
@@ -88,6 +90,12 @@ class public SimpleFormComponent extends AbstractBCBoundWidget
             calendarButton! = it!.next()
             cast(BBjButton, calendarButton!).setImageFile(#getUIPropertiesManager().getProperty("SIMPLE_FORM_BTN_CALENDAR"))
         wend
+    methodend
+    
+    
+    
+    method public void setListButtonFirstRowEmpty(Boolean listButtonFirstRowEmpty!)
+        #listButtonFirstRowEmpty! = listButtonFirstRowEmpty!
     methodend
     
     method public void setControlMap(BiMap controlMap!)
@@ -558,6 +566,10 @@ REM         ids! = rs!.get(0).getFieldsHavingAttributeValue("EDITABLE", "2")
         endif
         vectorKeys! = new BBjVector()
         vectorValues! = new BBjVector()
+        if #listButtonFirstRowEmpty! then
+            vectorKeys!.add("")
+            vectorValues!.add("")
+        endif
         itResultSet! = rs!.iterator()
         while itResultSet!.hasNext()
             dr! = itResultSet!.next()
@@ -789,11 +801,47 @@ REM         calendarButton!.setImageFile("BusinessUIComponents/icon/ic_insert_in
         #super!.setUIPropertiesManager(uiPropertiesManager!)
         it! = #quickSearchElements!.iterator()
         while it!.hasNext()
-        
             qs! = cast(QuickSearchField, it!.next())
             qs!.setUIPropertiesManager(uiPropertiesManager!)
         wend
         #updateProperties()
+    methodend
+    
+    rem methods from IPersistentState
+    
+    rem /**
+    rem  * this method will be called to apply the state given by the widget
+    rem  * @param state! state string with the state which was stored by the widget
+    rem  */
+    method public void applyState(String state!)
+        #clearForm()
+        if state!.trim().equals("") then methodret
+        dr! = DataRow.fromJson(state!)
+        fieldNames! = dr!.getFieldNames()
+        it! = fieldNames!.iterator()
+        while it!.hasNext()
+            field! = cast(String, it!.next())
+            control! = #getControlFromControlList(field!)
+            if control! = null() then continue
+            #fillControl(control!, dr!, field!)
+        wend
+    methodend
+    
+    rem /**
+    rem  * this method will provide the widget with the current state of the component.
+    rem  * the widget will store this data for later retrieval
+    rem  */
+    method public String retrieveState()
+        methodret #getFieldsForWrite().toJson(0)
+    methodend
+    
+    rem /**
+    rem  * the widget will call this method to register itself for statechanges of the component
+    rem  * the method should set a callback which should call the method 'methodName' on 'callable!' whenever the state changed
+    rem  * Event should be BBjCustomEvent. 
+    rem  */
+    method public void setStateChangeCallback(String methodName!, CustomObject callable!)
+        
     methodend
 
 classend

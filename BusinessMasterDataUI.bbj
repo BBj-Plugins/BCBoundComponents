@@ -5,6 +5,7 @@ use ::BusinessUIComponents/bound/TestComponent.bbj::TestComponent
 use ::BusinessUIComponents/bound/NavigatorComponent.bbj::NavigatorComponent
 use ::BusinessUIComponents/bound/EditToolbarComponent.bbj::EditToolbarComponent
 use ::BusinessUIComponents/bound/SimpleFormComponent.bbj::SimpleFormComponent
+use ::BusinessUIComponents/bound/FilterComponent.bbj::FilterComponent
 use ::BusinessUIComponents/bound/SearchBar.bbj::SearchBar
 use ::BusinessUIComponents/bound/MenuBar.bbj::MenuBar
 use ::BusinessUIComponents/bound/BCErrorHandler.bbj::BCErrorHandler
@@ -26,10 +27,14 @@ class public BusinessMasterDataUI
     field protected BBjTabCtrl formTabCtrl!
     field protected BCBinder binder!
     field protected BBjSysGui sysgui!
+    field protected BBjControl topControl! 
     field protected BBjVector componentsWithProperties! = new BBjVector()
     
+    field protected String title! = ""
+    field protected String pgm! = ""
+    
 
-    method public BusinessMasterDataUI( BBjString BC$, BBjString TITLE$)
+    method public BusinessMasterDataUI( BBjString BC$, BBjString TITLE$, BBjString PGMNAME$)
         ? 'HIDE'
         #sysgui! = BBjAPI().openSysGui("X0")
         #sysgui!.setRepaintEnabled(0)
@@ -54,6 +59,8 @@ class public BusinessMasterDataUI
         
         #binder! = new BCBinder(bc!)
         #binder!.setDebugLevel(1)
+        #title! = TITLE$
+        #pgm! = PGMNAME$
     methodend
     
     method public void doModal()
@@ -149,6 +156,24 @@ class public BusinessMasterDataUI
         #binder!.register(#wh!)
     methodend
     
+    method public void addFilter(DataRow filter_def!, HashMap controlPrefixMap!)
+        if (filter_def!.contains("CLASSNAME")) then
+            filter! = eval("new "+filter_def!.getFieldAsString("CLASSNAME")+"(#wnd!,#wnd!.getAvailableControlID(),0,5,300,300)")
+        else
+            filter! = new FilterComponent(#binder!, #wnd!,#wnd!.getAvailableControlID(),0,25,300,300)
+            filter!.setKey(#pgm!)
+            filter!.setForm(filter_def!.getFieldAsString("ARC"), filter_def!.getFieldAsNumber("CWID"))
+            #componentsWithProperties!.add(filter!)
+        fi
+        if controlPrefixMap! <> null() then
+            filter!.setControlPrefixMap(controlPrefixMap!)
+        endif
+        #topControl! = cast(BBjWidget, filter!)
+REM             #binder!.register(filter!)
+        filter!.buildControlMap()
+        #splitter!.setLocation(#splitter!.getX(), #splitter!.getY() + #topControl!.getHeight() + #topControl!.getY())
+    methodend
+    
 REM     method public void addMenuBar()
 REM         menubar! = #wnd!.addMenuBar()
 REM         fileMenu! = menubar!.addMenu(401, "File")
@@ -168,6 +193,10 @@ REM     methodend
         BBjAPI().removeTimer("resize",err=*next)
         w = #wnd!.getWidth()
         h = #wnd!.getHeight()
+        if #topControl! <> null() then
+            #topControl!.setSize(w-4, #topControl!.getHeight())
+            h = h - #topControl!.getHeight()
+        endif
         #splitter!.setSize(w-4 ,h-25)
         for i = 0 to #forms!.size() - 1
           cast(BBjWidget, #forms!.getItem(i)).setSize(w-4, h-25)
@@ -190,15 +219,23 @@ declare ResultSet form_defs!
 
 rem controlPrefixMap! is optional
 controlPrefixMap! = null()
-enter form_defs!, BC$, TITLE$, controlPrefixMap!, err=*next
+enter form_defs!, filter!, BC$, TITLE$, PGMNAME$, controlPrefixMap!, err=*next
+pgm! = PGMNAME$
+if pgm!.length() > 40 then
+    pgm! = pgm!.substring(pgm!.length() -35)
+endif
+PGMNAME$ = pgm!
 
-md! = new BusinessMasterDataUI(BC$, TITLE$)
+md! = new BusinessMasterDataUI(BC$, TITLE$, PGMNAME$)
 
 md!.addMenuBar()
 md!.addEditToolbar(2,2)
-md!.addBusinessGrid(0,5)
+md!.addBusinessGrid(0,0)
 md!.addBCErrorHandler(TITLE$)
 md!.addWindowHandler(TITLE$)
 md!.addForms(form_defs!, controlPrefixMap!)
+if filter! <> null() then
+    md!.addFilter(filter!, controlPrefixMap!)
+endif
 
 md!.doModal()
