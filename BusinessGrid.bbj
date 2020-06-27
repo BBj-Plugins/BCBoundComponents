@@ -479,7 +479,7 @@ REM               endif
         while pos("::"=x$)>0
             x$ = x$(pos("::"=x$)+2)
         wend
-        #cfgwidget! = new ConfigurationWidget(#getCanvas(),201, #getWidth()-155, 5 , #this!, Boolean.TRUE, "GRD", x$, #cfgbc! )
+        #cfgwidget! = new ConfigurationWidget(#getCanvas(),201, #getWidth()-155, 5 , #this!, "GRD", x$, #cfgbc! )
     methodend
     
     method public void onSignal(int signal!, Object payload!)
@@ -527,5 +527,5 @@ REM               endif
     method public ExportButton getExportButton()
         methodret #exportButton!
     methodend
-    
+   
 classend

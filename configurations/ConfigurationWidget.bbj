@@ -49,7 +49,7 @@ class public ConfigurationWidget extends BBjWidget
     field protected ResultSet availableConfigs!
     field protected IConfigurationsBC bc!
     field protected Boolean adminModeEnabled!
-    field protected Boolean allowAdmin!
+    field protected static Boolean allowAdmin! = Boolean.FALSE
     field protected Boolean bcInitialized! = Boolean.FALSE
     
     field protected String realm!
@@ -86,14 +86,30 @@ REM     field protected String iconButtonAdminDisabled! =   "BusinessUIComponent
     method private ConfigurationWidget()
     methodend
     
+    rem deprecated - allow admin is now static
     method public ConfigurationWidget(BBjWindow container!, BBjNumber id, BBjNumber x, BBjNumber y, IPersistentState statePersistable!, Boolean allowAdmin!)
-        #this!(container!, id, x, y, statePersistable!, allowAdmin!, "", "", null())
+        #this!(container!, id, x, y, statePersistable!,  "", "", null())
+        
+        print 'SHOW',"Call to deprecated constructor of ConfigurationWidget - AllowAdmin is now globally set and static "
+        
     methodend
 
+    rem deprecated - allow admin is now static
     method public ConfigurationWidget(BBjWindow container!, BBjNumber id, BBjNumber x, BBjNumber y, IPersistentState statePersistable!, Boolean allowAdmin!, String realm!, String keyx!, IConfigurationsBC bc!)
+        #this!(container!, id, x, y, statePersistable!, realm!, keyx!, bc!)
+        
+        print 'SHOW',"Call to deprecated constructor of ConfigurationWidget - AllowAdmin is now globally set and static "
+        
+    methodend
+
+    method public ConfigurationWidget(BBjWindow container!, BBjNumber id, BBjNumber x, BBjNumber y, IPersistentState statePersistable!)
+        #this!(container!, id, x, y, statePersistable!,  "", "", null())
+    methodend
+    
+    
+    method public ConfigurationWidget(BBjWindow container!, BBjNumber id, BBjNumber x, BBjNumber y, IPersistentState statePersistable!, String realm!, String keyx!, IConfigurationsBC bc!)
         #super!()
         #adminModeEnabled! = Boolean.FALSE
-        #allowAdmin! = allowAdmin!
         #realm! = realm!
         rem trim key to max length
         if keyx!.length() > 40 then
@@ -747,6 +763,14 @@ REM         #currentConfig! = ""
     
     method public IPropertiesManager getTextPropertiesManager()
         methodret #textPropertiesManager!
+    methodend
+    
+    method public void setAdminEnabled(Boolean f_enable!)
+        #allowAdmin! = f_enable! 
+    methodend
+
+    method public static void setAllowAdmin(Boolean f_allow!)
+        ConfigurationWidget.setallowAdmin(f_allow!)
     methodend
 
 classend

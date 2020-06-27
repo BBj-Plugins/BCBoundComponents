@@ -27,45 +27,45 @@ class public BusinessMasterDataUI
     field protected BBjTabCtrl formTabCtrl!
     field protected BCBinder binder!
     field protected BBjSysGui sysgui!
-    field protected BBjControl topControl! 
+    field protected BBjControl topControl!
     field protected BBjVector componentsWithProperties! = new BBjVector()
-    
+
+    field protected BusinessGrid bgrid!
+
     field protected String title! = ""
     field protected String pgm! = ""
-    
+
 
     method public BusinessMasterDataUI( BBjString BC$, BBjString TITLE$, BBjString PGMNAME$, ResultSet filter!, ResultSet form_defs!, HashMap controlPrefixMap!)
         ? 'HIDE'
         #sysgui! = BBjAPI().openSysGui("X0")
         #sysgui!.setRepaintEnabled(0)
-        
+
         if info(3,6)="5" then
             #wnd! = #sysgui!.addWindow(100,100,1020,760,TITLE$,$01001010$)
         else
             #wnd! = #sysgui!.addWindow(100,100,1020,760,TITLE$,$00000093$)
         fi
-        
+
         #wnd!.setCallback(BBjAPI.ON_RESIZE, #this!,"resize")
-        
+
         #splitter! = new HorizontalSplitter(#wnd!,112,2,30,890,800)
-        
-        #splitter!.setTopCtrl(bgrid!)
-        
+
         #formTabCtrl! = #splitter!.getBottomCanvas().addTabCtrl(115, 0, 0, 500, 500)
         #forms! = new BBjVector()
         #splitter!.setBottomCtrl(#formTabCtrl!)
-        
+
         bc! = eval("new "+BC$+"()")
-        
+
         #binder! = new BCBinder(bc!)
         #binder!.setDebugLevel(1)
         #title! = TITLE$
-        
+
         #pgm! = PGMNAME$
         if #pgm!.length() > 40 then
             #pgm! = #pgm!.substring(#pgm!.length() -35)
         endif
-        
+
         #addMenuBar()
         #addEditToolbar()
         #addBusinessGrid()
@@ -75,21 +75,23 @@ class public BusinessMasterDataUI
         if filter! <> null() then
             #addFilter(filter!, controlPrefixMap!)
         endif
+
+
     methodend
-    
+
     method public void doModal()
         #binder!.retrieve()
-        
+
         #delayed_resize(null())
-        
+
         #sysgui!.setRepaintEnabled(1)
         #wnd!.setVisible(1)
-        
+
         process_events
     methodend
-    
+
     rem ######### propertiesManager Setters #########
-    
+
     method public void setTextPropertiesManager(IPropertiesManager pm!)
         it! = #componentsWithProperties!.iterator()
         while it!.hasNext()
@@ -97,7 +99,7 @@ class public BusinessMasterDataUI
             cast(AbstractBCBoundWidget, component!).setTextPropertiesManager(pm!)
         wend
     methodend
-    
+
     method public void setUIPropertiesManager(IPropertiesManager pm!)
         it! = #componentsWithProperties!.iterator()
         while it!.hasNext()
@@ -106,9 +108,9 @@ class public BusinessMasterDataUI
         wend
         if #wh! <> null() then #wh!.setUIPropertiesManager(pm!)
     methodend
-    
+
     rem ######### add methods for BC bound components #########
-    
+
     method public void addForms(ResultSet form_defs!, HashMap controlPrefixMap!)
         cwIdStart = 200
         it! = form_defs!.iterator()
@@ -131,7 +133,7 @@ class public BusinessMasterDataUI
             cwIdStart = cwIdStart + 1
         wend
     methodend
-    
+
     method public BCBinder getBinder()
         methodret #binder!
     methodend
@@ -144,32 +146,32 @@ class public BusinessMasterDataUI
         menuBar!.setTextPropertiesManager(LocalizedPropertiesManager.getInstance())
         menuBar!.initMasterData()
     methodend
-    
+
     method public void addEditToolbar()
         edittb! = new EditToolbarComponent(#wnd!,111,2,2,100,32)
         #binder!.register(edittb!)
         #componentsWithProperties!.add(edittb!)
     methodend
-    
+
     method public void addBusinessGrid()
-        bgrid! = new BusinessGrid(#splitter!.getTopCanvas(),160,0,0,960,500)
-        #splitter!.setTopCtrl(bgrid!)
-        #binder!.register(bgrid!)
-        #componentsWithProperties!.add(bgrid!)
+        #bgrid! = new BusinessGrid(#splitter!.getTopCanvas(),160,0,0,960,500)
+        #splitter!.setTopCtrl(#bgrid!)
+        #binder!.register(#bgrid!)
+        #componentsWithProperties!.add(#bgrid!)
     methodend
     method public void addBCErrorHandler(String title!)
         errorhandler! = new BCErrorHandler()
         errorhandler!.setTitle(title!)
         #binder!.register(errorhandler!)
     methodend
-    
+
     method public void addWindowHandler(String pgmName!)
         #wh! = new WindowHandler(#wnd!)
         #wh!.setProgramName(pgmName!)
         #wh!.applyWindowConfig()
         #binder!.register(#wh!)
     methodend
-    
+
     method public void addFilter(DataRow filter_def!, HashMap controlPrefixMap!)
         if (filter_def!.contains("CLASSNAME")) then
             filter! = eval("new "+filter_def!.getFieldAsString("CLASSNAME")+"(#wnd!,#wnd!.getAvailableControlID(),0,5,300,300)")
@@ -187,7 +189,7 @@ REM             #binder!.register(filter!)
         filter!.buildControlMap()
         #splitter!.setLocation(#splitter!.getX(), #splitter!.getY() + #topControl!.getHeight() + #topControl!.getY())
     methodend
-    
+
 REM     method public void addMenuBar()
 REM         menubar! = #wnd!.addMenuBar()
 REM         fileMenu! = menubar!.addMenu(401, "File")
@@ -195,14 +197,14 @@ REM         recordMenu! = menubar!.addMenu(402, "Record")
 REM         helpMenu! = menubar!.addMenu(403, "Help")
 REM         statusbar! = #wnd!.addStatusBar(450)
 REM     methodend
-    
+
     rem ############## Events ######################
-    
+
     method public void resize(BBjEvent ev!)
         BBjAPI().removeTimer("resize",err=*next)
         BBjAPI().createTimer("resize", .4, #this!, "delayed_resize")
     methodend
-    
+
     method public void delayed_resize(BBjEvent ev!)
         BBjAPI().removeTimer("resize",err=*next)
         w = #wnd!.getWidth()
@@ -216,8 +218,8 @@ REM     methodend
           cast(BBjWidget, #forms!.getItem(i)).setSize(w-4, h-25)
         next i
     methodend
-    
-    
+
+
 
     method public BBjVector getForms()
         methodret #forms!
