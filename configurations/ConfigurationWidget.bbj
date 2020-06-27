@@ -650,7 +650,7 @@ REM         BBjAPI().setCustomEventCallback(#getOnStateChangeEventName(), #this!
         #popupMenu!.removeMenuItem(#menuSave!,err=*next)
         #menuSave! = null()
         if visible! then
-            #menuSave! = #popupMenu!.insertMenuItem(1, 1100, "Save")
+            #menuSave! = #popupMenu!.insertMenuItem(0, 1100, "Save")
             #menuSave!.setCallback(BBjPopupMenu.ON_POPUP_ITEM_SELECT, #this!, "saveButtonPush")
         endif
     methodend
