@@ -203,6 +203,7 @@ class public BusinessGrid extends AbstractBCBoundWidget implements IPersistentSt
 
         rs! = #getBinder().getRS()
         ar! = #getBinder().getAttributesRecord()
+        
         if rs! = null() or ar! = null() then methodret
         if !(ar!.isEmpty()) then
 
@@ -335,18 +336,20 @@ class public BusinessGrid extends AbstractBCBoundWidget implements IPersistentSt
 
                 next rscol
 
+                if cgroups!.size()>0 then
+                    it! = cgroups!.keySet().iterator()
+                    while it!.hasNext()
+                        cgroup$=it!.next()
+                        #grid!.addColumnGroup(cgroup$ , cgroup$, cgroups!.get(cgroup$) , 0 , "")
+                    wend
+                fi
+
                 #columnConfigurationSet! = Boolean.TRUE
             endif
 
+            
+
         endif
-        
-        if cgroups!.size()>0 then
-              it! = cgroups!.keySet().iterator()
-              while it!.hasNext()
-                  cgroup$=it!.next()
-                  #grid!.addColumnGroup(cgroup$ , cgroup$, cgroups!.get(cgroup$) , 0 , "")
-              wend
-        fi
         
         if rs!.isEmpty() then
             #grid!.clearData()
@@ -361,7 +364,14 @@ class public BusinessGrid extends AbstractBCBoundWidget implements IPersistentSt
                 #grid!.setSelectedRow(0)
                 #grid!.focus()
             endif
+        else
+            rem try to re-select the formerly selected record
+            sel$ = #getBinder().getSelection().get(0).toString()
+            if  #getBinder().getRS().get(sel$+"A",err=*endif) <> null() then
+                #getBinder().setSelection(sel$)
+            fi
         endif
+        
 
     methodend
     
