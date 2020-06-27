@@ -1,0 +1,569 @@
+use com.basiscomponents.db.DataRow
+use com.basiscomponents.db.ResultSet
+
+
+use ::BBjGridExWidget/GxColumns.bbj::GxColumn
+use ::BBjGridExWidget/GxColumns.bbj::GxColumnGroup
+use ::BBjGridExWidget/GxRenderers.bbj::GxRendererBoolean
+use ::BBjGridExWidget/BBjGridExWidget.bbj::BBjGridExWidget
+use ::BBjGridExWidget/GxCellEditors.bbj::GxCellEditorRichSelect
+use ::BBjGridExWidget/GxCellEditors.bbj::GxCellEditorSelect
+use ::BBjGridExWidget/GxClientEvents.bbj::GxClientEventsCell
+use ::BBjGridExWidget/GxClientModels.bbj::GxClientCellModel
+
+use com.google.gson.JsonArray
+
+
+use ::DialogWizard/BBDialog.bbj::BBDialog
+use ::DialogWizard/DialogUtils.bbj::DialogUtils
+use ::DialogWizard/DialogWizardRun.bbj::DialogWizardRun
+use ::bbwindowutils.bbj::BBWindowUtils
+
+class public BCMetaData extends BBDialog
+
+    field protected BBjAPI        API! = BBjAPI()
+    field protected BBjNumber     TRUE = #API!.TRUE
+    field protected BBjNumber     FALSE = #API!.FALSE
+    field protected BBjSysGui     SysGui! = #API!.openSysGui("X0")
+    field protected BBjThinClient ThinClient! = #API!.getThinClient()
+    field protected BBjString     ClientLocale$ = #ThinClient!.getClientLocale()
+    field protected BBjString     PgmDirectory$ = pgm(-2)(1,max(pos("\"=pgm(-2),-1),pos("/"=pgm(-2),-1)))
+
+    field protected BBjNamespace  GroupNS! = #API!.getGroupNamespace()
+    field protected BBjMDI        MDI!
+
+	rem /** DLGWIZ_RES BCMetaData.arc 101 **/
+
+	rem /** DLGWIZ_FLD_BEGIN **/
+	rem /** DLGWIZ_FLD_END **/
+
+
+	rem /** DLGWIZ_FLC_BEGIN **/
+	field protected BBjTopLevelWindow C_BCMetaData!
+	field protected BBjStaticText C_BCMetaData__LBL_CLASS!
+	field protected BBjListButton C_BCMetaData__LB_CLASS!
+	field protected BBjButton C_BTN_SAVE!
+	rem /** DLGWIZ_FLC_END **/
+
+	field private BBjGridExWidget grid!
+	field private DataRow CurrBC!
+	field public ResultSet BCList!
+	field public BBjString Dir$
+
+
+    field public BBjTopLevelWindow Wnd!
+
+    rem /**
+    rem * Constructor BCMetaData
+    rem */
+    method public BCMetaData()
+        #super!("BusinessUIComponents/tools/BCMetaData.arc",101)
+
+        rem Check if BBjSysGui object is still valid. If not re-create it.
+        #SysGui!.getContext(err=*next); sg_ok=1
+        if !sg_ok then
+            #SysGui!=#API!.openSysGui("X0")
+        endif
+
+        if stbl("+USER_LOCALE",err=*endif)<>"" then
+            #ClientLocale$ = stbl("+USER_LOCALE")
+        endif
+
+        #Wnd!=#super!.getWndTop()
+        if #API!.isInMDI() then #MDI!=#API!.getMDI()
+
+        if #Wnd!<>null() then
+            #setCallbacks()
+        endif
+    methodend
+
+    rem /**
+    rem * Method setCallbacks:
+    rem * Set control callbacks
+    rem */
+    method protected void setCallbacks()
+        if #API!.isInMDI() then #MDI!.registerMDIClosingCallback(#this!,"onMDIClosing")
+		rem /** DLGWIZ_CBS_BEGIN **/
+		#super!.getControlByName("BCMetaData").setCallback(BBjAPI.ON_CLOSE,#this!,"BCMetaData__ON_CLOSE")
+		#super!.getControlByName("BCMetaData").setCallback(BBjAPI.ON_RESIZE,#this!,"BCMetaData__ON_RESIZE")
+		#super!.getControlByName("LB_CLASS").setCallback(BBjAPI.ON_LIST_SELECT,#this!,"LB_CLASS__ON_LIST_SELECT")
+		#super!.getControlByName("BTN_SAVE").setCallback(BBjAPI.ON_BUTTON_PUSH,#this!,"BTN_SAVE__ON_BUTTON_PUSH")
+		rem /** DLGWIZ_CBS_END **/
+
+    methodend
+
+    rem /**
+    rem * Method doDataExchange:
+    rem * Set controls with program variables
+    rem * @param BBjNumber pInitFlag: Controls are initialized, if true
+    rem */
+    method protected void doDataExchange(BBjNumber pInitFlag)
+		rem /** DLGWIZ_DDX_BEGIN **/
+		rem /** DLGWIZ_DDX_END **/
+
+    methodend
+
+    rem /**
+    rem * Method doModal:
+    rem * Initialize and display dialog (contains PROCESS_EVENTS)
+    rem * @see doDataExchange(BBjNumber pInitFlag)
+    rem * @see onInitDialog()
+    rem * @see onExitDialog()
+    rem * @return BBjNumber Answer: 0=Passed required fields check, 1=Dialog canceled/closed
+    rem */
+    method public BBjNumber doModal()
+
+        #API!.setCustomEventCallback("ReturnAnswer","do_return")
+        #API!.setCustomEventCallback("CancelAnswer","do_cancel")
+
+        #doDataExchange(#TRUE)
+        #super!.setAllValidated(#TRUE)
+
+        #onInitDialog()
+        #Wnd!.setVisible(#TRUE)
+
+        do_process_events:
+            process_events,err=*same
+
+        do_return:
+            #doDataExchange(#FALSE)
+            if #super!.getAllValidated()=0 then
+                #super!.setAllValidated(#TRUE)
+                goto do_process_events
+            endif
+
+        do_cancel:
+            #onExitDialog()
+            #Wnd!.destroy()
+
+        methodret #super!.getAnswer()
+    methodend
+
+    rem /**
+    rem * Method onInitDialog:
+    rem * Your custom initialization
+    rem */
+    method public void onInitDialog()
+
+
+	rem /** DLGWIZ_INI_BEGIN **/
+	#C_BCMetaData! = cast(BBjTopLevelWindow,#super!.getControlByName("BCMetaData"))
+	#C_BCMetaData__LBL_CLASS! = cast(BBjStaticText,#super!.getControlByName("LBL_CLASS"))
+	#C_BCMetaData__LB_CLASS! = cast(BBjListButton,#super!.getControlByName("LB_CLASS"))
+	#C_BTN_SAVE! = cast(BBjButton,#super!.getControlByName("BTN_SAVE"))
+	rem /** DLGWIZ_INI_END **/
+
+
+	v! = new BBjVector()
+	it! = #BCList!.iterator()
+	while it!.hasNext()
+	    v!.addItem(it!.next().getFieldAsString("DESC"))
+	wend
+	#C_BCMetaData__LB_CLASS!.removeAllItems()
+	#C_BCMetaData__LB_CLASS!.insertItems(0,v!)
+	#C_BCMetaData__LB_CLASS!.deselect()
+
+
+	#grid! = new BBjGridExWidget(#C_BCMetaData!,500,0,80,#C_BCMetaData!.getWidth(),#C_BCMetaData!.getHeight()-80)
+	grid! = #grid!
+    grid!.setTheme( grid!.GRID_THEME_BALHAM() )
+    rem grid!.getOptions().setSingleClickEdit(1)
+
+    grid!.setCallback(grid!.ON_GRID_CELL_EDITING_STOPPED(),#this!,"cellEditingStopped")
+
+    locales! = #getLocales()
+    isEditableExp! = "data.FIELDNAME && (data.FIELDNAME !== '_ENTITY' && data.FIELDNAME !== '_ENTITIES')"
+    
+        filedNameColumn! = grid!.addColumn("FIELDNAME")
+        filedNameColumn!.setLabel("Field Name")
+        filedNameColumn!.setWidth(150)
+        filedNameColumn!.setPinned(GxColumn.PINNED_LEFT())
+
+
+        typeColumn! = grid!.addColumn("TYPE")
+        typeColumn!.setLabel("Type")
+        typeColumn!.setWidth(80)
+        typeColumn!.setPinned(GxColumn.PINNED_LEFT())
+                
+        hideColumn! = grid!.addColumn("HIDE")
+        hideColumn!.setLabel("Hide")
+        hideColumn!.setWidth(150)
+        hideColumn!.setType(java.sql.Types.BOOLEAN)
+        hideColumn!.setPinned(GxColumn.PINNED_LEFT())
+        hideColumn!.setEditable(1)
+        hideColumn!.setEditableExpression(isEditableExp!)
+
+        alignColumn! = grid!.addColumn("ALIGN")
+        alignColumn!.setLabel("Align")
+        alignColumn!.setEditable(1)
+        alignColumn!.setEditableExpression(isEditableExp!)
+
+        alignColumn!.setWidth(80)
+        alignColumn!.setPinned(GxColumn.PINNED_LEFT())
+
+        
+        rem GxCellEditorRichSelect is only available in the enhanced version
+        rem you can fallback to GxCellEditorSelect like this 
+        rem  if(!grid!.isLicensed()) then
+        rem     edselect! = new GxCellEditorRichSelect()
+        rem  else 
+        rem     edselect! = new GxCellEditorSelect()
+        rem  fi
+            
+         edselect! = new GxCellEditorSelect()
+         values! = new JsonArray()
+         values!.add("L")
+         values!.add("C")
+         values!.add("R")
+         edselect!.setValues(values!)
+         alignColumn!.setCellEditor(edselect!)
+
+    
+        it1! = locales!.iterator()
+        while it1!.hasNext()
+            loc$ = it1!.next()
+            col! = grid!.addColumn(loc$+"_LABEL","Label")
+            col!.setEditable(1)
+
+            col! = grid!.addColumn(loc$+"_SHORTLABEL","Short")
+            col!.setEditable(1)
+            col!.setEditableExpression(isEditableExp!)
+            
+            col! = grid!.addColumn(loc$+"_GROUP","Group")
+            col!.setEditable(1)
+            col!.setEditableExpression(isEditableExp!)
+
+            col! = grid!.addColumn(loc$+"_SHORTC","Short Cue")
+            col!.setEditable(1)
+            col!.setEditableExpression(isEditableExp!)
+
+            col! = grid!.addColumn(loc$+"_LONGC","Long Cue")
+            col!.setEditable(1)
+            col!.setEditableExpression(isEditableExp!)
+            
+            col! = grid!.addColumn(loc$+"_MASK","Mask")
+            col!.setEditable(1)
+            col!.setEditableExpression(isEditableExp!)
+        wend
+
+
+        checkboxRenderer! = new GxRendererBoolean()
+        checkboxRenderer!.setTrueValue("<font size=+1>&#9745;</font>")
+        checkboxRenderer!.setFalseValue("<font size=+1>&#9744;</font>")
+  REM           checkboxRenderer!.setTrueValue("&#10003;")
+  REM           checkboxRenderer!.setFalseValue("&#10008;")
+        grid!.getColumn("HIDE").setCellRenderer(checkboxRenderer!)
+
+        it1! = locales!.iterator()
+        while it1!.hasNext()
+            loc$ = it1!.next()
+            group! = new BBjVector()
+            group!.add(loc$+"_LABEL")
+            group!.add(loc$+"_SHORTLABEL")
+            group!.add(loc$+"_GROUP")
+            group!.add(loc$+"_SHORTC")
+            group!.add(loc$+"_LONGC")
+            group!.add(loc$+"_MASK")
+            grid!.addColumnGroup(loc$ , loc$, group! , 0 , "")
+        wend
+
+        rem grid!.updateColumns()
+
+    methodend
+
+    rem /**
+    rem * Method onExitDialog:
+    rem * Your custom exit code
+    rem */
+    method public void onExitDialog()
+    methodend
+
+    rem /**
+    rem * Method postCancelAnswer:
+    rem * Set dialog answer to "canceled"
+    rem */
+    method public void postCancelAnswer()
+        #super!.setAnswer(0)
+        #API!.postCustomEvent("CancelAnswer",null())
+    methodend
+
+    rem /**
+    rem * Method postReturnAnswer:
+    rem * Set dialog answer to "normal return"
+    rem */
+    method public void postReturnAnswer()
+        #super!.setAnswer(1)
+        #API!.postCustomEvent("ReturnAnswer",null())
+    methodend
+
+    rem /**
+    rem * Method onMDIClosing:
+    rem * Handler for the MDI closing
+    rem */
+    method public void onMDIClosing(BBjMDIClosingEvent pEvent!)
+        rem uncomment the next line to veto the MDI Close
+        rem #MDI!.vetoMDIClose()
+        #MDI!.approveMDIClose()
+        #postCancelAnswer()
+    methodend
+
+	rem /**
+	rem  * Method BCMetaData__ON_CLOSE: 
+	rem  * Event handler for the ON_CLOSE event for BCMetaData
+	rem  * @param BBjCloseEvent
+	rem  */
+	method public void BCMetaData__ON_CLOSE(BBjCloseEvent pEvent!)
+		#postCancelAnswer()
+	methodend
+
+	rem /**
+	rem  * Method BCMetaData__ON_RESIZE: 
+	rem  * Event handler for the ON_RESIZE event for BCMetaData
+	rem  * @param BBjResizeEvent
+	rem  */
+	method public void BCMetaData__ON_RESIZE(BBjResizeEvent ev!)
+
+		  w=ev!.getWidth()
+		  h=ev!.getHeight()
+		  #grid!.setSize(w,h-200)
+	methodend
+
+	rem /**
+	rem  * Method LB_CLASS__ON_LIST_SELECT: 
+	rem  * Event handler for the ON_LIST_SELECT event for LB_CLASS
+	rem  * @param BBjListSelectEvent
+	rem  */
+	method public void LB_CLASS__ON_LIST_SELECT(BBjListSelectEvent pEvent!)
+		id = pEvent!.getSelectedIndex()
+		#CurrBC! = #BCList!.get(id)
+		#loadData()
+
+	methodend
+
+	method private void loadData()
+
+	       class$  = #CurrBC!.getFieldAsString("CLASS")
+	       desc$   = #CurrBC!.getFieldAsString("DESC")
+	       bc!     = eval("new "+class$+"()")
+	       ar!     = bc!.getAttributesRecord()
+
+	       locales! = #getLocales()
+
+	       meta! = new DataRow()
+
+	       while 1
+    	       ch=unt
+    	       open (ch,err=*break)#Dir$+"/"+desc$+".json"
+    	       
+    	       read record (ch,siz=128000)json$
+    	       close (ch)
+    	       meta! = DataRow.fromJson(json$)
+    	       break
+	       wend
+
+          rs! = new ResultSet()
+
+          fields! = ar!.getFieldNames()
+          fields!.insertItem(0,"_ENTITIES")
+          fields!.insertItem(0,"_ENTITY")
+
+          it! = fields!.iterator()
+          while it!.hasNext()
+              f$=it!.next()
+
+              f! = new DataRow()
+              f!.setFieldValue("FIELDNAME",f$)
+
+              if f$(1,1)="_" then
+                f!.setFieldValue("TYPE","CHAR")
+                f!.setFieldValue("HIDE","")
+                f!.setFieldValue("ALIGN","")
+              else
+                f!.setFieldValue("TYPE",ar!.getFieldTypeName(f$))
+                f!.setFieldValue("HIDE",java.sql.Types.BOOLEAN,Boolean.FALSE)
+                f!.setFieldValue("ALIGN","L")
+              fi
+
+              it1! = locales!.iterator()
+              while it1!.hasNext()
+                  loc$ = it1!.next()
+
+
+                  f!.setFieldValue(loc$+"_LABEL","")
+                  f!.setFieldValue(loc$+"_SHORTLABEL","")
+                  f!.setFieldValue(loc$+"_GROUP","")
+                  f!.setFieldValue(loc$+"_SHORTC","")
+                  f!.setFieldValue(loc$+"_LONGC","")
+                  f!.setFieldValue(loc$+"_MASK","")
+
+                  locmeta! = null()
+                  locmeta! = meta!.getField(loc$,err=*next).getObject()
+                  if locmeta! <> null() then
+                      fmeta! = null()
+                      fmeta! = locmeta!.getField("fields").getObject()
+                      if fmeta! <> null() then
+                          f!.setFieldValue(loc$+"_LABEL",locmeta!.getField("fields",err=*next).getObject().getField(f$,err=*next).getObject().getFieldAsString("LABEL",err=*next))
+                          f!.setFieldValue(loc$+"_SHORTLABEL",locmeta!.getField("fields",err=*next).getObject().getField(f$,err=*next).getObject().getFieldAsString("SHORT",err=*next))
+                          f!.setFieldValue(loc$+"_GROUP",locmeta!.getField("fields",err=*next).getObject().getField(f$,err=*next).getObject().getFieldAsString("GROUP",err=*next))
+                          f!.setFieldValue(loc$+"_SHORTC",locmeta!.getField("fields",err=*next).getObject().getField(f$,err=*next).getObject().getFieldAsString("SHORTCUE",err=*next))
+                          f!.setFieldValue(loc$+"_LONGC",locmeta!.getField("fields",err=*next).getObject().getField(f$,err=*next).getObject().getFieldAsString("LONGCUE",err=*next))
+                          f!.setFieldValue(loc$+"_MASK",locmeta!.getField("fields",err=*next).getObject().getField(f$,err=*next).getObject().getFieldAsString("MASK",err=*next))
+                      fi
+                  fi
+              wend
+
+              rs!.add(f!)
+
+          wend
+
+        grid! = #grid!
+        grid!.updateData(rs!)
+
+	methodend
+
+	method private BBjVector getLocales()
+  	       v! = new BBjVector()
+  	       rem v!.addItem("#")
+  	       v!.addItem("en_GB")
+           v!.addItem("de_DE")
+           v!.addItem("nl_NL")
+           methodret v!
+	methodend
+
+	rem /**
+	rem  * Method BTN_SAVE__ON_BUTTON_PUSH: 
+	rem  * Event handler for the ON_BUTTON_PUSH event for BTN_SAVE
+	rem  * @param BBjButtonPushEvent
+	rem  */
+	method public void BTN_SAVE__ON_BUTTON_PUSH(BBjButtonPushEvent pEvent!)
+	        dr! = new DataRow()
+	        locales! = #getLocales()
+
+
+	        save! = new DataRow()
+
+	        it!=locales!.iterator()
+	        while it!.hasNext()
+	            loc$=it!.next()
+
+	            fdr! = new DataRow()
+	            fdr!.setFieldValue("fields",new DataRow())
+
+	            save!.setFieldValue(loc$,fdr!)
+	        wend
+
+
+	        rs! = #grid!.getRS()
+	        it! = rs!.iterator()
+	        while it!.hasNext()
+	            row! = it!.next()
+
+                it1!=locales!.iterator()
+                while it1!.hasNext()
+                    loc$=it1!.next()
+
+                    loc! = save!.getField(loc$).getObject().getField("fields").getObject()
+
+                    fdr! = new DataRow()
+
+                    value$=""
+                    value$=row!.getFieldAsString(loc$+"_LABEL")
+                    if value$>"" then
+                        fdr!.setFieldValue("LABEL",value$)
+                    fi
+
+                    value$=""
+                    value$=row!.getFieldAsString(loc$+"_SHORTLABEL")
+                    if value$>"" then
+                        fdr!.setFieldValue("SHORT",value$)
+                    fi
+
+                    value$=""
+                    value$=row!.getFieldAsString(loc$+"_GROUP")
+                    if value$>"" then
+                        fdr!.setFieldValue("GROUP",value$)
+                    fi
+
+                    value$=""
+                    value$=row!.getFieldAsString(loc$+"_SHORTC")
+                    if value$>"" then
+                        fdr!.setFieldValue("SHORTCUE",value$)
+                    fi
+
+                    value$=""
+                    value$=row!.getFieldAsString(loc$+"_LONGC")
+                    if value$>"" then
+                        fdr!.setFieldValue("LONGCUE",value$)
+                    fi
+
+                    value$=""
+                    value$=row!.getFieldAsString(loc$+"_MASK")
+                    if value$>"" then
+                        fdr!.setFieldValue("MASK",value$)
+                    fi
+                    
+                    if fdr!.getFieldNames().size()>0 then
+                        loc!.setFieldValue(row!.getFieldAsString("FIELDNAME"),fdr!)
+                    fi
+                wend
+
+
+	        wend
+	        
+	        ch=unt
+	        open (ch,mode="O_CREATE,O_TRUNC")#Dir$+"/"+#CurrBC!.getFieldAsString("DESC")+".json"
+	        write (ch)save!.toJson(0)
+	        close (ch)
+
+	methodend
+
+	method public void cellEditingStopped(BBjCustomEvent ev!)
+	    cellEvent! = ev!.getObject()
+
+        declare auto GxClientEventsCell cellEvent!
+        declare auto GxClientCellModel cellModel!
+        declare auto DataRow row!
+
+        lastEvent! = BBjAPI().getLastEvent()
+        cellEvent! = lastEvent!.getObject()
+        cellModel!  = cellEvent!.getCell()
+
+        rem sync the new client row values with the ResultSet
+        row! = cellModel!.getRow().updateFromClientRow()
+
+
+	methodend
+
+classend
+
+declare BCMetaData myDialog!
+myDialog! = new BCMetaData()
+
+rem /** DLGWIZ_SET_BEGIN **/
+rem /** DLGWIZ_SET_END **/
+
+BCList! = new ResultSet()
+bc! = new DataRow()
+bc!.setFieldValue("DESC","ChileCustomerBC")
+bc!.setFieldValue("CLASS","::BusinessUIComponents/ExampleBCs/ChileCustomerBC.bbj::ChileCustomerBC")
+BCList!.add(bc!)
+
+bc! = new DataRow()
+bc!.setFieldValue("DESC","ChileCustomerBC2")
+bc!.setFieldValue("CLASS","::BusinessUIComponents/ExampleBCs/ChileCustomerBC.bbj::ChileCustomerBC")
+BCList!.add(bc!)
+
+myDialog!.setBCList(BCList!)
+myDialog!.setDir(BBjAPI().getFileSystem().resolvePath("BusinessUIComponents/ExampleBCs/meta"))
+
+
+if myDialog!.doModal() and info(3,6)<>"5" then
+    print 'show',
+    print "Passed required fields check"
+rem /** DLGWIZ_GET_BEGIN **/
+rem /** DLGWIZ_GET_END **/
+
+    input "Press ENTER to release",dummy$
+endif
+
+release

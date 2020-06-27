@@ -94,7 +94,7 @@ class public BusinessGrid extends AbstractBCBoundWidget implements IPersistentSt
             options!.setContextMenu(menu!)
 
             rem need to wait for next Gx release:
-            rem options!.setSuppressCellSelection(Boolean.TRUE)
+            options!.setSuppressCellSelection(Boolean.TRUE)
 
             #exportButton! = new ExportButton(#getCanvas(), 202, 0, 5, 20, 20)
             #exportButton!.setGrid(#this!)
@@ -126,8 +126,8 @@ class public BusinessGrid extends AbstractBCBoundWidget implements IPersistentSt
             statusbar! = #grid!.getStatusbar()
             statusbar!.addComponent(new GxStatusBarTotalAndFilteredRowCountComponent("right"))
             statusbar!.addComponent(new GxStatusBarSelectedRowCountComponent("center"))
-            statusbar!.setComponentVisibility(GxStatusBarTotalAndFilteredRowCountComponent.NAME(), Boolean.TRUE)
-            statusbar!.setComponentVisibility(GxStatusBarSelectedRowCountComponent.NAME(), Boolean.TRUE)
+            statusbar!.setComponentVisibility(GxStatusBarTotalAndFilteredRowCountComponent.getId(), Boolean.TRUE)
+            statusbar!.setComponentVisibility(GxStatusBarSelectedRowCountComponent.getId(), Boolean.TRUE)
 
             #updateProperties()
         fi
@@ -203,6 +203,7 @@ class public BusinessGrid extends AbstractBCBoundWidget implements IPersistentSt
 
         rs! = #getBinder().getRS()
         ar! = #getBinder().getAttributesRecord()
+        
         if rs! = null() or ar! = null() then methodret
         if !(ar!.isEmpty()) then
 
@@ -244,11 +245,13 @@ class public BusinessGrid extends AbstractBCBoundWidget implements IPersistentSt
 
                 #grid!.getClientContext().addProperty("numberGroupSep",numberGroupSeparator$, err=*next)        
                 #grid!.getClientContext().addProperty("numberDecimalSep",numberDecimalSeparator$, err=*next)
-
+                #grid!.setTheme( #grid!.GRID_THEME_BALHAM() )
                 rem Render grid columns based on the attributes record (w/o any data)
                 rsa! = new ResultSet()
                 rsa!.add(ar!)
                 #grid!.setData(rsa!)
+                
+                cgroups! = new java.util.HashMap()
 
                 for rscol = 0 to ar!.getColumnCount() - 1
 
@@ -265,6 +268,14 @@ class public BusinessGrid extends AbstractBCBoundWidget implements IPersistentSt
                     label$ = fieldName$
                     if fa!.containsKey("LABEL") then label$ = fa!.get("LABEL")
                     column!.setLabel(label$)
+                    
+                    if fa!.containsKey("GROUP") then cgroup$ = fa!.get("GROUP")
+                    cgroup! = cgroups!.get(cgroup$)
+                    if cgroup! = null() then
+                        cgroup! = new BBjVector()
+                        cgroups!.put(cgroup$,cgroup!)
+                    fi
+                    cgroup!.addItem(fieldName$)
 
                     mask$ = ""
                     if fa!.containsKey("MASK") then mask$ = cvs(fa!.get("MASK"),3)
@@ -325,10 +336,21 @@ class public BusinessGrid extends AbstractBCBoundWidget implements IPersistentSt
 
                 next rscol
 
+                if cgroups!.size()>0 then
+                    it! = cgroups!.keySet().iterator()
+                    while it!.hasNext()
+                        cgroup$=it!.next()
+                        #grid!.addColumnGroup(cgroup$ , cgroup$, cgroups!.get(cgroup$) , 0 , "")
+                    wend
+                fi
+
                 #columnConfigurationSet! = Boolean.TRUE
             endif
 
+            
+
         endif
+        
         if rs!.isEmpty() then
             #grid!.clearData()
         else
@@ -342,7 +364,15 @@ class public BusinessGrid extends AbstractBCBoundWidget implements IPersistentSt
                 #grid!.setSelectedRow(0)
                 #grid!.focus()
             endif
+        else
+            rem try to re-select the formerly selected record
+            sel$ = #getBinder().getSelection().get(0).toString()
+            if  #getBinder().getRS().get(sel$+"A",err=*endif) <> null() then
+                #getBinder().setSelection(sel$)
+            fi
         endif
+        
+
     methodend
     
     
@@ -413,7 +443,7 @@ REM               endif
     rem  * @param state! state string previously stored by the widget
     rem  */
     method public void applyState(String state!)
-        #grid!.setColumnState(new GxState(state!))
+        #grid!.setState(new GxState(state!))
     methodend
 
     rem /**
@@ -423,7 +453,7 @@ REM               endif
     rem  * @return String containing the current state of all columns
     rem  */
     method public String retrieveState()
-        methodret #grid!.getColumnState().toString()
+        methodret #grid!.getState().toString()
     methodend
 
     rem /**
