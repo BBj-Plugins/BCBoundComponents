@@ -71,7 +71,7 @@ class public BCMetaData extends BBDialog
     rem * Constructor BCMetaData
     rem */
     method public BCMetaData(IBCMetaDataModel meta_model!)
-        #super!("BCMetaData.arc",101)
+        #super!("BusinessUIComponents/tools/BCMetaData.arc",101)
         #meta_model! =  meta_model!
 
 
