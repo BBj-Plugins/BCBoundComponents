@@ -381,10 +381,13 @@ class public BusinessGrid extends AbstractBCBoundWidget implements IPersistentSt
             endif
         else
             rem try to re-select the formerly selected record
-            sel$ = #getBinder().getSelection().get(0).toString()
-            if  #getBinder().getRS().get(sel$+"A",err=*endif) <> null() then
-                #getBinder().setSelection(sel$)
-            fi
+            cursel! = #getBinder().getSelection()
+            if cursel!.size()=1 then
+                sel$ = #getBinder().getSelection().get(0).toString()
+                if  #getBinder().getRS().get(sel$+"A",err=*endif) <> null() then
+                    #getBinder().setSelection(sel$)
+                fi
+            endif
         endif
         
 
