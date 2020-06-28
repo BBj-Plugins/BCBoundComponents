@@ -15,6 +15,7 @@ use ::BBjGridExWidget/GxClientModels.bbj::GxClientCellModel
 use ::BusinessUIComponents/BusinessGrid.bbj::BusinessGrid
 use ::BusinessUIComponents/configurations/ConfigurationWidget.bbj::ConfigurationWidget
 
+use ::BusinessUIComponents/tools/IBCMetaDataPersistenceModel.bbj::IBCMetaDataModel
 
 use com.google.gson.JsonArray
 
@@ -59,12 +60,20 @@ class public BCMetaData extends BBDialog
 	field private BusinessGrid preview_grid!
 
     field public BBjTopLevelWindow Wnd!
-
+    
+    field private IBCMetaDataModel meta_model!
+    
+    
+    method private BCMetaData()
+    methodend
+    
     rem /**
     rem * Constructor BCMetaData
     rem */
-    method public BCMetaData()
+    method public BCMetaData(IBCMetaDataModel meta_model!)
         #super!("BCMetaData.arc",101)
+        #meta_model! =  meta_model!
+
 
         rem Check if BBjSysGui object is still valid. If not re-create it.
         #SysGui!.getContext(err=*next); sg_ok=1
@@ -180,7 +189,7 @@ class public BCMetaData extends BBDialog
 
     grid!.setCallback(grid!.ON_GRID_CELL_EDITING_STOPPED(),#this!,"cellEditingStopped")
 
-    locales! = #getLocales()
+    locales! = #meta_model!.getLocales()
     isEditableExp! = "data.FIELDNAME && (data.FIELDNAME !== '_ENTITY' && data.FIELDNAME !== '_ENTITIES')"
 
         filedNameColumn! = grid!.addColumn("FIELDNAME")
@@ -221,6 +230,7 @@ class public BCMetaData extends BBDialog
 
          edselect! = new GxCellEditorSelect()
          values! = new JsonArray()
+         values!.add("")
          values!.add("L")
          values!.add("C")
          values!.add("R")
@@ -331,10 +341,9 @@ class public BCMetaData extends BBDialog
 	rem  * @param BBjResizeEvent
 	rem  */
 	method public void BCMetaData__ON_RESIZE(BBjResizeEvent ev!)
-
 		  w=ev!.getWidth()
 		  h=ev!.getHeight()
-		  #grid!.setSize(w,h-200)
+		  #grid!.setSize(w,h-80)
 	methodend
 
 	rem /**
@@ -356,25 +365,21 @@ class public BCMetaData extends BBDialog
 	       bc!     = eval("new "+class$+"()")
 	       ar!     = bc!.getAttributesRecord()
 
-	       locales! = #getLocales()
+	       locales! = #meta_model!.getLocales()
 
-	       meta! = new DataRow()
-
-	       while 1
-    	       ch=unt
-    	       open (ch,err=*break)#Dir$+"/"+desc$+".json"
-
-    	       read record (ch,siz=128000)json$
-    	       close (ch)
-    	       meta! = DataRow.fromJson(json$)
-    	       break
-	       wend
+	       meta! = #meta_model!.loadModel(desc$)
 
           rs! = new ResultSet()
 
           fields! = ar!.getFieldNames()
           fields!.insertItem(0,"_ENTITIES")
           fields!.insertItem(0,"_ENTITY")
+
+          layout! = meta!.getField("layout",err=*next).getObject()
+          if layout! <> null() then
+                layout! = layout!.getField("fields").getObject()
+          fi
+
 
           it! = fields!.iterator()
           while it!.hasNext()
@@ -390,9 +395,19 @@ class public BCMetaData extends BBDialog
               else
                 f!.setFieldValue("TYPE",ar!.getFieldTypeName(f$))
                 f!.setFieldValue("HIDE",java.sql.Types.BOOLEAN,Boolean.FALSE)
-                f!.setFieldValue("ALIGN","L")
+                f!.setFieldValue("ALIGN","")
               fi
 
+              if layout! <> null() then
+                    flayout! = layout!.getField(f$,err=*endif).getObject()
+                    if flayout!.contains("ALIGN") then
+                        f!.setFieldValue("ALIGN",flayout!.getFieldAsString("ALIGN"))
+                    fi
+                    if flayout!.contains("HIDE") then
+                        f!.setFieldValue("HIDE",str(flayout!.getFieldAsNumber("HIDE")>0))
+                    fi
+              fi
+            
               it1! = locales!.iterator()
               while it1!.hasNext()
                   loc$ = it1!.next()
@@ -430,14 +445,6 @@ class public BCMetaData extends BBDialog
 
 	methodend
 
-	method private BBjVector getLocales()
-  	       v! = new BBjVector()
-  	       rem v!.addItem("#")
-  	       v!.addItem("en_GB")
-           v!.addItem("de_DE")
-           v!.addItem("nl_NL")
-           methodret v!
-	methodend
 
 	rem /**
 	rem  * Method BTN_SAVE__ON_BUTTON_PUSH: 
@@ -446,7 +453,7 @@ class public BCMetaData extends BBDialog
 	rem  */
 	method public void BTN_SAVE__ON_BUTTON_PUSH(BBjButtonPushEvent pEvent!)
 	        dr! = new DataRow()
-	        locales! = #getLocales()
+	        locales! = #meta_model!.getLocales()
 
 
 	        save! = new DataRow()
@@ -460,13 +467,39 @@ class public BCMetaData extends BBDialog
 
 	            save!.setFieldValue(loc$,fdr!)
 	        wend
-
+	        
+            fdr! = new DataRow()
+            fdr!.setFieldValue("fields",new DataRow())
+            save!.setFieldValue("layout",fdr!)
+	        
 
 	        rs! = #grid!.getRS()
 	        it! = rs!.iterator()
 	        while it!.hasNext()
 	            row! = it!.next()
+	            fieldname$=row!.getFieldAsString("FIELDNAME")
+	            
+	            if fieldname$(1,1)<>"_" then
+	            
+	            
+	                set! = save!.getField("layout").getObject().getField("fields").getObject()
+	                align$=row!.getFieldAsString("ALIGN")
+	                hide!=row!.getField("HIDE").getBoolean()
 
+	                fdr! = new DataRow()
+	                if align$<>"" then
+	                    fdr!.setFieldValue("ALIGN",align$)
+	                fi
+	                if hide! then
+                        fdr!.setFieldValue("HIDE",hide!)
+                    fi
+                    if fdr!.getFieldNames().size()>0 then
+                        set!.setFieldValue(fieldname$,fdr!)
+                    fi
+
+	            fi
+	            
+	            
                 it1!=locales!.iterator()
                 while it1!.hasNext()
                     loc$=it1!.next()
@@ -512,17 +545,15 @@ class public BCMetaData extends BBDialog
                     fi
 
                     if fdr!.getFieldNames().size()>0 then
-                        loc!.setFieldValue(row!.getFieldAsString("FIELDNAME"),fdr!)
+                        loc!.setFieldValue(fieldname$,fdr!)
                     fi
                 wend
 
 
 	        wend
 
-	        ch=unt
-	        open (ch,mode="O_CREATE,O_TRUNC")#Dir$+"/"+#CurrBC!.getFieldAsString("DESC")+".json"
-	        write (ch)save!.toJson(0)
-	        close (ch)
+
+	        #meta_model!.saveModel(save!)
 
 	methodend
 
@@ -585,28 +616,4 @@ class public BCMetaData extends BBDialog
 
 classend
 
-declare BCMetaData myDialog!
-myDialog! = new BCMetaData()
 
-rem /** DLGWIZ_SET_BEGIN **/
-rem /** DLGWIZ_SET_END **/
-
-BCList! = new ResultSet()
-bc! = new DataRow()
-bc!.setFieldValue("DESC","ChileCustomerBC")
-bc!.setFieldValue("CLASS","::BusinessUIComponents/ExampleBCs/ChileCustomerBC.bbj::ChileCustomerBC")
-BCList!.add(bc!)
-
-myDialog!.setBCList(BCList!)
-myDialog!.setDir(BBjAPI().getFileSystem().resolvePath("BusinessUIComponents/ExampleBCs/meta"))
-
-if myDialog!.doModal() and info(3,6)<>"5" then
-    print 'show',
-    print "Passed required fields check"
-rem /** DLGWIZ_GET_BEGIN **/
-rem /** DLGWIZ_GET_END **/
-
-    input "Press ENTER to release",dummy$
-endif
-
-release

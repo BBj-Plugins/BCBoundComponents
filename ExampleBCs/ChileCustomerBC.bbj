@@ -180,36 +180,12 @@ class public ChileCustomerBC implements BusinessComponent
         dr!.setFieldAttribute("CREDIT_CODE","LABEL","Terms")
         dr!.setFieldAttribute("CREDIT_CODE","HIDE","1");rem set as hidden
 
-        while 1
-            loc$=stbl("!LOCALE")
-            ch=unt
-            open (ch,err=*break)"BusinessUIComponents/ExampleBCs/meta/ChileCustomerBC.json"
-            read record (ch,siz=128000)json$
-            close (ch)
-            meta! = DataRow.fromJson(json$)
-            locmeta! = meta!.getField(loc$,err=*next).getObject()
-            if locmeta! = null() then
-                locmeta! = meta!.getField(loc$(1,2),err=*next).getObject()
-            fi
-            if locmeta! <> null() then
-                it! = dr!.getFieldNames().iterator()
-                while it!.hasNext()
-                          f$=it!.next()
-                          fmeta! = null()
-                          fmeta! = locmeta!.getField("fields").getObject()
-                          if fmeta! <> null() then
-                              dr!.setFieldAttribute(f$,"LABEL",locmeta!.getField("fields",err=*next).getObject().getField(f$,err=*next).getObject().getFieldAsString("LABEL",err=*next))
-                              dr!.setFieldAttribute(f$,"GROUP",locmeta!.getField("fields",err=*next).getObject().getField(f$,err=*next).getObject().getFieldAsString("GROUP",err=*next))
-                              dr!.setFieldAttribute(f$,"MASK",locmeta!.getField("fields",err=*next).getObject().getField(f$,err=*next).getObject().getFieldAsString("MASK",err=*next))
-                              rem auch: SHORT, SHORTCUE, LONGCUE
-                          fi
-                wend
-            fi
-            
-            break
-        wend
+        rem merge model
+       use ::BusinessUIComponents/tools/BCMetaDataJSONModel.bbj::BCMetaDataJSONModel
+       model! = new BCMetaDataJSONModel("BusinessUIComponents/ExampleBCs/meta/")
+       model!.loadModel("ChileCustomerBC")
 
-        #AttributesRecord! = dr!
+        #AttributesRecord! = CAST(DataRow,model!.mergeAttributes(dr!,stbl("!LOCALE")))
         methodret dr!
 
     methodend

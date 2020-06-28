@@ -2,7 +2,7 @@ use com.basiscomponents.db.DataRow
 use com.basiscomponents.db.ResultSet
 
 
-dummy$ = STBL("!LOCALE", "en_US")
+
 BBjAPI().getAdmin("guest", "").getEnvironment().reloadClasspath("uicomponents")
 
 declare ResultSet forms!
