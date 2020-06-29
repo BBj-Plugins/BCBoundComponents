@@ -23,6 +23,8 @@ class public QuickSearchField
     field protected BBArrayList idFieldNames!
     field protected Boolean hasDesc!
     field protected Boolean useWildCard! = Boolean.TRUE
+    field protected Boolean passEnter!
+    field protected Boolean passTab!
     field protected String uniqueID! = java.util.UUID.randomUUID().toString()
     field private IPropertiesManager uiPropertiesManager!
     field protected BCBinder binder!
@@ -31,7 +33,6 @@ class public QuickSearchField
     
     field protected BBjVector optionIDs!
     
-
     method public QuickSearchField(BBjInputE control!, BusinessComponent bc!)
         #control! = control!
         #control!.setLength(#control!.getLength() + 100)
@@ -124,9 +125,11 @@ class public QuickSearchField
         keyCode = ev!.getKeyCode()
         selectedIndex = #popup!.getSelectedIndex()
         switch keycode
+            case 9
+                rem tab
             case 13
-                #popupSelect(selectedIndex)
                 rem enter
+                #popupSelect(selectedIndex)
                 break
             case 301
                 rem arrow down
@@ -150,6 +153,13 @@ class public QuickSearchField
 REM         #popup!.focus()
     methodend
     
+    method public Boolean isControlFocused(BBjControl control!)
+        if control!.getID() = control!.getParentWindow().getFocusedControlID() then
+            methodret Boolean.TRUE
+        endif
+        methodret Boolean.FALSE
+    methodend
+    
     
     rem /**
     rem  * starts the search in the bc using the search field name (default is '_SEARCH') and filling the popup control with the resultset for up to #maxEntries (default 10) items.
@@ -157,6 +167,7 @@ REM         #popup!.focus()
     rem  * 
     rem  */
     method public void startSearch(BBjEvent ev!)
+        if !#isControlFocused(#control!) then methodret
         BBjAPI().removeTimer(#uniqueID! + "startSearch")
         #popup!.removeAllItems()
         searchString! = #control!.getText()
@@ -207,6 +218,10 @@ REM         escape
     rem  */
     method public void openList(BBjEvent ev!)
         BBjAPI().removeTimer(#uniqueID! + "openList")
+        #passEnter! = #control!.getPassEnter()
+        #control!.setPassEnter(Boolean.FALSE)
+        #passTab! = #control!.getPassTab()
+        #control!.setPassTab(Boolean.FALSE)
         #popup!.openList()
         selectedIndex = #popup!.getSelectedIndex()
         if selectedIndex < 0 then
@@ -225,6 +240,8 @@ REM         escape
     rem  */
     method public void popupSelect(BBjNumber index)
         if #optionIDs! = null() then methodret
+        #control!.setPassEnter(#passEnter!)
+        #control!.setPassTab(#passTab!)
         if index < 0 then
             #control!.setUserData(null())
             #optionIDs! = null()
