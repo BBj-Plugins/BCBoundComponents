@@ -17,7 +17,7 @@ class public QuickSearchField
     field protected BBjInputE control!
     field protected BBjListButton popup!
     field protected BusinessComponent bc!
-    field protected BBjNumber delay = 1
+    field protected BBjNumber delay = .1
     field protected BBjNumber maxEntries = 10
     field protected String searchFieldName! = "_SEARCH"
     field protected BBArrayList idFieldNames!
@@ -123,8 +123,31 @@ class public QuickSearchField
         if !#popup!.isVisible() or #popup!.getItemCount() < 1 then methodret
         keyCode = ev!.getKeyCode()
         selectedIndex = #popup!.getSelectedIndex()
-        if keyCode <> 301 and keyCode <> 302 then methodret
-        #popup!.focus()
+        switch keycode
+            case 13
+                #popupSelect(selectedIndex)
+                rem enter
+                break
+            case 301
+                rem arrow down
+                if selectedIndex <= 0 then
+                    #popup!.selectIndex(#popup!.getItemCount() - 1)
+                else
+                    #popup!.selectIndex(selectedIndex - 1)
+                endif
+                break
+            case 302
+                rem arrow up
+                if selectedIndex >= #popup!.getItemCount() - 1 then
+                    #popup!.selectIndex(0)
+                else
+                    #popup!.selectIndex(selectedIndex + 1)
+                endif
+                break
+            case default
+                break
+        swend
+REM         #popup!.focus()
     methodend
     
     
@@ -174,6 +197,7 @@ class public QuickSearchField
             #popup!.addItem(desc!)
         NEXT i
 REM         escape
+        #popup!.setSize(#popup!.getWidth(), #control!.getHeight() * #maxEntries)
         #popup!.setVisible(1)
         BBjAPI().createTimer(#uniqueID! + "openList", .05, #this!, "openList")
     methodend
@@ -184,13 +208,22 @@ REM         escape
     method public void openList(BBjEvent ev!)
         BBjAPI().removeTimer(#uniqueID! + "openList")
         #popup!.openList()
+        selectedIndex = #popup!.getSelectedIndex()
+        if selectedIndex < 0 then
+            #popup!.selectIndex(selectedIndex + 1)
+        endif
     methodend
+    
+    method public void popupSelect(BBjListSelectEvent ev!)
+        index = ev!.getSelectedIndex()
+        #popupSelect(index)
+    methodend
+    
     
     rem /**
     rem  * on selection of an item in the popup screen, the userdata of the input control is set to the selected id and the text is set to the description
     rem  */
-    method public void popupSelect(BBjListSelectEvent ev!)
-        index = ev!.getSelectedIndex()
+    method public void popupSelect(BBjNumber index)
         if #optionIDs! = null() then methodret
         if index < 0 then
             #control!.setUserData(null())
@@ -198,11 +231,14 @@ REM         escape
             #popup!.setVisible(0)
             methodret
         endif
+        text! = #popup!.getItemAt(index)
         #control!.setUserData(#optionIDs!.get(index))
-        #control!.setText(ev!.getSelectedItem())
+        #control!.setText(text!)
         #optionIDs! = null()
         #popup!.setVisible(0)
         #control!.focus()
+        #control!.setCaretPosition(#control!.getLength())
+REM         #control!.setCaretPosition(text!.length() - 1)
     methodend
     
     rem /**

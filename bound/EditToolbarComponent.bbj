@@ -18,6 +18,8 @@ class public EditToolbarComponent extends AbstractBCBoundWidget
     field protected BBjToolButton btn_delete!
     field protected BBjToolButton btn_refresh!
     field protected BBjToolButton btn_blank!
+    field protected BBjToolButton btn_background!
+    
     
     field protected Boolean btn_new_enabled! = Boolean.TRUE
     field protected Boolean btn_save_enabled! = Boolean.TRUE
@@ -60,6 +62,10 @@ class public EditToolbarComponent extends AbstractBCBoundWidget
         if (f_init!) then
             #getCanvas().setOpaque(0)
             
+            #btn_background! = #getCanvas().addToolButton(99,0,0,20,20,"")
+            #btn_background!.setTabTraversable(0)
+            #btn_background!.setFocusable(0)
+            
             #btn_new! = #getCanvas().addToolButton(100,0,0,20,20,"NEW")
             #btn_new!.setCallback(BBjAPI.ON_TOOL_BUTTON_PUSH,#this!,"onBtnNew")
             #btn_new!.setTabTraversable(0)
@@ -86,10 +92,12 @@ class public EditToolbarComponent extends AbstractBCBoundWidget
             #btn_blank!.setTabTraversable(0)
             #btn_blank!.setFocusable(0)
             
+            
             #enableControls()
             #updateProperties()
         FI
-        
+        #getCanvas().setSize(#getCanvas().getParentWindow().getWidth(), #getCanvas().getHeight())
+        #btn_background!.setSize(#getCanvas().getWidth(), #btn_background!.getHeight())
     methodend
     
     rem /**
@@ -109,11 +117,12 @@ class public EditToolbarComponent extends AbstractBCBoundWidget
     method protected void alignAndSizeButtons()
             height = #getUIPropertiesManager().getPropertyAsNumber("EDIT_TOOLBAR_HEIGHT")
             imageSize = height - 4
-            currentXpos = 0
+            #btn_background!.setSize(#btn_background!.getWidth(), height + 4)
+            currentXpos = 2
             if #btn_blank_enabled! then
                 #btn_blank!.setImageSize(imageSize, imageSize)
                 #btn_blank!.setSize(height, height)
-                #btn_blank!.setLocation(currentXpos, 0)
+                #btn_blank!.setLocation(currentXpos, 2)
                 #btn_blank!.setVisible(1)
                 currentXpos = currentXpos + height
             else
@@ -122,7 +131,7 @@ class public EditToolbarComponent extends AbstractBCBoundWidget
             if #btn_new_enabled! then
                 #btn_new!.setImageSize(imageSize, imageSize)
                 #btn_new!.setSize(height, height)
-                #btn_new!.setLocation(currentXpos, 0)
+                #btn_new!.setLocation(currentXpos, 2)
                 #btn_new!.setVisible(1)
                 currentXpos = currentXpos + height
             else
@@ -132,7 +141,7 @@ class public EditToolbarComponent extends AbstractBCBoundWidget
             if #btn_save_enabled! then
                 #btn_save!.setImageSize(imageSize, imageSize)
                 #btn_save!.setSize(height, height)
-                #btn_save!.setLocation(currentXpos, 0)
+                #btn_save!.setLocation(currentXpos, 2)
                 #btn_save!.setVisible(1)
                 currentXpos = currentXpos + height
             else
@@ -141,7 +150,7 @@ class public EditToolbarComponent extends AbstractBCBoundWidget
             if #btn_delete_enabled! then
                 #btn_delete!.setImageSize(imageSize, imageSize)
                 #btn_delete!.setSize(height, height)
-                #btn_delete!.setLocation(currentXpos, 0)
+                #btn_delete!.setLocation(currentXpos, 2)
                 #btn_delete!.setVisible(1)
                 currentXpos = currentXpos + height
             else
@@ -150,7 +159,7 @@ class public EditToolbarComponent extends AbstractBCBoundWidget
             if #btn_refresh_enabled! then
                 #btn_refresh!.setImageSize(imageSize, imageSize)
                 #btn_refresh!.setSize(height, height)
-                #btn_refresh!.setLocation(currentXpos, 0)
+                #btn_refresh!.setLocation(currentXpos, 2)
                 #btn_refresh!.setVisible(1)
                 currentXpos = currentXpos + height
             else

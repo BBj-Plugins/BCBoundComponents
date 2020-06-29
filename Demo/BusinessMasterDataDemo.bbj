@@ -2,7 +2,7 @@ use com.basiscomponents.db.DataRow
 use com.basiscomponents.db.ResultSet
 
 
-dummy$ = STBL("!LOCALE", "en_US")
+
 BBjAPI().getAdmin("guest", "").getEnvironment().reloadClasspath("uicomponents")
 
 declare ResultSet forms!
@@ -19,37 +19,10 @@ dr!.setFieldValue("ARC", "BusinessUIComponents/Demo/MasterDataForm2.arc")
 dr!.setFieldValue("CWID", 100)
 dr!.setFieldValue("TABNAME", "Business")
 forms!.add(dr!)
-filter! = new DataRow()
-filter!.setFieldValue("ARC", "BusinessUIComponents/Demo/MasterDataFilter.arc")
-filter!.setFieldValue("CWID", 100)
 
 BC$="::BusinessUIComponents/ExampleBCs/ChileCustomerBC.bbj::ChileCustomerBC"
 TITLE$ = "ChileCustomer Demo"
 PGMNAME$ = pgm(-2)
 
-CALL "BusinessUIComponents/BusinessMasterDataUI.bbj", forms!, filter!, BC$, TITLE$, PGMNAME$
+CALL "BusinessUIComponents/BusinessMasterDataUI.bbj", forms!, null(), BC$, TITLE$, PGMNAME$
 
-REM resize:
-REM REM   if timerActive! then return
-REM   ev! = BBjAPI().getLastEvent()
-REM   if timerActive! then return
-REM   timerActive! = Boolean.TRUE
-REM   BBjAPI().createTimer("resize",.4,"delayed_resize")
-REM return
-REM delayed_resize:
-REM   timerActive! = Boolean.FALSE
-REM   BBjAPI().removeTimer("resize",err=*next)
-REM   splitter!.setSize(ev!.getWidth() -10 ,ev!.getHeight()-30)
-REM   navWidth = ev!.getWidth()-405
-REM   if navWidth < nav!.getHeight() * 4 then
-REM     navWidth = nav!.getHeight() * 4
-REM   endif
-REM   nav!.setSize(navWidth,20)
-REM   searchBarX = ev!.getWidth()-290
-REM REM   ?searchBarX
-REM REM   if searchBarX < 100 then escape
-REM   if searchBarX < (nav!.getX() +  nav!.getWidth()) then
-REM      searchBarX = nav!.getX() +  nav!.getWidth()
-REM   endif
-REM   searchBar!.setLocation(searchBarX, searchBar!.getY())
-REM return

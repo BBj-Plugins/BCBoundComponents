@@ -1,0 +1,133 @@
+use ::BusinessUIComponents/tools/IBCMetaDataPersistenceModel.bbj::IBCMetaDataModel
+use com.basiscomponents.db.DataRow
+
+
+class public BCMetaDataJSONModel implements IBCMetaDataModel
+
+    field private String folder! = ""
+    field private String name! = ""
+    field private DataRow meta!
+
+    method private BCMetaDataJSONModel()
+    methodend
+    
+    method public BCMetaDataJSONModel(String folder!)
+    
+        folder! = BBjAPI().getFileSystem().resolvePath(folder!,err=folder_missing)
+        
+        ch=unt
+        open (ch)folder!
+        fid$=fid(ch)
+        close (ch)
+        
+        if fid$(1,1) <> $05$ then
+            throw "File "+folder!+" is not a directory!",17
+        fi
+        
+        #folder! = folder!
+        
+        methodret
+        
+        folder_missing:
+            throw "Folder "+folder!+" does not exist!",12
+    
+    methodend
+     
+    
+
+    method public DataRow loadModel(String name!)
+
+           declare DataRow meta!
+           meta! = new DataRow()
+           #name! = name!
+
+           ch=unt
+           open (ch,err=new_model)#folder!+"/"+name!+".json"
+           read record (ch,siz=512000)json$
+           close (ch)
+           meta! = DataRow.fromJson(json$)
+           
+           new_model:
+           
+           #meta! = meta!
+           methodret meta!
+        
+    methodend
+    
+    method public void saveModel(DataRow model!)
+    
+            ch=unt
+            open (ch,mode="O_CREATE,O_TRUNC")#folder!+"/"+#name!+".json"
+            write (ch)model!.toJson(0)
+            close (ch)
+    
+    methodend
+    
+    method public DataRow mergeAttributes(DataRow dr!, String locale!)
+    
+        if #meta! = null() then
+            throw "no model loaded!",14
+        fi
+    
+        while 1
+            loc$=locale!
+            meta! = #meta!
+            locmeta! = meta!.getField(loc$,err=*next).getObject()
+            if locmeta! = null() then
+                locmeta! = meta!.getField(loc$(1,2),err=*next).getObject()
+            fi
+            if locmeta! <> null() then
+                it! = dr!.getFieldNames().iterator()
+                while it!.hasNext()
+                          f$=it!.next()
+                          fmeta! = null()
+                          fmeta! = locmeta!.getField("fields").getObject()
+                          if fmeta! <> null() then
+                              dr!.setFieldAttribute(f$,"LABEL",locmeta!.getField("fields",err=*next).getObject().getField(f$,err=*next).getObject().getFieldAsString("LABEL",err=*next))
+                              dr!.setFieldAttribute(f$,"GROUP",locmeta!.getField("fields",err=*next).getObject().getField(f$,err=*next).getObject().getFieldAsString("GROUP",err=*next))
+                              dr!.setFieldAttribute(f$,"MASK",locmeta!.getField("fields",err=*next).getObject().getField(f$,err=*next).getObject().getFieldAsString("MASK",err=*next))
+                              rem auch: SHORT, SHORTCUE, LONGCUE
+                          fi
+                wend
+            fi
+            
+            
+            layout! = meta!.getField("layout",err=*next).getObject()
+            if layout! <> null() then
+            fmeta! = layout!.getField("fields").getObject()
+            it! = dr!.getFieldNames().iterator()
+            while it!.hasNext()
+                f$=it!.next()
+                flayout! = fmeta!.getField(f$,err=*continue).getObject()
+                if flayout!.contains("ALIGN") then
+                    dr!.setFieldAttribute(f$,"ALIGN",flayout!.getFieldAsString("ALIGN"))
+                fi
+                if flayout!.contains("HIDE") then
+                    dr!.setFieldAttribute(f$,"HIDE",str(flayout!.getFieldAsNumber("HIDE")>0))
+                fi
+            wend
+
+            break
+        wend
+    
+    
+        methodret dr!
+    
+    methodend
+    
+    method public BBjVector getLocales()
+           v! = new BBjVector()
+           rem v!.addItem("#")
+           v!.addItem("en_GB")
+           v!.addItem("de_DE")
+           v!.addItem("nl_NL")
+           methodret v!
+    methodend    
+
+classend
+
+
+
+model! = new BCMetaDataJSONModel("BusinessUIComponents/ExampleBCs/meta/")
+
+dr! = model!.loadModel("ChileCustomerBC")
