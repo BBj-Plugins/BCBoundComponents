@@ -612,6 +612,10 @@ REM         calendarButton!.setImageFile("BusinessUIComponents/icon/ic_insert_in
             case BBjControl.LISTEDIT_TYPE
                 c!.setCallback(BBjAPI.ON_LIST_SELECT,#this!,"onControlListSelect") 
                 break
+            case BBjControl.CHECKBOX_TYPE
+                c!.setCallback(BBjAPI.ON_CHECK_ON,#this!,"onControlGainedFocus",err=*next) 
+                c!.setCallback(BBjAPI.ON_CHECK_OFF,#this!,"onControlGainedFocus",err=*next) 
+                break
             case default
                 c!.setCallback(BBjAPI.ON_GAINED_FOCUS,#this!,"onControlGainedFocus",err=*next) 
                 break

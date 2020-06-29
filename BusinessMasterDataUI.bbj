@@ -22,6 +22,7 @@ class public BusinessMasterDataUI
 
     field protected BBjTopLevelWindow wnd!
     field protected WindowHandler wh!
+    field protected EditToolbarComponent edittb!
     field protected HorizontalSplitter splitter!
     field protected BBjVector forms!
     field protected BBjTabCtrl formTabCtrl!
@@ -148,9 +149,9 @@ class public BusinessMasterDataUI
     methodend
 
     method public void addEditToolbar()
-        edittb! = new EditToolbarComponent(#wnd!,111,2,2,100,32)
-        #binder!.register(edittb!)
-        #componentsWithProperties!.add(edittb!)
+        #edittb! = new EditToolbarComponent(#wnd!,111,2,2,100,32)
+        #binder!.register(#edittb!)
+        #componentsWithProperties!.add(#edittb!)
     methodend
 
     method public void addBusinessGrid()
@@ -217,6 +218,9 @@ REM     methodend
         for i = 0 to #forms!.size() - 1
           cast(BBjWidget, #forms!.getItem(i)).setSize(w-4, h-25)
         next i
+        if #edittb! <> null() then
+            #edittb!.redraw(0)
+        endif
     methodend
 
 
