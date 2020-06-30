@@ -67,7 +67,7 @@ class public BusinessMonitorUI
         #addEditToolbar(2,2)
         #addBusinessGrid(0,5)
         #addBCErrorHandler(TITLE$)
-        #addWindowHandler(PGMNAME$)
+        #addWindowHandler(#pgm!)
         #addFilters(filter!, controlPrefixMap!)
 
     methodend
