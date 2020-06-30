@@ -124,7 +124,13 @@ REM     methodend
     methodend
     
     method public DataRow write(DataRow dr!)
-        methodret #configurationsBC!.write(dr!)
+        writedr! = #configurationsBC!.write(dr!,err=handling)
+        methodret writedr!
+        handling:
+            mes! = errmes(-1)
+            System.out.println(mes!)
+            ?mes!
+            methodret new DataRow()
     methodend
     
     method public ResultSet validateRemove(DataRow dr!)
