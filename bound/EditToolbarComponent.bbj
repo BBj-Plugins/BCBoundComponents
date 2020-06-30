@@ -97,7 +97,7 @@ class public EditToolbarComponent extends AbstractBCBoundWidget
             #updateProperties()
         FI
         #getCanvas().setSize(#getCanvas().getParentWindow().getWidth(), #getCanvas().getHeight())
-        #btn_background!.setSize(#getCanvas().getWidth(), #btn_background!.getHeight())
+        #btn_background!.setSize(#getCanvas().getWidth() - 4, #btn_background!.getHeight())
     methodend
     
     rem /**
@@ -116,6 +116,7 @@ class public EditToolbarComponent extends AbstractBCBoundWidget
     
     method protected void alignAndSizeButtons()
             height = #getUIPropertiesManager().getPropertyAsNumber("EDIT_TOOLBAR_HEIGHT")
+            #getCanvas().setSize(#getCanvas().getWidth(), height + 4)
             imageSize = height - 4
             #btn_background!.setSize(#btn_background!.getWidth(), height + 4)
             currentXpos = 2

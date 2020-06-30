@@ -48,7 +48,7 @@ class public BusinessMonitorUI
         
         #wnd!.setCallback(BBjAPI.ON_RESIZE, #this!,"resize")
         
-        #splitter! = new HorizontalSplitter(#wnd!,112,2,25,890,800)
+        #splitter! = new HorizontalSplitter(#wnd!,112,2,30,890,800)
         
         #splitter!.setBottomCtrl(bgrid!)
         
@@ -104,7 +104,7 @@ class public BusinessMonitorUI
             if (dr!.contains("CLASSNAME")) then
                 filter! = eval("new "+dr!.getFieldAsString("CLASSNAME")+"(filterCW!,100,0,5,300,300)")
             else
-                filter! = new FilterComponent(#binder!, filterCW!,100,0,10,300,300)
+                filter! = new FilterComponent(#binder!, filterCW!,100,2,10,300,300)
                 filter!.setKey(#pgm!)
                 filter!.setForm(dr!.getFieldAsString("ARC"), dr!.getFieldAsNumber("CWID"))
                 #componentsWithProperties!.add(filter!)
