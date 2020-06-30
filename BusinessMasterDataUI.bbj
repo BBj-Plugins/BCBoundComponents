@@ -25,6 +25,7 @@ class public BusinessMasterDataUI
     field protected EditToolbarComponent edittb!
     field protected HorizontalSplitter splitter!
     field protected BBjVector forms!
+    field protected BBjVector filters!
     field protected BBjTabCtrl formTabCtrl!
     field protected BCBinder binder!
     field protected BBjSysGui sysgui!
@@ -54,6 +55,7 @@ class public BusinessMasterDataUI
 
         #formTabCtrl! = #splitter!.getBottomCanvas().addTabCtrl(115, 0, 0, 500, 500)
         #forms! = new BBjVector()
+        #filters! = new BBjVector()
         #splitter!.setBottomCtrl(#formTabCtrl!)
 
         bc! = eval("new "+BC$+"()")
@@ -187,6 +189,7 @@ class public BusinessMasterDataUI
         endif
         #topControl! = cast(BBjWidget, filter!)
 REM             #binder!.register(filter!)
+        #filters!.addItem(filter!)
         filter!.buildControlMap()
         #splitter!.setLocation(#splitter!.getX(), #splitter!.getY() + #topControl!.getHeight() + #topControl!.getY())
     methodend
@@ -227,6 +230,10 @@ REM     methodend
 
     method public BBjVector getForms()
         methodret #forms!
+    methodend
+
+    method public BBjVector getFilters()
+        methodret #filters!
     methodend
 
     method public BBjWindow getWindow()

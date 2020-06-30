@@ -36,7 +36,6 @@ class public BusinessMonitorUI
     
 
     method public BusinessMonitorUI( BBjString BC$, BBjString TITLE$, BBjString PGMNAME$, ResultSet filter!, HashMap controlPrefixMap!)
-        
         ? 'HIDE'
         #sysgui! = BBjAPI().openSysGui("X0")
         #sysgui!.setRepaintEnabled(0)
@@ -52,6 +51,7 @@ class public BusinessMonitorUI
         #splitter! = new HorizontalSplitter(#wnd!,112,2,30,890,800)
 
         #filters! = new BBjVector()
+        
         bc! = eval("new "+BC$+"()")
 
         #binder! = new BCBinder(bc!)
