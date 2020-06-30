@@ -35,32 +35,41 @@ class public BusinessMonitorUI
     field protected String pgm! = ""
     
 
-    method public BusinessMonitorUI( BBjString BC$, BBjString TITLE$, BBjString PGMNAME$)
+    method public BusinessMonitorUI( BBjString BC$, BBjString TITLE$, BBjString PGMNAME$, ResultSet filter!, HashMap controlPrefixMap!)
+        
         ? 'HIDE'
         #sysgui! = BBjAPI().openSysGui("X0")
         #sysgui!.setRepaintEnabled(0)
-        
+
         if info(3,6)="5" then
             #wnd! = #sysgui!.addWindow(100,100,1200,760,TITLE$,$01001010$)
         else
             #wnd! = #sysgui!.addWindow(100,100,1200,760,TITLE$,$00000093$)
         fi
-        
+
         #wnd!.setCallback(BBjAPI.ON_RESIZE, #this!,"resize")
-        
+
         #splitter! = new HorizontalSplitter(#wnd!,112,2,30,890,800)
-        
-        #splitter!.setBottomCtrl(bgrid!)
-        
-        
+
         #filters! = new BBjVector()
-        
         bc! = eval("new "+BC$+"()")
-        
+
         #binder! = new BCBinder(bc!)
         #binder!.setDebugLevel(1)
         #title! = TITLE$
+
         #pgm! = PGMNAME$
+        if #pgm!.length() > 40 then
+            #pgm! = #pgm!.substring(#pgm!.length() -35)
+        endif
+        
+        #addMenuBar()
+        #addEditToolbar(2,2)
+        #addBusinessGrid(0,5)
+        #addBCErrorHandler(TITLE$)
+        #addWindowHandler(PGMNAME$)
+        #addFilters(filter!, controlPrefixMap!)
+
     methodend
     
     method public void doModal()
@@ -220,18 +229,6 @@ rem controlPrefixMap! is optional
 controlPrefixMap! = null()
 enter filter_defs!, BC$, TITLE$, PGMNAME$, controlPrefixMap!, err=*next
 
-pgm! = PGMNAME$
-if pgm!.length() > 40 then
-    pgm! = pgm!.substring(pgm!.length() -35)
-endif
-PGMNAME$ = pgm!
-md! = new BusinessMonitorUI(BC$, TITLE$, PGMNAME$)
-
-md!.addMenuBar()
-md!.addEditToolbar(2,2)
-md!.addBusinessGrid(0,5)
-md!.addBCErrorHandler(TITLE$)
-md!.addWindowHandler(TITLE$)
-md!.addFilters(filter_defs!, controlPrefixMap!)
+md! = new BusinessMonitorUI(BC$, TITLE$, PGMNAME$, filter_defs!, controlPrefixMap!)
 
 md!.doModal()

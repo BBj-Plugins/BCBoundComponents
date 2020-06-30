@@ -71,7 +71,7 @@ class public BusinessMasterDataUI
         #addEditToolbar()
         #addBusinessGrid()
         #addBCErrorHandler(TITLE$)
-        #addWindowHandler(TITLE$)
+        #addWindowHandler(PGMNAME$)
         #addForms(form_defs!, controlPrefixMap!)
         if filter! <> null() then
             #addFilter(filter!, controlPrefixMap!)
