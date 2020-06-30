@@ -232,6 +232,10 @@ REM     methodend
         methodret #forms!
     methodend
 
+    method public BBjVector getFilters()
+        methodret #filters!
+    methodend
+
     method public BBjWindow getWindow()
         methodret #wnd!
     methodend
