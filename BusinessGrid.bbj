@@ -33,6 +33,8 @@ class public BusinessGrid extends AbstractBCBoundWidget implements IPersistentSt
     field private BBjGridExWidget grid!
     field private Boolean         sending! = Boolean.FALSE
     field private Boolean         ignoreNext! = Boolean.FALSE
+    
+    field private String realm! = "GRD"
 
     field private ConfigurationWidget    cfgwidget!
     field private CustomConfigurationsBC cfgbc!
@@ -43,6 +45,10 @@ class public BusinessGrid extends AbstractBCBoundWidget implements IPersistentSt
     field private Boolean columnConfigurationSet! = Boolean.FALSE
     field private Boolean initialRetrieve! = Boolean.TRUE
 
+    field private String state! = ""
+    
+    field private BBjNumber widgetHeight = 20
+    
     rem --------------------- constructors -------------------------------------
 
     rem /**
@@ -132,11 +138,10 @@ class public BusinessGrid extends AbstractBCBoundWidget implements IPersistentSt
             #updateProperties()
         fi
 
-        #grid!.setSize(#getWidth(),#getHeight()-30)
+        #grid!.setSize(#getWidth(),#getHeight()-#widgetHeight - 10)
 
         if #cfgwidget! <> null() then
             rem min padding for config widget to allow for the export and fitToGrid buttons to the left
-            #cfgwidget!.setMinPaddingLeft(75)
             #cfgwidget!.setLocation(#getWidth()-155, 5)
         fi
     methodend
@@ -160,13 +165,24 @@ class public BusinessGrid extends AbstractBCBoundWidget implements IPersistentSt
         #autoSizeColumnsButton!.setImageFile(uiProperties!.getProperty("AUTO_SIZE_COLUMNS_IMAGE"))
         #autoSizeColumnsButton!.setToolTipText(textProperties!.getProperty("BUSINESS_GRID_TOOLTIP_AUTO_SIZE_COLUMNS"))
 
-        height = uiProperties!.getPropertyAsNumber("CONFIG_WIDGET_HEIGHT")
-        #exportButton!.setSize(height, height)
-        #exportButton!.setImageSize(height-4, height-4)
-        #fitToGridButton!.setSize(height, height)
-        #fitToGridButton!.setImageSize(height-4, height-4)
-        #autoSizeColumnsButton!.setSize(height, height)
-        #autoSizeColumnsButton!.setImageSize(height-4, height-4)
+        #widgetHeight = cast(BBjNumber, uiProperties!.getPropertyAsNumber("CONFIG_WIDGET_HEIGHT"))
+        xPos = #exportButton!.getButton().getX()
+        yPos = #exportButton!.getButton().getY()
+        #exportButton!.setSize(#widgetHeight, #widgetHeight)
+        #exportButton!.setImageSize(#widgetHeight-4, #widgetHeight-4)
+        xPos = xPos + #widgetHeight
+        #fitToGridButton!.setSize(#widgetHeight, #widgetHeight)
+        #fitToGridButton!.setImageSize(#widgetHeight-4, #widgetHeight-4)
+        #fitToGridButton!.setLocation(xPos, yPos)
+        xPos = xPos + #widgetHeight
+        #autoSizeColumnsButton!.setSize(#widgetHeight, #widgetHeight)
+        #autoSizeColumnsButton!.setImageSize(#widgetHeight-4, #widgetHeight-4)
+        #autoSizeColumnsButton!.setLocation(xPos, yPos)
+        #grid!.setLocation(#grid!.getX(), #widgetHeight + 10)
+        if #cfgwidget! <> null() then 
+            xPos = xPos + #widgetHeight
+            #cfgwidget!.setMinPaddingLeft(xPos)
+        endif
     methodend
 
     rem ---------------------- Event Handlers --------------------------------
@@ -461,7 +477,19 @@ REM               endif
     rem  * @param state! state string previously stored by the widget
     rem  */
     method public void applyState(String state!)
-        #grid!.setState(new GxState(state!))
+REM         #grid!.setState(new GxState(state!))
+        #state! = state!
+        BBjAPI().createTimer("applyStateDelay", 2, #this!, "applyStateDelay");rem timer because async gridexwidget state must be applied after grid has loaded
+    methodend
+    
+    rem /**
+    rem  * This method will be called to apply the state to the widget.
+    rem  *
+    rem  * @param state! state string previously stored by the widget
+    rem  */
+    method public void applyStateDelay(BBjEvent ev!)
+        BBjAPI().removeTimer("applyStateDelay",err=*next)
+        #grid!.setState(new GxState(#state!))
     methodend
 
     rem /**
@@ -497,7 +525,8 @@ REM               endif
         while pos("::"=x$)>0
             x$ = x$(pos("::"=x$)+2)
         wend
-        #cfgwidget! = new ConfigurationWidget(#getCanvas(),201, #getWidth()-155, 5 , #this!, "GRD", x$, #cfgbc! )
+        #cfgwidget! = new ConfigurationWidget(#getCanvas(),201, #getWidth()-155, 5 , #this!, #realm!, x$, #cfgbc! )
+        #updateProperties()
     methodend
     
     method public void onSignal(int signal!, Object payload!)
@@ -544,6 +573,14 @@ REM               endif
     
     method public ExportButton getExportButton()
         methodret #exportButton!
+    methodend
+    
+    method public void setRealm(String realm!)
+        #realm! = realm!
+        if #cfgwidget! <> null() then 
+            #cfgwidget!.setRealm(realm!)
+            #cfgwidget!.init()
+        endif
     methodend
    
 classend

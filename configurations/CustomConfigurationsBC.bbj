@@ -99,6 +99,14 @@ REM     methodend
         #configurationsBC!.setAdminUser(adminUser!)
     methodend
     
+    method public String getFactoryDefaultUser()
+        methodret #configurationsBC!.getFactoryDefaultUser()
+    methodend
+    
+    method public void setFactoryDefaultUser(String factoryDefaultUser!)
+        #configurationsBC!.setFactoryDefaultUser(factoryDefaultUser!)
+    methodend
+    
     method public void setFieldSelection(DataRow fieldSelection!)
         #configurationsBC!.setFieldSelection(fieldSelection!)
     methodend
