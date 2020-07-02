@@ -77,6 +77,8 @@ class public BCMetaDataJSONModel implements IBCMetaDataModel
                 locmeta! = meta!.getField(loc$(1,2),err=*next).getObject()
             fi
             if locmeta! <> null() then
+                dr!.setFieldValue("_ENTITY", "")
+                dr!.setFieldValue("_ENTITIES", "")
                 it! = dr!.getFieldNames().iterator()
                 while it!.hasNext()
                           f$=it!.next()
@@ -92,6 +94,14 @@ class public BCMetaDataJSONModel implements IBCMetaDataModel
             fi
             
             
+            general! = meta!.getField("general",err=*next).getObject()
+            if general! <> null() then
+                id! = general!.getFieldAsString("_ID",err=*next)
+                if id! <> null() then
+                    dr!.setFieldValue("_ID", "")
+                    dr!.setFieldAttribute("_ID","LABEL",cast(String, id!))
+                endif
+            endif
             layout! = meta!.getField("layout",err=*next).getObject()
             if layout! <> null() then
             fmeta! = layout!.getField("fields").getObject()

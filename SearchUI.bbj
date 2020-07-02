@@ -22,9 +22,14 @@ class public SearchUI
     field protected BCErrorHandler errorhandler!
     field protected WindowHandler windowHandler!
     field protected DataRow selectedRecord!
+    field protected BBjInputE quickFilterControl!
     
     field protected BBjButton buttonOK!
     field protected BBjButton buttonCancel!
+    
+    field protected String title! = "Search"
+    field protected BBjString bcName$ = "Search"
+    
 
     method public SearchUI()
         ? 'HIDE'
@@ -40,17 +45,19 @@ class public SearchUI
         #buttonOK!.setCallback(#buttonOK!.ON_BUTTON_PUSH, "gridSelect")
         #buttonCancel! = #wnd!.addButton(2,660,950,100,20,"Cancel")
         #buttonCancel!.setCallback(#buttonCancel!.ON_BUTTON_PUSH, "onClose")
-        
+        #quickFilterControl! = #wnd!.addInputE(#wnd!.getAvailableControlID(), 0, 0, 200, 20)
+        #quickFilterControl!.setCallback(BBjAPI.ON_EDIT_MODIFY, #this!,"quickFilter")
         #wnd!.setCallback(BBjAPI.ON_RESIZE, #this!,"resize")
     methodend
     
     method public void initComponents()
-        #addBusinessGrid(5,5)
-        #addBCErrorHandler("")
-        #addWindowHandler("SearchUI")
+        #addBusinessGrid(5,25)
+        #addBCErrorHandler(#title!)
+        #addWindowHandler(#title!)
+        #registerComponentsToBinder()
     methodend
     
-    method public void setBC(String bcName!)
+    method public void setBC(BBjString BC$)
         bc! = eval("new "+BC$+"()")
         #setBC(bc!)
     methodend
@@ -58,6 +65,16 @@ class public SearchUI
     method public void setBC(BusinessComponent bc!)
         #binder! = new BCBinder(bc!)
         #binder!.setDebugLevel(1)
+        attr! = bc!.getAttributesRecord()
+        entities! = attr!.getFieldAttribute("_ENTITIES", "LABEL")
+        if entities! <> null() then
+            #title! = cast(String, entities!)
+        endif
+        bcName$ = str(#binder!.getBC())
+        while pos("::"=bcName$)>0
+            bcName$ = bcName$(pos("::"=bcName$)+2)
+        wend
+        #bcName$ = bcName$
         #registerComponentsToBinder()
     methodend
     
@@ -85,7 +102,10 @@ class public SearchUI
         process_events
         gridSelect:
             rowModel! = #bgrid!.getGrid().getSelectedRow()
-            if rowModel! = null() then methodret
+            if rowModel! = null() then
+               #wnd!.setVisible(0)
+               methodret
+            endif
             #selectedRecord! = cast(DataRow, rowModel!.asDataRow())
             #wnd!.setVisible(0)
             methodret
@@ -119,7 +139,8 @@ class public SearchUI
     methodend
 
     method public void addBusinessGrid(BBjInt x!, BBjInt y!)
-        #bgrid! = new BusinessGrid(#wnd!,160,x!,y!,960,500)
+        #bgrid! = new BusinessGrid(#wnd!,160,x!,y!,960,480)
+        #bgrid!.setRealm("SGR")
         #componentsWithProperties!.add(#bgrid!)
         #bgrid!.getGrid().setCallback(#bgrid!.getGrid().ON_GRID_DOUBLE_CLICK(), "gridSelect")
     methodend
@@ -130,8 +151,10 @@ class public SearchUI
     methodend
     
     method public void addWindowHandler(String pgmName!)
+        #wnd!.setTitle(#title!)
         #windowHandler! = new WindowHandler(#wnd!)
-        #windowHandler!.setProgramName(pgmName!)
+        #windowHandler!.setRealm("SWN")
+        #windowHandler!.setProgramName(#bcName$)
         #windowHandler!.applyWindowConfig()
         #windowHandler!.setCloseMode(#windowHandler!.CLOSE_MODE_OFF())
         #wnd!.setCallback(BBjAPI().ON_CLOSE, "onClose")
@@ -149,7 +172,7 @@ class public SearchUI
         BBjAPI().removeTimer("resize",err=*next)
         w = #wnd!.getWidth()
         h = #wnd!.getHeight()
-        #bgrid!.setSize(w-4 ,h-50)
+        #bgrid!.setSize(w-4 ,h-70)
         
         #buttonOK!.setLocation(w-204, h-25)
         #buttonCancel!.setLocation(w-104, h-25)
@@ -166,6 +189,11 @@ class public SearchUI
     
     method public void applyWindowConfig()
         #windowHandler!.applyWindowConfig()
+    methodend
+    
+    method public void quickFilter(BBjEvent ev!)
+        filter! = #quickFilterControl!.getText()
+        #bgrid!.getGrid().setQuickFilter(filter!)
     methodend
     
     

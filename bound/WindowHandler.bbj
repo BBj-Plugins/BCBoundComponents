@@ -27,6 +27,7 @@ class public WindowHandler implements IBCBound, IPersistentState
     field protected BBjWindow wnd!
     field protected IConfigurationsBC configBC!
     field protected String programName! = ""
+    field protected String realm! = "WND"
     field protected BBjNumber closeMode
     
     field protected static BBjNumber CLOSE_MODE_DESTROY = 100
@@ -68,7 +69,8 @@ class public WindowHandler implements IBCBound, IPersistentState
     rem -------------------------BCBinder methods--------------------------------
     method public void setBinder(BCBinder binder!)
         #binder! = binder!
-    methodend    
+    methodend   
+     
     
     method public BCBinder getBinder()
         methodret #binder!
@@ -109,7 +111,11 @@ class public WindowHandler implements IBCBound, IPersistentState
     rem -------------------------custom methods--------------------------------
     
     method public void onClose(BBjCloseEvent ev!)
-        if #binder! = null() then methodret
+        if #binder! = null() then 
+            PropertiesManager.getInstance().terminate();rem kills all instances of PropertiesManager, not just default instance
+            #saveWindowConfig()
+            release
+        endif
         if #closeMode = #CLOSE_MODE_OFF then
             wnd!.setVisible(0)
         else
@@ -130,12 +136,17 @@ class public WindowHandler implements IBCBound, IPersistentState
         #configBC!.setUserName(user!)
     methodend
     
+    method public void setRealm(String realm!)
+        #realm! = realm!
+    methodend    
+    
     method public void applyWindowConfig()
         windowFilter! = #configBC!.getFilter().clone()
         windowFilter!.setFieldValue(#configBC!.getFieldNameKeyx(), #programName!)
-        windowFilter!.setFieldValue(#configBC!.getFieldNameRealm(), "WND")
+        windowFilter!.setFieldValue(#configBC!.getFieldNameRealm(), #realm!)
         windowFilter!.setFieldValue(#configBC!.getFieldNameSetting(), "")
 REM         windowFilter!.setFieldValue(#configBC!.getFieldNameUserid(), #configBC!.getUserName())
+        
         #configBC!.setFilter(windowFilter!)
         rs! = #configBC!.retrieve()
         if !rs!.size() then methodret
@@ -155,7 +166,7 @@ REM         windowFilter!.setFieldValue(#configBC!.getFieldNameUserid(), #config
     method public DataRow getConfigFilter()
         windowFilter! = new DataRow()
         windowFilter!.setFieldValue(#configBC!.getFieldNameKeyx(), #programName!)
-        windowFilter!.setFieldValue(#configBC!.getFieldNameRealm(), "WND")
+        windowFilter!.setFieldValue(#configBC!.getFieldNameRealm(), #realm!)
         windowFilter!.setFieldValue(#configBC!.getFieldNameSetting(), "")
         windowFilter!.setFieldValue(#configBC!.getFieldNameUserid(), #configBC!.getUserName())
         methodret windowFilter!
