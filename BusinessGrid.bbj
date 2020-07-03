@@ -573,6 +573,9 @@ REM         #grid!.setState(new GxState(state!))
                 dr!.setFieldValue(fieldName$, "")
             next i
         endif
+        
+        ?dr!
+        escape
         methodret dr!
     methodend
         
