@@ -39,7 +39,7 @@ class public BusinessGrid extends AbstractBCBoundWidget implements IPersistentSt
     field private ConfigurationWidget    cfgwidget!
     field private CustomConfigurationsBC cfgbc!
     field private ExportButton           exportButton!
-    field private BBjButton              fitToGridButton!
+    field private BBjMenuButton          fitToGridButton!
     field private BBjMenuButton          autoSizeColumnsButton!
 
     field private Boolean columnConfigurationSet! = Boolean.FALSE
@@ -119,12 +119,13 @@ class public BusinessGrid extends AbstractBCBoundWidget implements IPersistentSt
             endif
             #exportButton!.setProgramName(pgmName$)
             
-            #fitToGridButton! = #getCanvas().addButton(203, 25, 5, 20, 20, "")
+            #fitToGridButton! = #getCanvas().addMenuButton(203, 25, 5, 20, 20, "")
             #fitToGridButton!.setCallback(#fitToGridButton!.ON_BUTTON_PUSH, #this!, "fitToGrid")
             #fitToGridButton!.setTabTraversable(0)
             #fitToGridButton!.setFocusable(0)
+            #fitToGridButton!.setBorderPainted(0)
             
-            #autoSizeColumnsButton! = #getCanvas().addButton(204, 50, 5, 20, 20, "")
+            #autoSizeColumnsButton! = #getCanvas().addMenuButton(204, 50, 5, 20, 20, "")
             #autoSizeColumnsButton!.setCallback(#autoSizeColumnsButton!.ON_BUTTON_PUSH, #this!, "autoSizeColumns")
             #autoSizeColumnsButton!.setTabTraversable(0)
             #autoSizeColumnsButton!.setFocusable(0)
