@@ -140,8 +140,6 @@ class public BusinessGrid extends AbstractBCBoundWidget implements IPersistentSt
             #cfgwidget!.setLocation(#getWidth()-155, 5)
         fi
     methodend
-    
-    
 
     rem /**
     rem  *
@@ -347,8 +345,6 @@ class public BusinessGrid extends AbstractBCBoundWidget implements IPersistentSt
                     if fa!.containsKey("PASSWORD") then
                         column!.setCellRenderer(new GxRendererCustomHTML("<%= ""<input readonly type='password' value='"" + params.value + ""' />"" %>"))
                     endif
-
-
                 next rscol
 
                 if cgroups!.size()>0 then
@@ -361,9 +357,6 @@ class public BusinessGrid extends AbstractBCBoundWidget implements IPersistentSt
 
                 #columnConfigurationSet! = Boolean.TRUE
             endif
-
-            
-
         endif
 
         if rs!.isEmpty() then
@@ -389,12 +382,8 @@ class public BusinessGrid extends AbstractBCBoundWidget implements IPersistentSt
                 fi
             endif
         endif
-        
-
     methodend
     
-    
-
     rem /**
     rem  *
     rem  */
@@ -544,6 +533,18 @@ REM               endif
     
     method public ExportButton getExportButton()
         methodret #exportButton!
+    methodend
+    
+    method public DataRow getFieldsForFieldSelection()
+        dr! = new DataRow()
+        visibleRowsVec! = #grid!.getColumnState().getVisibleColumns()
+        if visibleRowsVec!.size() > 0 then
+            for i = 0 to visibleRowsVec!.size() - 1
+                fieldName$ = visibleRowsVec!.get(i)
+                dr!.setFieldValue(fieldName$, "")
+            next i
+        endif
+        methodret dr!
     methodend
    
 classend

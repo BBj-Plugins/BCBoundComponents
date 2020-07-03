@@ -172,7 +172,6 @@ class public ExportCustomReportDialog
             System.out.println(reportPath$)
 		endif
 
-        rem TODO: wie triggern wir das neue resultset, welches die felder des reports beinhaltet? kein controller vorhanden!
         rem exporting
         declare File outputFile!
 

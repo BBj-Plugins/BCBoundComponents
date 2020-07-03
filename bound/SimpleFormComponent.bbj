@@ -847,5 +847,17 @@ REM         calendarButton!.setImageFile("BusinessUIComponents/icon/ic_insert_in
     method public void setStateChangeCallback(String methodName!, CustomObject callable!)
         
     methodend
+    
+    method public DataRow getFieldsForFieldSelection()
+        dr! = new DataRow()
+        if #controlMap! <> null() then        
+            it! = #controlMap!.values().iterator()
+            while it!.hasNext()
+                field$ = it!.next()
+                dr!.setFieldValue(field$, "")
+            wend
+        endif
+        methodret dr!
+    methodend
 
 classend
