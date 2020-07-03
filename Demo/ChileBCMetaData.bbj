@@ -7,6 +7,7 @@ model! = new BCMetaDataJSONModel("BusinessUIComponents/ExampleBCs/meta/")
 
 declare BCMetaData myDialog!
 myDialog! = new BCMetaData(model!)
+myDialog!.applyWindowHandler()
 
 rem /** DLGWIZ_SET_BEGIN **/
 rem /** DLGWIZ_SET_END **/

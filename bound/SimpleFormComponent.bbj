@@ -92,8 +92,6 @@ class public SimpleFormComponent extends AbstractBCBoundWidget implements IPersi
         wend
     methodend
     
-    
-    
     method public void setListButtonFirstRowEmpty(Boolean listButtonFirstRowEmpty!)
         #listButtonFirstRowEmpty! = listButtonFirstRowEmpty!
     methodend

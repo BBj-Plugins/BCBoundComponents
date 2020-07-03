@@ -40,7 +40,7 @@ class public BusinessGrid extends AbstractBCBoundWidget implements IPersistentSt
     field private CustomConfigurationsBC cfgbc!
     field private ExportButton           exportButton!
     field private BBjButton              fitToGridButton!
-    field private BBjButton              autoSizeColumnsButton!
+    field private BBjMenuButton          autoSizeColumnsButton!
 
     field private Boolean columnConfigurationSet! = Boolean.FALSE
     field private Boolean initialRetrieve! = Boolean.TRUE
@@ -128,6 +128,7 @@ class public BusinessGrid extends AbstractBCBoundWidget implements IPersistentSt
             #autoSizeColumnsButton!.setCallback(#autoSizeColumnsButton!.ON_BUTTON_PUSH, #this!, "autoSizeColumns")
             #autoSizeColumnsButton!.setTabTraversable(0)
             #autoSizeColumnsButton!.setFocusable(0)
+            #autoSizeColumnsButton!.setBorderPainted(0)
 
             statusbar! = #grid!.getStatusbar()
             statusbar!.addComponent(new GxStatusBarTotalAndFilteredRowCountComponent("right"))

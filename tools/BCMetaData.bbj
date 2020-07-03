@@ -92,7 +92,6 @@ class public BCMetaData extends BBDialog
 
         if #Wnd!<>null() then
             #setCallbacks()
-            #applyWindowHandler()
         endif
     methodend
 
@@ -113,7 +112,7 @@ REM 		#super!.getControlByName("BCMetaData").setCallback(BBjAPI.ON_CLOSE,#this!,
 
     methodend
     
-    method protected void applyWindowHandler()
+    method public void applyWindowHandler()
         #windowHandler! = new WindowHandler(#Wnd!)
         #windowHandler!.applyWindowConfig()
     methodend
