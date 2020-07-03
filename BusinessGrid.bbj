@@ -574,8 +574,11 @@ REM         #grid!.setState(new GxState(state!))
             next i
         endif
         
-        ?dr!
-        escape
+        rem --- current work around for BusinessGrid displaying _ENTITY and _ENTITIES fields ---
+        if dr!.contains("_ENTITY") then dr!.removeField("_ENTITY")
+        if dr!.contains("_ENTITIES") then dr!.removeField("_ENTITIES")
+        rem ------------------------------------------------------------------------------------
+        
         methodret dr!
     methodend
         
