@@ -6,6 +6,7 @@ use com.basiscomponents.db.DataRow
 use ::BusinessUIComponents/configurations/IPropertiesManager.bbj::IPropertiesManager
 use ::BusinessUIComponents/configurations/PropertiesManager.bbj::PropertiesManager
 use ::BusinessUIComponents/configurations/LocalizedPropertiesManager.bbj::LocalizedPropertiesManager
+use ::BusinessUIComponents/utils/UIUtils.bbj::UIUtils
 
 class public AbstractBCBoundWidget extends BBjWidget implements IBCBound
 
@@ -77,6 +78,35 @@ class public AbstractBCBoundWidget extends BBjWidget implements IBCBound
         g = #getUIPropertiesManager().getPropertyAsNumber("CONTROL_LOST_FOCUS_GREEN")
         b = #getUIPropertiesManager().getPropertyAsNumber("CONTROL_LOST_FOCUS_BLUE")
         #colorFocusLost! = BBjAPI().getSysGui().makeColor(r,g,b,err=*next)
+        if #getCanvas() <> null() then #setBackgroundColor()
+    methodend
+    
+    method protected void setBackgroundColor()
+        allControls! = UIUtils.getAllControlsRecursive(new BBjVector(), cast(BBjWindow, #getCanvas()), Boolean.TRUE)
+        r = #getUIPropertiesManager().getPropertyAsNumber("BACKGROUND_RED")
+        g = #getUIPropertiesManager().getPropertyAsNumber("BACKGROUND_GREEN")
+        b = #getUIPropertiesManager().getPropertyAsNumber("BACKGROUND_BLUE")
+        bgColor! = BBjAPI().makeColor(r,g,b)
+        it! = allControls!.iterator()
+        while it!.hasNext()
+            control! = cast(BBjControl, it!.next())
+            switch control!.getControlType()
+                case BBjControl.TABCTRL_TYPE
+                    control!.setBackColor(bgColor!)
+                    control!.getParent().setBackColor(bgColor!)
+                    tabctrl! = cast(BBjTabCtrl, control!)
+                    numTabs = tabctrl!.getNumTabs()
+                    if numTabs < 1 then break
+                    for i=0 to numTabs - 1
+                        tabctrl!.setBackColorAt(i, bgColor!)
+                    next i
+                    break
+                case default
+                    control!.setBackColor(bgColor!)
+                    break
+            swend
+        wend
+        
     methodend
     rem ------------------properties manager--------------------------------------
     method public void setUIPropertiesManager(IPropertiesManager uiPropertiesManager!)
@@ -96,5 +126,5 @@ class public AbstractBCBoundWidget extends BBjWidget implements IBCBound
     method public IPropertiesManager getTextPropertiesManager()
         methodret #textPropertiesManager!
     methodend
-
+    
 classend

@@ -26,9 +26,9 @@ class public ConfigurationWidget extends BBjWidget
     field private IPropertiesManager textPropertiesManager!
 
     field protected BBjWindow container!
-    field protected BBjButton buttonDelete!
-    field protected BBjButton buttonSave!
-    field protected BBjButton buttonAdmin!
+    field protected BBjMenuButton buttonDelete!
+    field protected BBjMenuButton buttonSave!
+    field protected BBjMenuButton buttonAdmin!
     
     field protected Boolean buttonSaveEnabled! = Boolean.FALSE
     field protected Boolean buttonDeleteEnabled! = Boolean.FALSE
@@ -248,11 +248,12 @@ REM             #popupMenu!.setVisible(Boolean.TRUE)
         if (f_init!) then
             #listEditOptions!   = #getCanvas().addListEdit(#getCanvas().getAvailableControlID(), 0, 1, 100, 20, "")
             #listEditOptions!.setFieldHeight(18)
-            #buttonDelete!      = #getCanvas().addButton(#getCanvas().getAvailableControlID(), 100,0,20,20,"")
-            #buttonSave!        = #getCanvas().addButton(#getCanvas().getAvailableControlID(), 120,0,20,20,"")
+            #buttonDelete!      = #getCanvas().addMenuButton(#getCanvas().getAvailableControlID(), 100,0,20,20,"")
+            #buttonSave!        = #getCanvas().addMenuButton(#getCanvas().getAvailableControlID(), 120,0,20,20,"")
 REM             #buttonSave!.setShortCue("save")
             if #allowAdmin! or #allowFactoryDefaults! then
-                #buttonAdmin!       = #getCanvas().addButton(#getCanvas().getAvailableControlID(), 140,0,20,20,"")
+                #buttonAdmin!       = #getCanvas().addMenuButton(#getCanvas().getAvailableControlID(), 140,0,20,20,"")
+                #buttonAdmin!.setBorderPainted(1)
 REM                 #buttonAdmin!.setShortCue("Admin mode (currently disabled)")
             endif
             #createPopupButton()

@@ -49,6 +49,7 @@ class public BusinessGrid extends AbstractBCBoundWidget implements IPersistentSt
     
     field private BBjNumber widgetHeight = 20
     
+    
     rem --------------------- constructors -------------------------------------
 
     rem /**
