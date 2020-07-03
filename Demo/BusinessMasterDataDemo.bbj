@@ -1,6 +1,6 @@
 use com.basiscomponents.db.DataRow
 use com.basiscomponents.db.ResultSet
-
+use ::BusinessUIComponents/configurations/ConfigurationWidget.bbj::ConfigurationWidget
 
 
 BBjAPI().getAdmin("guest", "").getEnvironment().reloadClasspath("uicomponents")
@@ -23,6 +23,9 @@ forms!.add(dr!)
 BC$="::BusinessUIComponents/ExampleBCs/ChileCustomerBC.bbj::ChileCustomerBC"
 TITLE$ = "ChileCustomer Demo"
 PGMNAME$ = pgm(-2)
+
+REM ConfigurationWidget.setAllowAdmin(Boolean.TRUE)
+ConfigurationWidget.setAllowFactoryDefaults(Boolean.TRUE)
 
 CALL "BusinessUIComponents/BusinessMasterDataUI.bbj", forms!, null(), BC$, TITLE$, PGMNAME$
 

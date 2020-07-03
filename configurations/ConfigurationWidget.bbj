@@ -42,14 +42,16 @@ class public ConfigurationWidget extends BBjWidget
     field protected BBjMenuItem menuDelete!
     field protected BBjMenuItem menuSave!
     field protected BBjCheckableMenuItem menuAdmin!
+    field protected BBjCheckableMenuItem menuFactoryDefaults!
     
     
     
     field protected BBjListEdit listEditOptions!
     field protected ResultSet availableConfigs!
     field protected IConfigurationsBC bc!
-    field protected Boolean adminModeEnabled!
+    field protected BBjNumber accessMode
     field protected static Boolean allowAdmin! = Boolean.FALSE
+    field protected static Boolean allowFactoryDefaults! = Boolean.FALSE
     field protected Boolean bcInitialized! = Boolean.FALSE
     
     field protected String realm!
@@ -65,11 +67,9 @@ class public ConfigurationWidget extends BBjWidget
     field protected static String ON_STATE_CHANGE! = "STATE_CHANGE"
     field protected static String ON_CONFIGURATION_CHANGE! = "CONFIGURATION_CHANGE"
     
-REM     field protected String iconButtonDelete! =          "BusinessUIComponents\icon\ic_close_black_24dp.png"
-REM     field protected String iconButtonSave! =            "BusinessUIComponents\icon\ic_save_black_24dp.png"
-REM     field protected String iconButtonAdminEnabled! =    "BusinessUIComponents\icon\ic_person_black_24dp.png"
-REM     field protected String iconButtonAdminDisabled! =   "BusinessUIComponents\icon\ic_person_white_24dp.png"
-    
+    field protected static BBjNumber ACCESS_MODE_FACTORYDEFAULT = 0
+    field protected static BBjNumber ACCESS_MODE_ADMIN          = 1
+    field protected static BBjNumber ACCESS_MODE_USER           = 2
     
     field protected BBjNumber selectedIndex = -1
     field protected String widgetID! = UUID.randomUUID().toString()
@@ -109,11 +109,11 @@ REM     field protected String iconButtonAdminDisabled! =   "BusinessUIComponent
     
     method public ConfigurationWidget(BBjWindow container!, BBjNumber id, BBjNumber x, BBjNumber y, IPersistentState statePersistable!, String realm!, String keyx!, IConfigurationsBC bc!)
         #super!()
-        #adminModeEnabled! = Boolean.FALSE
+        #accessMode = #ACCESS_MODE_USER
         #realm! = realm!
         rem trim key to max length
-        if keyx!.length() > 40 then
-            keyx! = keyx!.substring(keyx!.length() - 40)
+        if keyx!.length() > 35 then
+            keyx! = keyx!.substring(keyx!.length() - 35)
         endif
         #keyx! = keyx!
         #container! = container!
@@ -140,18 +140,29 @@ REM     field protected String iconButtonAdminDisabled! =   "BusinessUIComponent
     method protected void createPopupButton()
         #popupButton! = #getCanvas().addMenuButton(#getCanvas().getAvailableControlID(), 100,0,20,20, "")
         #popupMenu! = #popupButton!.addDropdownMenu()
-REM         #listEditOptions!.setPopupMenu(#popupMenu!)
-REM         #popupMenu!.setLocation(#buttonDelete!.getX(), #buttonDelete!.getY()) 
-        
-REM         #popupMenu! = BBjAPI().getSysGui().addDropdownMenu()
         #menuDelete! = #popupMenu!.insertMenuItem(0, 1000, "Delete")
         #menuDelete!.setCallback(BBjPopupMenu.ON_POPUP_ITEM_SELECT, #this!, "deleteButtonPush")
         #menuSave!   = #popupMenu!.insertMenuItem(1, 1100, "Save")
         #menuSave!.setCallback(BBjPopupMenu.ON_POPUP_ITEM_SELECT, #this!, "saveButtonPush")
-        
+        nextIndex = 2
         if #allowAdmin! then
-            #menuAdmin! = #popupMenu!.insertCheckableMenuItem(2, 1200, "Admin",#adminModeEnabled!)
-REM             #menuAdmin!.setCallback(#menuAdmin!.ON_MENU_ITEM_SELECT, #this!, "adminButtonPush")
+            if #accessMode = #ACCESS_MODE_ADMIN then
+                isChecked! = Boolean.TRUE
+            else
+                isChecked! = Boolean.FALSE
+            endif
+            #menuAdmin! = #popupMenu!.insertCheckableMenuItem(nextIndex, 1200, "Admin",isChecked!)
+            #menuAdmin!.setCallback(#menuAdmin!.ON_POPUP_ITEM_SELECT, #this!, "adminButtonPush")
+            nextIndex = nextIndex + 1
+        endif
+        if #allowFactoryDefaults! then
+            if #accessMode = #ACCESS_MODE_FACTORYDEFAULT then
+                isChecked! = Boolean.TRUE
+            else
+                isChecked! = Boolean.FALSE
+            endif
+            #menuFactoryDefaults! = #popupMenu!.insertCheckableMenuItem(nextIndex, 1300, "FactoryDefault",isChecked!)
+            #menuFactoryDefaults!.setCallback(#menuFactoryDefaults!.ON_POPUP_ITEM_SELECT, #this!, "adminButtonPush")
         endif
     methodend
     
@@ -168,7 +179,7 @@ REM             #popupMenu!.setVisible(Boolean.TRUE)
             
             #buttonDelete!.setVisible(Boolean.FALSE)
             #buttonSave!.setVisible(Boolean.FALSE)
-            if #allowAdmin! then #buttonAdmin!.setVisible(Boolean.FALSE)
+            if #allowAdmin! or #allowFactoryDefaults! then #buttonAdmin!.setVisible(Boolean.FALSE)
         else
             #popupButton!.setVisible(0)
 REM             #listEditOptions!.removePopupMenu()
@@ -176,7 +187,7 @@ REM             #popupMenu!.setVisible(Boolean.TRUE)
             
             #buttonDelete!.setVisible(#buttonDeleteEnabled!)
             #buttonSave!.setVisible(#buttonSaveEnabled!)
-            if #allowAdmin! then #buttonAdmin!.setVisible(Boolean.TRUE)
+            if #allowAdmin! or #allowFactoryDefaults! then #buttonAdmin!.setVisible(Boolean.TRUE)
         endif
     methodend
     
@@ -186,11 +197,17 @@ REM             #popupMenu!.setVisible(Boolean.TRUE)
     method public void setUserName(String userName!)
         #userName! = userName!
         if #bc! = null() then methodret
-        if #adminModeEnabled! then
-            #bc!.setUserName(#bc!.getAdminUser())
-        else
-            #bc!.setUserName(userName!)
-        endif
+        switch #accessMode
+            case #ACCESS_MODE_FACTORYDEFAULT
+                #bc!.setUserName(#bc!.getFactoryDefaultUser())
+                break
+            case #ACCESS_MODE_ADMIN
+                #bc!.setUserName(#bc!.getAdminUser())
+                break
+            case #ACCESS_MODE_USER
+                #bc!.setUserName(userName!)
+                break
+        swend
     methodend
     
     method public void setRealm(String realm!)
@@ -234,7 +251,7 @@ REM             #popupMenu!.setVisible(Boolean.TRUE)
             #buttonDelete!      = #getCanvas().addButton(#getCanvas().getAvailableControlID(), 100,0,20,20,"")
             #buttonSave!        = #getCanvas().addButton(#getCanvas().getAvailableControlID(), 120,0,20,20,"")
 REM             #buttonSave!.setShortCue("save")
-            if #allowAdmin! then
+            if #allowAdmin! or #allowFactoryDefaults! then
                 #buttonAdmin!       = #getCanvas().addButton(#getCanvas().getAvailableControlID(), 140,0,20,20,"")
 REM                 #buttonAdmin!.setShortCue("Admin mode (currently disabled)")
             endif
@@ -268,16 +285,12 @@ REM     field protected BBjNumber listEditPopupHeight = 0
         #getCanvas().setLocation(xStart,#getY())
         #listEditOptions!.setLocation(0,1)
         #listEditOptions!.setSize(#optionsListeditWidth, #listEditPopupHeight)
-        #listEditOptions!.setFieldHeight(#widgetHeight - 2)
         #buttonDelete!.setLocation(buttonsX,buttonsY)
         #buttonSave!.setLocation(buttonsX + #widgetHeight,buttonsY)
-        if #allowAdmin! then
+        if #allowAdmin! or #allowFactoryDefaults! then
             #buttonAdmin!.setLocation(buttonsX + (2 * #widgetHeight),buttonsY)
         endif
         if totalLength < #widgetWidth then
-REM         ?xStart
-REM         ?xEnd
-REM         escape
             #togglePopupMode(Boolean.TRUE)
         else
             #togglePopupMode(Boolean.FALSE)
@@ -296,25 +309,37 @@ REM         escape
         textProperties! = #getTextPropertiesManager()
         #widgetWidth = cast(BBjNumber, uiProperties!.getPropertyAsNumber("CONFIG_WIDGET_WIDTH"))
         #widgetHeight = cast(BBjNumber, uiProperties!.getPropertyAsNumber("CONFIG_WIDGET_HEIGHT"))
+        #listEditOptions!.setFieldHeight(#widgetHeight - 2)
+        #getCanvas().setSize(#widgetWidth + 2, #widgetHeight + 2)
         #optionsListeditWidth = #widgetWidth - (3 * #widgetHeight);REM list edit is widget width minus the 3 buttons
         #listEditPopupHeight = cast(BBjNumber, uiProperties!.getPropertyAsNumber("CONFIG_WIDGET_LISTEDIT_POPUP_HEIGHT"))
         #buttonDelete!.setImageFile(uiProperties!.getProperty("CONFIG_WIDGET_BTN_DELETE_IMAGE"))
         size = uiProperties!.getPropertyAsNumber("CONFIG_WIDGET_HEIGHT") - 4
         #buttonDelete!.setImageSize(size,size)
+        #buttonDelete!.setSize(size + 2, size + 2)
         #buttonDelete!.setShortCue(textProperties!.getProperty("CONFIG_WIDGET_BTN_DELETE_SHORT_CUE"))
         #buttonSave!.setImageFile(uiProperties!.getProperty("CONFIG_WIDGET_BTN_SAVE_IMAGE"))
         #buttonSave!.setImageSize(size,size)
+        #buttonSave!.setSize(size + 2, size + 2)
         #buttonSave!.setShortCue(textProperties!.getProperty("CONFIG_WIDGET_BTN_SAVE_SHORT_CUE"))
         #popupButton!.setLocation(#optionsListeditWidth, 0)
-        if #allowAdmin! then
+        if #allowAdmin! or #allowFactoryDefaults! then
             #buttonAdmin!.setImageSize(size,size)
-            if #adminModeEnabled! then
-                #buttonAdmin!.setImageFile( uiProperties!.getProperty("CONFIG_WIDGET_BTN_ADMIN_ENABLED_IMAGE"))
-                #buttonAdmin!.setShortCue( textProperties!.getProperty("CONFIG_WIDGET_BTN_ADMIN_ENABLED_SHORT_CUE"))
-            else
-                #buttonAdmin!.setImageFile( uiProperties!.getProperty("CONFIG_WIDGET_BTN_ADMIN_DISABLED_IMAGE"))
-                #buttonAdmin!.setShortCue( textProperties!.getProperty("CONFIG_WIDGET_BTN_ADMIN_DISABLED_SHORT_CUE"))
-            endif
+            #buttonAdmin!.setSize(size + 2, size + 2)
+            switch #accessMode
+                case #ACCESS_MODE_FACTORYDEFAULT
+                    #buttonAdmin!.setImageFile( uiProperties!.getProperty("CONFIG_WIDGET_BTN_FACTORYDEFAULTS_ENABLED_IMAGE"))
+                    #buttonAdmin!.setShortCue( textProperties!.getProperty("CONFIG_WIDGET_BTN_FACTORYDEFAULTS_ENABLED_SHORT_CUE"))
+                    break
+                case #ACCESS_MODE_ADMIN
+                    #buttonAdmin!.setImageFile( uiProperties!.getProperty("CONFIG_WIDGET_BTN_ADMIN_ENABLED_IMAGE"))
+                    #buttonAdmin!.setShortCue( textProperties!.getProperty("CONFIG_WIDGET_BTN_ADMIN_ENABLED_SHORT_CUE"))
+                    break
+                case #ACCESS_MODE_USER
+                    #buttonAdmin!.setImageFile( uiProperties!.getProperty("CONFIG_WIDGET_BTN_ADMIN_DISABLED_IMAGE"))
+                    #buttonAdmin!.setShortCue( textProperties!.getProperty("CONFIG_WIDGET_BTN_ADMIN_DISABLED_SHORT_CUE"))
+                    break
+            swend
         endif
         r = uiProperties!.getPropertyAsNumber("CONTROL_GAINED_FOCUS_RED")
         g = uiProperties!.getPropertyAsNumber("CONTROL_GAINED_FOCUS_GREEN")
@@ -437,10 +462,14 @@ REM         #stateHandler!.configurationChange(config!)
             userID! = currentConfig!.getFieldAsString(#bc!.getFieldNameUserid())
             userSettingName! = currentConfig!.getFieldAsString(#bc!.getFieldNameSetting())
             description! = ""
-            if !userID!.trim().equals("") then
-                description! = "(" + userID!.trim() + ")"
-            else
+            if userID!.trim().equals(#bc!.getAdminUser()) then
                 description! = "(" + #getTextPropertiesManager().getProperty("CONFIG_WIDGET_DEFAULT_CONFIG_DESCRIPTION") + ")"
+            else
+                if userID!.trim().equals(#bc!.getFactoryDefaultUser()) then
+                    rem no prefix for factory default
+                else
+                    description! = "(" + userID!.trim() + ")"
+                endif
             endif
             description! = description! + " " + userSettingName!.trim()
             #listEditOptions!.addItem(description!)
@@ -467,7 +496,7 @@ REM         #listEditOptions!.addItem("")
         #listEditOptions!.setCallback(BBjAPI.ON_LIST_SELECT, #this!,    "configsListEditSelect")
         #buttonDelete!.setCallback(BBjAPI.ON_BUTTON_PUSH, #this!,   "deleteButtonPush")
         #buttonSave!.setCallback(  BBjAPI.ON_BUTTON_PUSH, #this!, "saveButtonPush")
-        if #allowAdmin! then
+        if #allowAdmin! or #allowFactoryDefaults! then
             #buttonAdmin!.setCallback( BBjAPI.ON_BUTTON_PUSH, #this!, "adminButtonPush")
         endif
 REM         BBjAPI().setCustomEventCallback(#getOnStateChangeEventName(), #this!,"onColumnStateChange")
@@ -524,7 +553,7 @@ REM         BBjAPI().setCustomEventCallback(#getOnStateChangeEventName(), #this!
     rem  */
     method protected Boolean wouldWriteOverrideOtherConfig(DataRow dr!)
         dr! = dr!.clone()
-        if !#adminModeEnabled! then
+        if #accessMode = #ACCESS_MODE_USER then
             dr!.setFieldValue(#bc!.getFieldNameUserid(), #userName!)
         endif
         previousFilter! = new DataRow()
@@ -542,7 +571,7 @@ REM         BBjAPI().setCustomEventCallback(#getOnStateChangeEventName(), #this!
     method protected String getListEditOptionText()
         text! = #listEditOptions!.getEditText()
         if text! = null() or text!.trim().equals("") then methodret ""
-        adminPrefix! = "(default)"
+        adminPrefix! = "(" + #getTextPropertiesManager().getProperty("CONFIG_WIDGET_DEFAULT_CONFIG_DESCRIPTION") + ")"
         userPrefix! = "(" + #userName!+ ")"
         if text!.startsWith(adminPrefix!) then
             methodret text!.substring(adminPrefix!.length()).trim()
@@ -586,20 +615,56 @@ REM         BBjAPI().setCustomEventCallback(#getOnStateChangeEventName(), #this!
     rem  * onclick event for the admin button. toggles mode and image
     rem  */
     method public void adminButtonPush(BBjEvent ev!)
-        if #adminModeEnabled! then
-            #adminModeEnabled! = Boolean.FALSE
-            #buttonAdmin!.setImageFile( #getUIPropertiesManager().getProperty("CONFIG_WIDGET_BTN_ADMIN_DISABLED_IMAGE"))
-            #buttonAdmin!.setShortCue( #getTextPropertiesManager().getProperty("CONFIG_WIDGET_BTN_ADMIN_DISABLED_SHORT_CUE"))
-            #menuAdmin!.setSelected(Boolean.FALSE)
-            #bc!.setUserName(#userName!)
-        else
-            #adminModeEnabled! = Boolean.TRUE
-            #buttonAdmin!.setImageFile( #getUIPropertiesManager().getProperty("CONFIG_WIDGET_BTN_ADMIN_ENABLED_IMAGE"))
-            #buttonAdmin!.setShortCue( #getUIPropertiesManager().getProperty("CONFIG_WIDGET_BTN_ADMIN_ENABLED_SHORT_CUE"))
-            #menuAdmin!.setSelected(Boolean.TRUE)
-            #bc!.setUserName(#bc!.getAdminUser())
-        endif
+    
+        switch #accessMode
+            case #ACCESS_MODE_FACTORYDEFAULT
+                if #allowAdmin! then
+                    #accessMode = #ACCESS_MODE_ADMIN
+                else
+                    #accessMode = #ACCESS_MODE_USER
+                endif
+                break
+            case #ACCESS_MODE_ADMIN
+                #accessMode = #ACCESS_MODE_USER
+                break
+            case #ACCESS_MODE_USER
+                if #allowFactoryDefaults! then
+                    #accessMode = #ACCESS_MODE_FACTORYDEFAULT
+                else
+                    if #allowAdmin! then
+                        #accessMode = #ACCESS_MODE_ADMIN
+                    endif
+                endif
+                break
+        swend
+        #updateAccessButton()
         #updateButtonDelete()
+    methodend
+    
+    method protected void updateAccessButton()
+        switch #accessMode
+            case #ACCESS_MODE_ADMIN
+                #buttonAdmin!.setImageFile( #getUIPropertiesManager().getProperty("CONFIG_WIDGET_BTN_ADMIN_ENABLED_IMAGE"))
+                #buttonAdmin!.setShortCue( #getTextPropertiesManager().getProperty("CONFIG_WIDGET_BTN_ADMIN_ENABLED_SHORT_CUE"))
+                if #menuAdmin! <> null() then #menuAdmin!.setSelected(Boolean.TRUE)
+                if #menuFactoryDefaults! <> null() then #menuFactoryDefaults!.setSelected(Boolean.FALSE)
+                #bc!.setUserName(#bc!.getAdminUser())
+                break
+            case #ACCESS_MODE_USER
+                #buttonAdmin!.setImageFile( #getUIPropertiesManager().getProperty("CONFIG_WIDGET_BTN_ADMIN_DISABLED_IMAGE"))
+                #buttonAdmin!.setShortCue( #getTextPropertiesManager().getProperty("CONFIG_WIDGET_BTN_ADMIN_DISABLED_SHORT_CUE"))
+                if #menuAdmin! <> null() then #menuAdmin!.setSelected(Boolean.FALSE)
+                if #menuFactoryDefaults! <> null() then #menuFactoryDefaults!.setSelected(Boolean.FALSE)
+                #bc!.setUserName(#userName!)
+                break
+            case #ACCESS_MODE_FACTORYDEFAULT
+                #buttonAdmin!.setImageFile( #getUIPropertiesManager().getProperty("CONFIG_WIDGET_BTN_FACTORYDEFAULTS_ENABLED_IMAGE"))
+                #buttonAdmin!.setShortCue( #getUIPropertiesManager().getProperty("CONFIG_WIDGET_BTN_FACTORYDEFAULTS_ENABLED_SHORT_CUE"))
+                if #menuAdmin! <> null() then #menuAdmin!.setSelected(Boolean.FALSE)
+                if #menuFactoryDefaults! <> null() then #menuFactoryDefaults!.setSelected(Boolean.TRUE)
+                #bc!.setUserName(#bc!.getFactoryDefaultUser())
+                break
+        swend
     methodend
     
     rem /**
@@ -727,11 +792,18 @@ REM         #currentConfig! = ""
         endif
         selectedConfig!.setFieldValue(#bc!.getFieldNameSetting(), #getListEditOptionText())
         selectedConfig!.setFieldValue(#bc!.getFieldNameConfig(), #stateHandler!.getState())
-        if #adminModeEnabled! then
-            selectedConfig!.setFieldValue(#bc!.getFieldNameUserid(), #bc!.getAdminUser())
-        else
-            selectedConfig!.setFieldValue(#bc!.getFieldNameUserid(), #userName!)
-        endif
+        switch #accessMode
+            case #ACCESS_MODE_FACTORYDEFAULT
+                selectedConfig!.setFieldValue(#bc!.getFieldNameUserid(), #bc!.getFactoryDefaultUser())
+                break
+            case #ACCESS_MODE_ADMIN
+                selectedConfig!.setFieldValue(#bc!.getFieldNameUserid(), #bc!.getAdminUser())
+                break
+            case #ACCESS_MODE_USER
+                selectedConfig!.setFieldValue(#bc!.getFieldNameUserid(), #userName!)
+                endif
+                break
+        swend
         methodret selectedConfig!
     methodend
     
@@ -771,6 +843,10 @@ REM         #currentConfig! = ""
 
     method public static void setAllowAdmin(Boolean f_allow!)
         ConfigurationWidget.setallowAdmin(f_allow!)
+    methodend
+
+    method public static void setAllowFactoryDefaults(Boolean allowFactoryDefaults!)
+        ConfigurationWidget.setallowFactoryDefaults(allowFactoryDefaults!)
     methodend
 
 classend

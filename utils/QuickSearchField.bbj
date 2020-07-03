@@ -291,8 +291,8 @@ REM         #control!.setCaretPosition(text!.length() - 1)
     method public void searchButtonClick(BBjEvent ev!)
         if #searchUI! = null() then
             #searchUI! = new SearchUI()
-            #searchUI!.initComponents()
             #searchUI!.setBC(#bc!)
+            #searchUI!.initComponents()
             #searchUI!.applyWindowConfig()
             #searchUI!.setUIPropertiesManager(#uiPropertiesManager!)
         endif

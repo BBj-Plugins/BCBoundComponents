@@ -15,6 +15,7 @@ use ::BBjGridExWidget/GxClientModels.bbj::GxClientCellModel
 
 use ::BusinessUIComponents/BusinessGrid.bbj::BusinessGrid
 use ::BusinessUIComponents/configurations/ConfigurationWidget.bbj::ConfigurationWidget
+use ::BusinessUIComponents/bound/WindowHandler.bbj::WindowHandler
 
 use ::BusinessUIComponents/tools/IBCMetaDataPersistenceModel.bbj::IBCMetaDataModel
 
@@ -38,6 +39,7 @@ class public BCMetaData extends BBDialog
 
     field protected BBjNamespace  GroupNS! = #API!.getGroupNamespace()
     field protected BBjMDI        MDI!
+    field protected WindowHandler windowHandler!
 
 	rem /** DLGWIZ_RES BCMetaData.arc 101 **/
 
@@ -91,6 +93,7 @@ class public BCMetaData extends BBDialog
 
         if #Wnd!<>null() then
             #setCallbacks()
+            #applyWindowHandler()
         endif
     methodend
 
@@ -99,15 +102,21 @@ class public BCMetaData extends BBDialog
     rem * Set control callbacks
     rem */
     method protected void setCallbacks()
-        if #API!.isInMDI() then #MDI!.registerMDIClosingCallback(#this!,"onMDIClosing")
+REM         if #API!.isInMDI() then #MDI!.registerMDIClosingCallback(#this!,"onMDIClosing")
 		rem /** DLGWIZ_CBS_BEGIN **/
-		#super!.getControlByName("BCMetaData").setCallback(BBjAPI.ON_CLOSE,#this!,"BCMetaData__ON_CLOSE")
+REM 		#super!.getControlByName("BCMetaData").setCallback(BBjAPI.ON_CLOSE,#this!,"BCMetaData__ON_CLOSE")
+    
 		#super!.getControlByName("BCMetaData").setCallback(BBjAPI.ON_RESIZE,#this!,"BCMetaData__ON_RESIZE")
 		#super!.getControlByName("LB_CLASS").setCallback(BBjAPI.ON_LIST_SELECT,#this!,"LB_CLASS__ON_LIST_SELECT")
 		#super!.getControlByName("BTN_SAVE").setCallback(BBjAPI.ON_BUTTON_PUSH,#this!,"BTN_SAVE__ON_BUTTON_PUSH")
 		#super!.getControlByName("BTN_GRID").setCallback(BBjAPI.ON_BUTTON_PUSH,#this!,"BTN_GRID__ON_BUTTON_PUSH")
 		rem /** DLGWIZ_CBS_END **/
 
+    methodend
+    
+    method protected void applyWindowHandler()
+        #windowHandler! = new WindowHandler(#Wnd!)
+        #windowHandler!.applyWindowConfig()
     methodend
 
     rem /**
