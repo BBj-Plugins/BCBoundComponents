@@ -61,6 +61,10 @@ class public AbstractBCBoundWidget extends BBjWidget implements IBCBound
         methodret new DataRow()
     methodend
     
+    method public DataRow getFieldsForFieldSelection()
+        methodret new DataRow()
+    methodend
+    
     method protected void updateProperties()
         if #getUIPropertiesManager() = null() then #setUIPropertiesManager(PropertiesManager.getInstance())
         if #getTextPropertiesManager() = null() then #setTextPropertiesManager(LocalizedPropertiesManager.getInstance())

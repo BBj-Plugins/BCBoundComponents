@@ -76,6 +76,10 @@ class public WindowHandler implements IBCBound, IPersistentState
         methodret #binder!
     methodend    
     
+    method public DataRow getFieldsForFieldSelection()
+        methodret new DataRow()
+    methodend
+    
     method public void onSetData()
     methodend
    
