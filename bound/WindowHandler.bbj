@@ -76,6 +76,10 @@ class public WindowHandler implements IBCBound, IPersistentState
         methodret #binder!
     methodend    
     
+    method public DataRow getFieldsForFieldSelection()
+        methodret new DataRow()
+    methodend
+    
     method public void onSetData()
     methodend
    
@@ -223,8 +227,49 @@ REM         windowFilter!.setFieldValue(#configBC!.getFieldNameUserid(), #config
     method protected void updateProperties()
         if #uiPropertiesManager! = null() then #uiPropertiesManager! = cast(IPropertiesManager, PropertiesManager.getInstance())
         windowLogo! = #uiPropertiesManager!.getProperty("WINDOW_LOGO")
-        if windowLogo!.equals("") then methodret
-        #wnd!.setIcon(windowLogo!)
+        if !windowLogo!.equals("") then 
+            #wnd!.setIcon(windowLogo!)
+        endif
+        r = #uiPropertiesManager!.getPropertyAsNumber("BACKGROUND_RED")
+        g = #uiPropertiesManager!.getPropertyAsNumber("BACKGROUND_GREEN")
+        b = #uiPropertiesManager!.getPropertyAsNumber("BACKGROUND_BLUE")
+        bgColor! = BBjAPI().makeColor(r,g,b)
+        #wnd!.setBackColor(bgColor!)
+        allControls! = #getAllControlsAndChildWindowsRecursive(new BBjVector(),#wnd!)
+        it! = allControls!.iterator()
+        while it!.hasNext()
+            control! = cast(BBjControl, it!.next())
+            switch control!.getControlType()
+                case BBjControl.TABCTRL_TYPE
+                    control!.setBackColor(bgColor!)
+                    tabctrl! = cast(BBjTabCtrl, control!)
+                    numTabs = tabctrl!.getNumTabs()
+                    if numTabs < 1 then break
+                    for i=0 to numTabs - 1
+                        tabctrl!.setBackColorAt(i, bgColor!)
+                    next i
+                    break
+                case default
+                    control!.setBackColor(bgColor!)
+                    break
+            swend
+        wend
+    methodend
+    
+    method protected BBjVector getAllControlsAndChildWindowsRecursive(BBjVector controls!, BBjWindow window!)
+        currentControls! = window!.getAllControls()
+        it! = currentControls!.iterator()
+        while it!.hasNext()
+            control! = it!.next()
+            type = control!.getControlType()
+            if type = BBjControl.CHILD_TYPE then
+                controls!.add(control!)
+                controls! = #getAllControlsAndChildWindowsRecursive(controls!,cast(BBjChildWindow, control!))
+            else
+                controls!.add(control!)
+            endif
+        wend
+        methodret controls!
     methodend
     
 

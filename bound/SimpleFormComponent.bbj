@@ -92,8 +92,6 @@ class public SimpleFormComponent extends AbstractBCBoundWidget implements IPersi
         wend
     methodend
     
-    
-    
     method public void setListButtonFirstRowEmpty(Boolean listButtonFirstRowEmpty!)
         #listButtonFirstRowEmpty! = listButtonFirstRowEmpty!
     methodend
@@ -846,6 +844,18 @@ REM         calendarButton!.setImageFile("BusinessUIComponents/icon/ic_insert_in
     rem  */
     method public void setStateChangeCallback(String methodName!, CustomObject callable!)
         
+    methodend
+    
+    method public DataRow getFieldsForFieldSelection()
+        dr! = new DataRow()
+        if #controlMap! <> null() then        
+            it! = #controlMap!.values().iterator()
+            while it!.hasNext()
+                field$ = it!.next()
+                dr!.setFieldValue(field$, "")
+            wend
+        endif
+        methodret dr!
     methodend
 
 classend

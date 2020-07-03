@@ -45,6 +45,10 @@ class public BCErrorHandler implements IBCBound
     method public void onSetSelection()
     methodend
     
+    method public DataRow getFieldsForFieldSelection()
+        methodret new DataRow()
+    methodend
+    
     method public Boolean canSetSelection()
         methodret BBjAPI.TRUE
     methodend
