@@ -72,6 +72,7 @@ class public EditToolbarComponent extends AbstractBCBoundWidget
             #btn_new!.setTabTraversable(0)
             #btn_new!.setFocusable(0)
             #btn_new!.setBorderPainted(0)
+            #btn_new!.setOpaque(0)
             
             
             #btn_save! = #getCanvas().addMenuButton(101,20,0,20,20,"SAVE")
@@ -79,24 +80,28 @@ class public EditToolbarComponent extends AbstractBCBoundWidget
             #btn_save!.setTabTraversable(0)
             #btn_save!.setFocusable(0)
             #btn_save!.setBorderPainted(0)
+            #btn_save!.setOpaque(0)
             
             #btn_delete! = #getCanvas().addMenuButton(102,40,0,20,20,"DELETE")
             #btn_delete!.setCallback(BBjAPI.ON_BUTTON_PUSH,#this!,"onBtnDelete")
             #btn_delete!.setTabTraversable(0)
             #btn_delete!.setFocusable(0)
             #btn_delete!.setBorderPainted(0)
+            #btn_delete!.setOpaque(0)
             
             #btn_refresh! = #getCanvas().addMenuButton(103,60,0,20,20,"REFRESH")
             #btn_refresh!.setCallback(BBjAPI.ON_BUTTON_PUSH,#this!,"onBtnRefresh")
             #btn_refresh!.setTabTraversable(0)
             #btn_refresh!.setFocusable(0)
             #btn_refresh!.setBorderPainted(0)
+            #btn_refresh!.setOpaque(0)
             
             #btn_blank! = #getCanvas().addMenuButton(104,60,0,20,20,"BLANK")
             #btn_blank!.setCallback(BBjAPI.ON_BUTTON_PUSH,#this!,"onBtnBlank")
             #btn_blank!.setTabTraversable(0)
             #btn_blank!.setFocusable(0)
             #btn_blank!.setBorderPainted(0)
+            #btn_blank!.setOpaque(0)
             
             
             #enableControls()
@@ -117,13 +122,19 @@ class public EditToolbarComponent extends AbstractBCBoundWidget
             #btn_delete!.setImageFile(uiProperties!.getProperty("EDIT_TOOLBAR_BTN_DELETE_IMAGE"))
             #btn_refresh!.setImageFile(uiProperties!.getProperty("EDIT_TOOLBAR_BTN_REFRESH_IMAGE"))
             #btn_blank!.setImageFile(uiProperties!.getProperty("EDIT_TOOLBAR_BTN_BLANK_IMAGE"))
-            r = uiProperties!.getPropertyAsNumber("BACKGROUND_RED")
-            g = uiProperties!.getPropertyAsNumber("BACKGROUND_GREEN")
-            b = uiProperties!.getPropertyAsNumber("BACKGROUND_BLUE")
+            r = uiProperties!.getPropertyAsNumber("EDIT_TOOLBAR_BACKGROUND_RED")
+            g = uiProperties!.getPropertyAsNumber("EDIT_TOOLBAR_BACKGROUND_GREEN")
+            b = uiProperties!.getPropertyAsNumber("EDIT_TOOLBAR_BACKGROUND_BLUE")
             bgColor! = BBjAPI().makeColor(r,g,b)
             #btn_background!.setForeColor(bgColor!)
             #btn_background!.setBackColor(bgColor!)
             #alignAndSizeButtons()
+
+            #btn_new!.setBackColor(bgColor!)
+            #btn_save!.setBackColor(bgColor!)
+            #btn_delete!.setBackColor(bgColor!)
+            #btn_refresh!.setBackColor(bgColor!)
+            #btn_blank!.setBackColor(bgColor!)
     methodend
     
     method protected void alignAndSizeButtons()
