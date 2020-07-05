@@ -54,6 +54,8 @@ class public BusinessMasterDataUI
         #splitter! = new HorizontalSplitter(#wnd!,112,2,45,890,800)
 
         #formTabCtrl! = #splitter!.getBottomCanvas().addTabCtrl(115, 0, 0, 500, 500)
+        #formTabCtrl!.setBackColor(BBjAPI().makeColor("WHITE"))
+        
         #forms! = new BBjVector()
         #filters! = new BBjVector()
         #splitter!.setBottomCtrl(#formTabCtrl!)
