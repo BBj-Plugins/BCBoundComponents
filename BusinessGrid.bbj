@@ -262,7 +262,7 @@ class public BusinessGrid extends AbstractBCBoundWidget implements IPersistentSt
 
                 #grid!.getClientContext().addProperty("numberGroupSep",numberGroupSeparator$, err=*next)        
                 #grid!.getClientContext().addProperty("numberDecimalSep",numberDecimalSeparator$, err=*next)
-                #grid!.setTheme( #grid!.GRID_THEME_BALHAM() )
+                #grid!.setTheme( #grid!.GRID_THEME_ALPINE() )
                 rem Render grid columns based on the attributes record (w/o any data)
                 
                 cgroups! = new java.util.HashMap()
