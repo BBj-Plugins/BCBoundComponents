@@ -61,7 +61,7 @@ class public HorizontalSplitter extends BBjWidget
             #Split!     = #getCanvas().addStaticText(200,0,#SplitPos-2,#W,4,"")
     
             #Split!.setCursor(8)
-            #Split!.setBackColor(BBjAPI().makeColor("LTGRAY"))
+            #Split!.setBackColor(BBjAPI().makeColor("WHITE"))
             
             #getCanvas().setCallback(BBjAPI.ON_MOUSE_DOWN,#this!,"onSplitMouseDown")
             #getCanvas().setCallback(BBjAPI.ON_MOUSE_UP,#this!,"onSplitMouseUp")
