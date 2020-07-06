@@ -180,7 +180,7 @@ REM                     c!.clearCallback(BBjAPI.ON_GAINED_FOCUS)
     methodend
     
     method protected void addConfigurationWidget()
-        #configWidget! = new ConfigurationWidget(#getCanvas(),#getCanvas().getAvailableControlID(), #getWidth()-155, 2 , #this!, Boolean.TRUE, "SEL", #selectionBC!.getKey(), #selectionBC!.getConfigurationsBC() )
+        #configWidget! = new ConfigurationWidget(#getCanvas(),#getCanvas().getAvailableControlID(), #getWidth()-155, 2 , #this!, "SEL", #selectionBC!.getKey(), #selectionBC!.getConfigurationsBC() )
         #configWidget!.setMinPaddingLeft(#fetchButton!.getY() + #fetchButton!.getWidth())
     methodend
     
