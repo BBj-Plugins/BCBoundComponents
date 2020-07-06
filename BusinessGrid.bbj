@@ -21,6 +21,8 @@ use ::BusinessUIComponents/ExportButton.bbj::ExportButton
 use ::BusinessUIComponents/configurations/ConfigurationWidget.bbj::ConfigurationWidget
 use ::BusinessUIComponents/configurations/CustomConfigurationsBC.bbj::CustomConfigurationsBC
 use ::BusinessUIComponents/configurations/IPersistentState.bbj::IPersistentState
+use ::BusinessUIComponents/configurations/IPropertiesManager.bbj::IPropertiesManager
+use ::BusinessUIComponents/configurations/PropertiesManager.bbj::PropertiesManager
 
 use java.util.HashMap
 
@@ -201,6 +203,12 @@ class public BusinessGrid extends AbstractBCBoundWidget implements IPersistentSt
     rem  */
     method public void setConfigurationWidgetUser(String user!)
         #cfgbc!.setUserName(user!)
+    methodend
+    
+    method public void setUIPropertiesManager(IPropertiesManager uiPropertiesManager!)
+        #super!.setUIPropertiesManager(uiPropertiesManager!)
+        #updateProperties()
+        if cfgwidget! <> null() then cfgwidget!.setUIPropertiesManager(uiPropertiesManager!)
     methodend
 
     rem ----------------------grid handling---------------------------------------------

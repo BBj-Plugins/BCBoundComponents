@@ -126,6 +126,7 @@ REM         #getBinder().setDebugLevel(1)
     method public void setUIPropertiesManager(IPropertiesManager uiPropertiesManager!)
         #super!.setUIPropertiesManager(uiPropertiesManager!)
         #updateProperties()
+        if #configWidget! <> null() then #configWidget!.setUIPropertiesManager(uiPropertiesManager!)
     methodend
     
     method protected void updateProperties()
