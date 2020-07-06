@@ -208,7 +208,7 @@ class public BusinessGrid extends AbstractBCBoundWidget implements IPersistentSt
     method public void setUIPropertiesManager(IPropertiesManager uiPropertiesManager!)
         #super!.setUIPropertiesManager(uiPropertiesManager!)
         #updateProperties()
-        if cfgwidget! <> null() then cfgwidget!.setUIPropertiesManager(uiPropertiesManager!)
+        if #cfgwidget! <> null() then #cfgwidget!.setUIPropertiesManager(uiPropertiesManager!)
     methodend
 
     rem ----------------------grid handling---------------------------------------------
