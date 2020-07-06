@@ -46,6 +46,7 @@ class public QuickSearchField
         #popup!.setFieldHeight(0)
         #popup!.setVisible(0)
         #popup!.setCallback(BBjControl.ON_LIST_SELECT, #this!, "popupSelect")
+        #popup!.setFont(#control!.getFont())
         #control!.setCallback(BBjControl.ON_EDIT_MODIFY, #this!, "onEditModifyEvent")
         #control!.setCallback(BBjControl.ON_INPUT_KEYPRESS, #this!, "onKeyPressed")
         #parseAttributes()

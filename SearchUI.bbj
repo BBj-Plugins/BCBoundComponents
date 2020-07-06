@@ -4,6 +4,7 @@ use ::BusinessUIComponents/BusinessGrid.bbj::BusinessGrid
 use ::BusinessUIComponents/bound/BCErrorHandler.bbj::BCErrorHandler
 use ::BusinessUIComponents/bound/WindowHandler.bbj::WindowHandler
 use ::BusinessUIComponents/configurations/IPropertiesManager.bbj::IPropertiesManager
+use ::BusinessUIComponents/configurations/PropertiesManager.bbj::PropertiesManager
 use ::BusinessUIComponents/configurations/LocalizedPropertiesManager.bbj::LocalizedPropertiesManager
 use com.basiscomponents.bc.BCBinder
 use com.basiscomponents.bc.BusinessComponent
@@ -17,6 +18,8 @@ class public SearchUI
     field protected BCBinder binder!
     field protected BBjSysGui sysgui!
     field protected BBjVector componentsWithProperties! = new BBjVector()
+    field protected IPropertiesManager pm!
+    field protected BBjNumber height = 10
     
     field protected BusinessGrid bgrid!
     field protected BCErrorHandler errorhandler!
@@ -24,8 +27,10 @@ class public SearchUI
     field protected DataRow selectedRecord!
     field protected BBjInputE quickFilterControl!
     
+    field protected BBjMenuButton quickFilterIcon!
     field protected BBjButton buttonOK!
     field protected BBjButton buttonCancel!
+    field protected BBjMenuButton buttonBackground!
     
     field protected String title! = "Search"
     field protected BBjString bcName$ = "Search"
@@ -45,9 +50,17 @@ class public SearchUI
         #buttonOK!.setCallback(#buttonOK!.ON_BUTTON_PUSH, "gridSelect")
         #buttonCancel! = #wnd!.addButton(2,660,950,100,20,"Cancel")
         #buttonCancel!.setCallback(#buttonCancel!.ON_BUTTON_PUSH, "onClose")
-        #quickFilterControl! = #wnd!.addInputE(#wnd!.getAvailableControlID(), 0, 0, 200, 20)
+        #buttonBackground! = #wnd!.addMenuButton(3,-2,0,100,20,"")
+        #buttonBackground!.setTabTraversable(0)
+        #buttonBackground!.setFocusable(0)
+        #buttonBackground!.setBorderPainted(1)
+        #quickFilterControl! = #wnd!.addInputE(#wnd!.getAvailableControlID(), 2, 2, 200, 20)
         #quickFilterControl!.setCallback(BBjAPI.ON_EDIT_MODIFY, #this!,"quickFilter")
+        #quickFilterIcon! = #wnd!.addMenuButton(#wnd!.getAvailableControlID(), 0, 0, 200, 20,"")
+        #quickFilterIcon!.setTabTraversable(0)
+        #quickFilterIcon!.setFocusable(0)
         #wnd!.setCallback(BBjAPI.ON_RESIZE, #this!,"resize")
+        #updateProperties()
     methodend
     
     method public void initComponents()
@@ -66,15 +79,17 @@ class public SearchUI
         #binder! = new BCBinder(bc!)
         #binder!.setDebugLevel(1)
         attr! = bc!.getAttributesRecord()
-        entities! = attr!.getFieldAttribute("_ENTITIES", "LABEL")
-        if entities! <> null() then
-            #title! = cast(String, entities!)
-        endif
         bcName$ = str(#binder!.getBC())
         while pos("::"=bcName$)>0
             bcName$ = bcName$(pos("::"=bcName$)+2)
         wend
         #bcName$ = bcName$
+        entities! = attr!.getFieldAttribute("_ENTITIES", "LABEL", err=*next)
+        if entities! = null() then
+            #title! = bcName$
+        else
+            #title! = cast(String, entities!)
+        endif
         #registerComponentsToBinder()
     methodend
     
@@ -123,13 +138,38 @@ class public SearchUI
         wend
     methodend
     
+    method public void updateProperties()
+        if #pm! = null() then #pm! = cast(IPropertiesManager, PropertiesManager.getInstance())
+        icon! = #pm!.getProperty("SEARCHBAR_BTN_RETRIEVE_IMAGE")
+        
+        #height = #pm!.getPropertyAsNumber("EDIT_TOOLBAR_HEIGHT")
+        #quickFilterControl!.setLocation(#quickFilterControl!.getX(), (#height - #quickFilterControl!.getHeight()) / 2)
+        r = #pm!.getPropertyAsNumber("EDIT_TOOLBAR_BACKGROUND_RED")
+        g = #pm!.getPropertyAsNumber("EDIT_TOOLBAR_BACKGROUND_GREEN")
+        b = #pm!.getPropertyAsNumber("EDIT_TOOLBAR_BACKGROUND_BLUE")
+        bgColor! = BBjAPI().makeColor(r,g,b)
+        #buttonBackground!.setSize(#buttonBackground!.getWidth(), #height)
+        #buttonBackground!.setForeColor(bgColor!)
+        #buttonBackground!.setBackColor(bgColor!)
+        if #bgrid! <> null() then #bgrid!.setLocation(#bgrid!.getX(), #height)
+        iconS = #quickFilterControl!.getHeight() - 4
+        iconX = #quickFilterControl!.getX() + #quickFilterControl!.getWidth() - iconS -2
+        iconY = #quickFilterControl!.getY() + 2
+        #quickFilterIcon!.setSize(iconS, iconS)
+        #quickFilterIcon!.setLocation(iconX, iconY)
+        #quickFilterIcon!.setImageFile(icon!)
+        #quickFilterIcon!.setImageSize(iconS - 2, iconS - 2)
+    methodend
+    
     method public void setUIPropertiesManager(IPropertiesManager pm!)
+        #pm! = pm!
         it! = #componentsWithProperties!.iterator()
         while it!.hasNext()
             component! = it!.next()
             cast(AbstractBCBoundWidget, component!).setUIPropertiesManager(pm!)
         wend
         #windowHandler!.setUIPropertiesManager(pm!)
+        #updateProperties()
     methodend
     
     rem ######### add methods for BC bound components #########
@@ -140,6 +180,7 @@ class public SearchUI
 
     method public void addBusinessGrid(BBjInt x!, BBjInt y!)
         #bgrid! = new BusinessGrid(#wnd!,160,x!,y!,960,480)
+        #bgrid!.setSize(x!, #height)
         #bgrid!.setRealm("SGR")
         #componentsWithProperties!.add(#bgrid!)
         #bgrid!.getGrid().setCallback(#bgrid!.getGrid().ON_GRID_DOUBLE_CLICK(), "gridSelect")
@@ -173,6 +214,7 @@ class public SearchUI
         w = #wnd!.getWidth()
         h = #wnd!.getHeight()
         #bgrid!.setSize(w-4 ,h-70)
+        #buttonBackground!.setSize(w + 4, #buttonBackground!.getHeight())
         
         #buttonOK!.setLocation(w-204, h-25)
         #buttonCancel!.setLocation(w-104, h-25)

@@ -234,7 +234,8 @@ class public EditToolbarComponent extends AbstractBCBoundWidget
     
     method public void onBtnDelete( BBjEvent ev! )
         text! = #getTextPropertiesManager().getProperty("EDIT_TOOLBAR_DIALOG_DELETE_DATA")
-        action = msgbox(text!, 1, text!)
+        header! = #getTextPropertiesManager().getProperty("EDIT_TOOLBAR_DIALOG_HEADER")
+        action = msgbox(text!, 33, header!);rem 33 = 1:ok+cancel, 32:?icon
         switch action
             case 1
                 #getBinder().sendSignal(BCBinder.SIGNAL_DELETE)
@@ -274,7 +275,8 @@ class public EditToolbarComponent extends AbstractBCBoundWidget
     method public Boolean canSetSelection()
         if #dirty! then
             text! = #getTextPropertiesManager().getProperty("EDIT_TOOLBAR_DIALOG_SAVE_DATA")
-            action = msgbox(text!, 3, text!)
+            header! = #getTextPropertiesManager().getProperty("EDIT_TOOLBAR_DIALOG_HEADER")
+            action = msgbox(text!, 35, header!);rem 33 = 3:yes+no+cancel, 32:?icon
             switch action
                 case 6
                     rem action = YES

@@ -140,6 +140,7 @@ REM         #getBinder().setDebugLevel(1)
                 #configWidget!.setMinPaddingLeft(#fetchButton!.getY() + #fetchButton!.getWidth())
             endif
         endif
+        if #getCanvas() <> null() then #setBackgroundColor()
     methodend
     
     rem /**
