@@ -15,6 +15,7 @@ use com.basiscomponents.bc.IConfigurationsBC
 use com.basiscomponents.bc.BCBound
 use com.basiscomponents.bc.IBCBound
 use com.basiscomponents.bc.BCBinder
+use ::BusinessUIComponents/utils/UIUtils.bbj::UIUtils
 
 
 use com.basiscomponents.db.ResultSet
@@ -235,42 +236,21 @@ REM         windowFilter!.setFieldValue(#configBC!.getFieldNameUserid(), #config
         b = #uiPropertiesManager!.getPropertyAsNumber("BACKGROUND_BLUE")
         bgColor! = BBjAPI().makeColor(r,g,b)
         #wnd!.setBackColor(bgColor!)
-        allControls! = #getAllControlsAndChildWindowsRecursive(new BBjVector(),#wnd!)
+        allControls! = UIUtils.getAllControlsRecursive(new BBjVector(), #wnd!, Boolean.TRUE)
         it! = allControls!.iterator()
         while it!.hasNext()
             control! = cast(BBjControl, it!.next())
             switch control!.getControlType()
-                case BBjControl.TABCTRL_TYPE
+                case BBjControl.WINDOW
+                case BBjControl.TOP_TYPE
+                case BBjControl.CHILD_TYPE
                     control!.setBackColor(bgColor!)
-                    tabctrl! = cast(BBjTabCtrl, control!)
-                    numTabs = tabctrl!.getNumTabs()
-                    if numTabs < 1 then break
-                    for i=0 to numTabs - 1
-                        tabctrl!.setBackColorAt(i, bgColor!)
-                    next i
+                    control!.setForeColor(bgColor!)
                     break
                 case default
-                    control!.setBackColor(bgColor!)
                     break
             swend
         wend
     methodend
     
-    method protected BBjVector getAllControlsAndChildWindowsRecursive(BBjVector controls!, BBjWindow window!)
-        currentControls! = window!.getAllControls()
-        it! = currentControls!.iterator()
-        while it!.hasNext()
-            control! = it!.next()
-            type = control!.getControlType()
-            if type = BBjControl.CHILD_TYPE then
-                controls!.add(control!)
-                controls! = #getAllControlsAndChildWindowsRecursive(controls!,cast(BBjChildWindow, control!))
-            else
-                controls!.add(control!)
-            endif
-        wend
-        methodret controls!
-    methodend
-    
-
 classend

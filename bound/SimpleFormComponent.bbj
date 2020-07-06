@@ -88,7 +88,7 @@ class public SimpleFormComponent extends AbstractBCBoundWidget implements IPersi
         it! = #calendarButtons!.iterator()
         while it!.hasNext()
             calendarButton! = it!.next()
-            cast(BBjButton, calendarButton!).setImageFile(#getUIPropertiesManager().getProperty("SIMPLE_FORM_BTN_CALENDAR"))
+            cast(BBjMenuButton, calendarButton!).setImageFile(#getUIPropertiesManager().getProperty("SIMPLE_FORM_BTN_CALENDAR"))
         wend
     methodend
     
@@ -591,7 +591,7 @@ REM         ids! = rs!.get(0).getFieldsHavingAttributeValue("EDITABLE", "2")
     methodend
     
     method protected void addCalendarButton(BBjInputD control!)
-        calendarButton! = #getCanvas().addButton(#getCanvas().getAvailableControlID(), control!.getX() + control!.getWidth() - control!.getHeight() + 1, control!.getY() + 1, control!.getHeight() - 2, control!.getHeight() - 2, "")
+        calendarButton! = #getCanvas().addMenuButton(#getCanvas().getAvailableControlID(), control!.getX() + control!.getWidth() - control!.getHeight() + 1, control!.getY() + 1, control!.getHeight() - 2, control!.getHeight() - 2, "")
         #calendarButtons!.add(calendarButton!)
 REM         calendarButton!.setImageFile("BusinessUIComponents/icon/ic_insert_invitation_black_24dp.png")
         calendarButton!.setImageSize(control!.getHeight() - 6,control!.getHeight() - 6)

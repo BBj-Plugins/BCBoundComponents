@@ -28,7 +28,7 @@ class public QuickSearchField
     field protected String uniqueID! = java.util.UUID.randomUUID().toString()
     field private IPropertiesManager uiPropertiesManager!
     field protected BCBinder binder!
-    field protected BBjButton searchButton!
+    field protected BBjMenuButton searchButton!
     field protected SearchUI searchUI!
     
     field protected BBjVector optionIDs!
@@ -279,11 +279,11 @@ REM         #control!.setCaretPosition(text!.length() - 1)
     
     method protected void addSearchButton()
         buttonSize = #control!.getHeight() - 2
-        buttonX = #control!.getX() + #control!.getWidth() - buttonSize + 1
+        buttonX = #control!.getX() + #control!.getWidth() - buttonSize - 1
         buttonY = #control!.getY() + 1
         wnd! = #control!.getParentWindow()
         
-        #searchButton! = cast(BBjButton, wnd!.addButton(wnd!.getAvailableControlID(), buttonX, buttonY, buttonSize, buttonSize, ""))
+        #searchButton! = cast(BBjMenuButton, wnd!.addMenuButton(wnd!.getAvailableControlID(), buttonX, buttonY, buttonSize, buttonSize, ""))
         #searchButton!.setCallback(#searchButton!.ON_BUTTON_PUSH,#this!,"searchButtonClick")
         #updateProperties()
     methodend

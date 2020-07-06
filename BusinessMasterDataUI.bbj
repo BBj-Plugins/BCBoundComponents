@@ -54,6 +54,8 @@ class public BusinessMasterDataUI
         #splitter! = new HorizontalSplitter(#wnd!,112,2,45,890,800)
 
         #formTabCtrl! = #splitter!.getBottomCanvas().addTabCtrl(115, 0, 0, 500, 500)
+        #formTabCtrl!.setBackColor(BBjAPI().makeColor("WHITE"))
+        
         #forms! = new BBjVector()
         #filters! = new BBjVector()
         #splitter!.setBottomCtrl(#formTabCtrl!)
@@ -151,7 +153,7 @@ class public BusinessMasterDataUI
     methodend
 
     method public void addEditToolbar()
-        #edittb! = new EditToolbarComponent(#wnd!,111,2,2,100,32)
+        #edittb! = new EditToolbarComponent(#wnd!,111, -2, -2,100,32)
         #binder!.register(#edittb!)
         #componentsWithProperties!.add(#edittb!)
     methodend

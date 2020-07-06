@@ -1,0 +1,26 @@
+REM /**
+REM  * UIUtils.bbj
+REM  * @author jcorea
+REM  *
+REM  */
+
+
+class public UIUtils
+
+    method public static BBjVector getAllControlsRecursive(BBjVector controls!, BBjWindow window!, Boolean addChildWindowsToVector!)
+        if addChildWindowsToVector! then controls!.add(window!)
+        currentControls! = window!.getAllControls()
+        it! = currentControls!.iterator()
+        while it!.hasNext()
+            control! = it!.next()
+            type = control!.getControlType()
+            if type = BBjControl.CHILD_TYPE or type = BBjControl.WINDOW or type = BBjControl.TOP_TYPE then
+                controls! = UIUtils.getAllControlsRecursive(controls!,cast(BBjWindow, control!),addChildWindowsToVector!)
+            else
+                controls!.add(control!)
+            endif
+        wend
+        methodret controls!
+    methodend
+    
+classend

@@ -29,7 +29,7 @@ class public FilterComponent extends SimpleFormComponent
 
     field protected BCBinder mainBinder!
     field protected SelectionBC selectionBC!
-    field protected BBjButton fetchButton!
+    field protected BBjMenuButton fetchButton!
     field protected ConfigurationWidget configWidget!
     rem --------------------- constructors -------------------------------------
     
@@ -85,7 +85,7 @@ class public FilterComponent extends SimpleFormComponent
     methodend
     
     method protected void addButtons()
-        #fetchButton! = #getCanvas().addButton(#getCanvas().getAvailableControlID(),0,2,20,20,"")
+        #fetchButton! = #getCanvas().addMenuButton(#getCanvas().getAvailableControlID(),0,2,20,20,"")
         #fetchButton!.setCallback(#fetchButton!.ON_BUTTON_PUSH,#this!,"buttonPushFetch")
         #updateProperties()
     methodend
@@ -132,7 +132,7 @@ REM         #getBinder().setDebugLevel(1)
         #super!.updateProperties()
         if #fetchButton! <> null() then 
             #fetchButton!.setImageFile(#getUIPropertiesManager().getProperty("FILTER_BTN_FETCH"))
-            size = #getUIPropertiesManager().getPropertyAsNumber("EDIT_TOOLBAR_HEIGHT")
+            size = #getUIPropertiesManager().getPropertyAsNumber("CONFIG_WIDGET_HEIGHT")
             #fetchButton!.setSize(size, size)
             #fetchButton!.setImageSize(size - 4, size - 4)
             if #configWidget! <> null()
