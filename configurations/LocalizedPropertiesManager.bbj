@@ -70,7 +70,12 @@ class public LocalizedPropertiesManager implements IPropertiesManager
             localePrefix! = localePrefix!.substring(0, localeDelimiterIndex)
         endif
         path! = #folder! + localePrefix! + #propertiesFilesPostfix!
-        file! = new File(BBjAPI().getFileSystem().resolvePath(path!))
+        resolvedPath! = BBjAPI().getFileSystem().resolvePath(path!,err=*next)
+        if resolvedPath! = null() then
+            path! = #folder! + "en" + #propertiesFilesPostfix!
+            resolvedPath! = BBjAPI().getFileSystem().resolvePath(path!,err=*next)
+        endif
+        file! = new File(resolvedPath!)
         if !#filesInUse!.contains(path!) then
             #filesInUse!.add(path!)
         endif
