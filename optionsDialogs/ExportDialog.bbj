@@ -107,10 +107,10 @@ class public ExportDialog
         wnd! = #createDialogWindow("Export file")
         if info(3,6) = "5" then
             #addBaseLayout(wnd!)
-            #addExportLayouts(0, 40, 500, 75)
+            #addExportLayouts(0, 40, 500, 85)
         else
             #addFileChooser(wnd!)
-            #addExportLayouts(0, 350, 500, 125)
+            #addExportLayouts(0, 350, 500, 135)
         endif
         #fillFormWithConfigurations()
         #setCallbacks()
@@ -120,9 +120,9 @@ class public ExportDialog
         sysGui! = BBjAPI().getSysGui()
         declare BBjTopLevelWindow wnd!
         if info(3,6) = "5" then
-            wnd! = cast(BBjTopLevelWindow, sysGui!.addWindow(sysGui!.getAvailableContext(),10,10,500,145,windowTitle$, $40000000$))
+            wnd! = cast(BBjTopLevelWindow, sysGui!.addWindow(sysGui!.getAvailableContext(),10,10,500,155,windowTitle$, $40000000$))
         else
-            wnd! = cast(BBjTopLevelWindow, sysGui!.addWindow(sysGui!.getAvailableContext(),10,10,500,482,windowTitle$, $40000000$))
+            wnd! = cast(BBjTopLevelWindow, sysGui!.addWindow(sysGui!.getAvailableContext(),10,10,500,492,windowTitle$, $40000000$))
         
         endif
         wnd!.setCallback(BBjAPI.ON_CLOSE, #this!, "onClose")
@@ -231,8 +231,8 @@ class public ExportDialog
         #cwCurrentlyVisible! = #cwPdf!
         #cwCurrentlyVisible!.setVisible(Boolean.TRUE)
 
-        c! = #cwPdf!.addStaticText(2010, 16, 15, 150, 23, "Page options")
-        #lbPageFittingOptions! = #cwPdf!.addListButton(3010, 175, 15, 190, 200, "")
+        c! = #cwPdf!.addStaticText(2010, 16, 25, 150, 23, "Page options")
+        #lbPageFittingOptions! = #cwPdf!.addListButton(3010, 175, 25, 190, 200, "")
         #lbPageFittingOptions!.setFieldHeight(23)
         #lbPageFittingOptions!.addItem("normal fitting")
         #lbPageFittingOptions!.addItem("fit to width")
@@ -240,8 +240,8 @@ class public ExportDialog
         #lbPageFittingOptions!.addItem("fit to page")
         #lbPageFittingOptions!.selectIndex(0)
         
-        #cwPdf!.addStaticText(2020, 16, 40, 150, 23, "Font size")
-        #lbFontSize! = #cwPdf!.addListButton(3020, 175, 40, 90, 200, "")
+        #cwPdf!.addStaticText(2020, 16, 50, 150, 23, "Font size")
+        #lbFontSize! = #cwPdf!.addListButton(3020, 175, 50, 90, 200, "")
         #lbFontSize!.addItem(" 7")
         #lbFontSize!.addItem(" 8")
         #lbFontSize!.addItem(" 9")
@@ -250,8 +250,8 @@ class public ExportDialog
         #lbFontSize!.addItem("12")
         #lbFontSize!.selectIndex(2)
         
-        #cwPdf!.addStaticText(2030, 16, 65, 150, 23, "Page layout")
-        #lbPageLayout! = #cwPdf!.addListButton(3030, 175, 65, 190, 200, "")
+        #cwPdf!.addStaticText(2030, 16, 75, 150, 23, "Page layout")
+        #lbPageLayout! = #cwPdf!.addListButton(3030, 175, 75, 190, 200, "")
         #lbPageLayout!.setFieldHeight(23)
         #lbPageLayout!.addItem("portrait")
         #lbPageLayout!.addItem("landscape")
@@ -259,8 +259,8 @@ class public ExportDialog
         
         if info(3,6) <> "5" then
             #cwPdf!.addGroupBox(2005, 10, 2, width-20, height-4, "Options")
-            #cwPdf!.addStaticText(2040, 16, 90, 150, 23, "Open file after export")
-            #cbPdfOpen! = #cwPdf!.addCheckBox(3040, 175, 90, 23, 23, "")
+            #cwPdf!.addStaticText(2040, 16, 100, 150, 23, "Open file after export")
+            #cbPdfOpen! = #cwPdf!.addCheckBox(3040, 175, 100, 23, 23, "")
         endif
     methodend
     
@@ -268,13 +268,13 @@ class public ExportDialog
         #cwXlsx! = #mainWindow!.addChildWindow(7020, x, y, width, height, "", $00000800$,#sysGui!.getAvailableContext())
         #cwXlsx!.setVisible(Boolean.FALSE)
         
-        #cwXlsx!.addStaticText(2010, 16, 15, 150, 23, "Write header")
-        #cbWriteHeader! = #cwXlsx!.addCheckBox(3010, 175, 15, 23, 23, "")
+        #cwXlsx!.addStaticText(2010, 16, 25, 150, 23, "Write header")
+        #cbWriteHeader! = #cwXlsx!.addCheckBox(3010, 175, 25, 23, 23, "")
         
         if info(3,6) <> "5" then
             #cwXlsx!.addGroupBox(2005, 10, 2, width-20, height-4, "Options")
-            #cwXlsx!.addStaticText(2020, 16, 40, 150, 23, "Open file after export")
-            #cbXlsxOpen! = #cwXlsx!.addCheckBox(3020, 175, 40, 23, 23, "")
+            #cwXlsx!.addStaticText(2020, 16, 50, 150, 23, "Open file after export")
+            #cbXlsxOpen! = #cwXlsx!.addCheckBox(3020, 175, 50, 23, 23, "")
         endif
     methodend
     
@@ -284,8 +284,8 @@ class public ExportDialog
         
         if info(3,6) <> "5" then
             #cwHtml!.addGroupBox(2005, 10, 2, width-20, height-4, "Options")
-            #cwHtml!.addStaticText(2010, 16, 15, 150, 23, "Open file after export")
-            #cbHtmlOpen! = #cwHtml!.addCheckBox(3010, 175, 15, 23, 23, "")
+            #cwHtml!.addStaticText(2010, 16, 25, 150, 23, "Open file after export")
+            #cbHtmlOpen! = #cwHtml!.addCheckBox(3010, 175, 25, 23, 23, "")
         endif
     methodend
     
@@ -293,16 +293,16 @@ class public ExportDialog
         #cwXml! = #mainWindow!.addChildWindow(7040, x, y, width, height, "", $00000800$,#sysGui!.getAvailableContext())
         #cwXml!.setVisible(Boolean.FALSE)
         
-        #cwXml!.addStaticText(2010, 16, 15, 150, 23, "Root tag name")
-        #ieRootTagName! = #cwXml!.addInputE(3010, 175, 15, 90, 23)
+        #cwXml!.addStaticText(2010, 16, 25, 150, 23, "Root tag name")
+        #ieRootTagName! = #cwXml!.addInputE(3010, 175, 25, 90, 23)
         
-        #cwXml!.addStaticText(2020, 16, 40, 150, 23, "Entity name")
-        #ieEntityName! = #cwXml!.addInputE(3020, 175, 40, 90, 23)
+        #cwXml!.addStaticText(2020, 16, 50, 150, 23, "Entity name")
+        #ieEntityName! = #cwXml!.addInputE(3020, 175, 50, 90, 23)
         
         if info(3,6) <> "5" then
             #cwXml!.addGroupBox(2005, 10, 2, width-20, height-4, "Options")
-            #cwXml!.addStaticText(2030, 16, 65, 150, 23, "Open file after export")
-            #cbXmlOpen! = #cwXml!.addCheckBox(3030, 175, 65, 23, 23, "")
+            #cwXml!.addStaticText(2030, 16, 75, 150, 23, "Open file after export")
+            #cbXmlOpen! = #cwXml!.addCheckBox(3030, 175, 75, 23, 23, "")
         endif
     methodend
     
@@ -312,8 +312,8 @@ class public ExportDialog
         
         if info(3,6) <> "5" then
             #cwTxt!.addGroupBox(2005, 10, 2, width-20, height-4, "Options")
-            #cwTxt!.addStaticText(2010, 16, 15, 150, 23, "Open file after export")
-            #cbTxtOpen! = #cwTxt!.addCheckBox(3010, 175, 15, 23, 23, "")
+            #cwTxt!.addStaticText(2010, 16, 25, 150, 23, "Open file after export")
+            #cbTxtOpen! = #cwTxt!.addCheckBox(3010, 175, 25, 23, 23, "")
         endif
     methodend
     
@@ -323,8 +323,8 @@ class public ExportDialog
         
         if info(3,6) <> "5" then
             #cwCsv!.addGroupBox(2005, 10, 2, width-20, height-4, "Options")
-            #cwCsv!.addStaticText(2010, 16, 15, 150, 23, "Open file after export")
-            #cbCsvOpen! = #cwCsv!.addCheckBox(3010, 175, 15, 23, 23, "")
+            #cwCsv!.addStaticText(2010, 16, 25, 150, 23, "Open file after export")
+            #cbCsvOpen! = #cwCsv!.addCheckBox(3010, 175, 25, 23, 23, "")
         endif
     methodend
     
@@ -334,8 +334,8 @@ class public ExportDialog
         
         if info(3,6) <> "5" then
             #cwCustomPdf!.addGroupBox(2005, 10, 2, width-20, height-4, "Options")
-            #cwCustomPdf!.addStaticText(2010, 16, 15, 150, 23, "Open file after export")
-            #cbCustomPdfOpen! = #cwCustomPdf!.addCheckBox(3010, 175, 15, 23, 23, "")
+            #cwCustomPdf!.addStaticText(2010, 16, 25, 150, 23, "Open file after export")
+            #cbCustomPdfOpen! = #cwCustomPdf!.addCheckBox(3010, 175, 25, 23, 23, "")
         endif
     methodend
     

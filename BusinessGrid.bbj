@@ -278,105 +278,101 @@ class public BusinessGrid extends AbstractBCBoundWidget implements IPersistentSt
                 for rscol = 0 to ar!.getColumnCount() - 1
 
                     fieldName$ = ar!.getColumnName(rscol)
-                    if !(fieldName$ = "_ENTITY" or fieldName$ = "_ENTITIES") then
+                    fa! = ar!.getFieldAttributes(fieldName$);rem returns HashMap
+
+                    hide = BBjAPI.FALSE
+                    if fa!.containsKey("HIDE") then hide = num(fa!.get("HIDE"))
+                    if hide then
+                        rem don't add columns that should never show up in UI
+                        continue
+                    fi
                     
-                        fa! = ar!.getFieldAttributes(fieldName$);rem returns HashMap
-    
-                        hide = BBjAPI.FALSE
-                        if fa!.containsKey("HIDE") then hide = num(fa!.get("HIDE"))
-                        if hide then
-                            rem don't add columns that should never show up in UI
-                            continue
+                    label$ = fieldName$
+                    if fa!.containsKey("LABEL") then label$ = fa!.get("LABEL")
+
+                    type =  ar!.getFieldType(fieldName$)
+                    column! = #grid!.addColumn(fieldName$, label$, type)
+                    
+                    if fa!.containsKey("GROUP") then cgroup$ = fa!.get("GROUP")
+                    if cgroup$<>"" then
+                        cgroup! = cgroups!.get(cgroup$)
+                        if cgroup! = null() then
+                            cgroup! = new BBjVector()
+                            cgroups!.put(cgroup$,cgroup!)
                         fi
-                        
-                        label$ = fieldName$
-                        if fa!.containsKey("LABEL") then label$ = fa!.get("LABEL")
-    
-                        type =  ar!.getFieldType(fieldName$)
-                        column! = #grid!.addColumn(fieldName$, label$, type)
-                        
-                        if fa!.containsKey("GROUP") then cgroup$ = fa!.get("GROUP")
-                        if cgroup$<>"" then
-                            cgroup! = cgroups!.get(cgroup$)
-                            if cgroup! = null() then
-                                cgroup! = new BBjVector()
-                                cgroups!.put(cgroup$,cgroup!)
-                            fi
-                            cgroup!.addItem(fieldName$)
-                        fi
-                        
-                        mask$ = ""
-                        align$ = ""
-                        
-                        if fa!.containsKey("MASK") then mask$ = cvs(fa!.get("MASK"),3)
-                        if mask$ <> "" then column!.setColumnMask(mask$)
-                        if type = java.sql.Types.DATE or type = java.sql.Types.TIMESTAMP or type = java.sql.Types.TIME or type = java.sql.Types.BOOLEAN then
-                            align$="R"
-                            if fa!.containsKey("MASK") then 
-                                mask$ = cvs(fa!.get("MASK"),3)
+                        cgroup!.addItem(fieldName$)
+                    fi
+                    
+                    mask$ = ""
+                    align$ = ""
+                    
+                    if fa!.containsKey("MASK") then mask$ = cvs(fa!.get("MASK"),3)
+                    if mask$ <> "" then column!.setColumnMask(mask$)
+                    if type = java.sql.Types.DATE or type = java.sql.Types.TIMESTAMP or type = java.sql.Types.TIME or type = java.sql.Types.BOOLEAN then
+                        align$="R"
+                        if fa!.containsKey("MASK") then 
+                            mask$ = cvs(fa!.get("MASK"),3)
+                            column! = #grid!.getColumn(fieldName$)
+                            vfe! = column!.getValueFormatterExpression()
+                            vfe!.setMask(mask$)
+                        else
+                            if type = java.sql.Types.DATE then
                                 column! = #grid!.getColumn(fieldName$)
                                 vfe! = column!.getValueFormatterExpression()
-                                vfe!.setMask(mask$)
-                            else
-                                if type = java.sql.Types.DATE then
-                                    column! = #grid!.getColumn(fieldName$)
-                                    vfe! = column!.getValueFormatterExpression()
-                                    vfe!.setMask(dateMask$)
-                                endif
-                                if type = java.sql.Types.TIMESTAMP then
-                                    column! = #grid!.getColumn(fieldName$)
-                                    vfe! = column!.getValueFormatterExpression()
-                                    vfe!.setMask(timestampMask$)
-                                endif
+                                vfe!.setMask(dateMask$)
                             endif
-                        else
-                            if SqlTypeNames.isNumericType(type) then
-                                align$="R"
-                                if mask$ = "" then
-                                    rem blank when zero
-                                    blankWhenZeroRenderer! = new GxRendererCustomHTML("<% print(params.data."+fieldName$+" == 0 ? '&nbsp;' : params.data."+fieldName$+") %>")
-                                    column!.setCellRenderer(blankWhenZeroRenderer!)
-                                endif
+                            if type = java.sql.Types.TIMESTAMP then
+                                column! = #grid!.getColumn(fieldName$)
+                                vfe! = column!.getValueFormatterExpression()
+                                vfe!.setMask(timestampMask$)
                             endif
                         endif
-    
-                        if fa!.containsKey("ALIGN") then align$ = fa!.get("ALIGN")
-    
-                        switch align$
-                            case "R"
-                                column!.setHeaderAlignment(#grid!.GRID_ALIGN_RIGHT())
-                                column!.setAlignment(#grid!.GRID_ALIGN_RIGHT())
-                                break
-                            case "C"
-                                column!.setHeaderAlignment(#grid!.GRID_ALIGN_CENTER())
-                                column!.setAlignment(#grid!.GRID_ALIGN_CENTER())
-                                break
-                            case default
-                            case "L"
-                                column!.setHeaderAlignment(#grid!.GRID_ALIGN_LEFT())
-                                column!.setAlignment(#grid!.GRID_ALIGN_LEFT())
-                                break
-    
-                        swend
-                        if type = java.sql.Types.BOOLEAN  OR type = java.sql.Types.BIT then
-                            checkboxRenderer! = new GxRendererBoolean()
-                            checkboxRenderer!.setTrueValue("<font size=+1>&#9745;</font>")
-                            checkboxRenderer!.setFalseValue("<font size=+1>&#9744;</font>")
-                            column!.setCellRenderer(checkboxRenderer!)
-                            
-                            rem checkboxRenderer!.setTrueValue("<input type='checkbox' checked/>")
-                            rem checkboxRenderer!.setFalseValue("<input type='checkbox' />")
-                            
-                            rem column!.getCellRenderer().setTrueValue(GxRendererBoolean.SWITCH_RENDERER())
-                            rem column!.getCellRenderer().setFalseValue(GxRendererBoolean.SWITCH_RENDERER())
+                    else
+                        if SqlTypeNames.isNumericType(type) then
+                            align$="R"
+                            if mask$ = "" then
+                                rem blank when zero
+                                blankWhenZeroRenderer! = new GxRendererCustomHTML("<% print(params.data."+fieldName$+" == 0 ? '&nbsp;' : params.data."+fieldName$+") %>")
+                                column!.setCellRenderer(blankWhenZeroRenderer!)
+                            endif
                         endif
-    
-                        if fa!.containsKey("PASSWORD") then
-                            column!.setCellRenderer(new GxRendererCustomHTML("<%= ""<input readonly type='password' value='"" + params.value + ""' />"" %>"))
-                        endif
-                        
                     endif
-                    
+
+                    if fa!.containsKey("ALIGN") then align$ = fa!.get("ALIGN")
+
+                    switch align$
+                        case "R"
+                            column!.setHeaderAlignment(#grid!.GRID_ALIGN_RIGHT())
+                            column!.setAlignment(#grid!.GRID_ALIGN_RIGHT())
+                            break
+                        case "C"
+                            column!.setHeaderAlignment(#grid!.GRID_ALIGN_CENTER())
+                            column!.setAlignment(#grid!.GRID_ALIGN_CENTER())
+                            break
+                        case default
+                        case "L"
+                            column!.setHeaderAlignment(#grid!.GRID_ALIGN_LEFT())
+                            column!.setAlignment(#grid!.GRID_ALIGN_LEFT())
+                            break
+
+                    swend
+                    if type = java.sql.Types.BOOLEAN  OR type = java.sql.Types.BIT then
+                        checkboxRenderer! = new GxRendererBoolean()
+                        checkboxRenderer!.setTrueValue("<font size=+1>&#9745;</font>")
+                        checkboxRenderer!.setFalseValue("<font size=+1>&#9744;</font>")
+                        column!.setCellRenderer(checkboxRenderer!)
+                        
+                        rem checkboxRenderer!.setTrueValue("<input type='checkbox' checked/>")
+                        rem checkboxRenderer!.setFalseValue("<input type='checkbox' />")
+                        
+                        rem column!.getCellRenderer().setTrueValue(GxRendererBoolean.SWITCH_RENDERER())
+                        rem column!.getCellRenderer().setFalseValue(GxRendererBoolean.SWITCH_RENDERER())
+                    endif
+
+                    if fa!.containsKey("PASSWORD") then
+                        column!.setCellRenderer(new GxRendererCustomHTML("<%= ""<input readonly type='password' value='"" + params.value + ""' />"" %>"))
+                    endif
+                        
                 next rscol
 
                 if cgroups!.size()>0 then

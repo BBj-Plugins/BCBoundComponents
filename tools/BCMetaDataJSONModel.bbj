@@ -78,7 +78,9 @@ class public BCMetaDataJSONModel implements IBCMetaDataModel
             fi
             if locmeta! <> null() then
                 dr!.setFieldValue("_ENTITY", "")
+                dr!.setFieldAttribute("_ENTITY", "HIDE", "1")
                 dr!.setFieldValue("_ENTITIES", "")
+                dr!.setFieldAttribute("_ENTITIES", "HIDE", "1")
                 it! = dr!.getFieldNames().iterator()
                 while it!.hasNext()
                           f$=it!.next()
