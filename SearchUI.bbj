@@ -56,6 +56,7 @@ class public SearchUI
         #buttonBackground!.setBorderPainted(1)
         #quickFilterControl! = #wnd!.addInputE(#wnd!.getAvailableControlID(), 2, 2, 200, 20)
         #quickFilterControl!.setCallback(BBjAPI.ON_EDIT_MODIFY, #this!,"quickFilter")
+        #quickFilterControl!.setCallback(BBjAPI.ON_INPUT_KEYPRESS, #this!,"inputKeyPress")
         #quickFilterIcon! = #wnd!.addMenuButton(#wnd!.getAvailableControlID(), 0, 0, 200, 20,"")
         #quickFilterIcon!.setTabTraversable(0)
         #quickFilterIcon!.setFocusable(0)
@@ -113,6 +114,7 @@ class public SearchUI
         
         #sysgui!.setRepaintEnabled(1)
         #wnd!.setVisible(1)
+        #quickFilterControl!.focus()
         
         process_events
         gridSelect:
@@ -236,6 +238,17 @@ class public SearchUI
     method public void quickFilter(BBjEvent ev!)
         filter! = #quickFilterControl!.getText()
         #bgrid!.getGrid().setQuickFilter(filter!)
+    methodend
+    
+    method public void inputKeyPress(BBjInputKeypressEvent ev!)
+        keyCode = ev!.getKeyCode()
+        if keyCode = 9 then
+            rem tab
+            #bgrid!.getGrid().setSelectedRow(0)
+            rem must focus first the businessgrid and then the gridexwidget or it will not work
+            #bgrid!.focus()
+            #bgrid!.getGrid().focus()
+        endif
     methodend
     
     
