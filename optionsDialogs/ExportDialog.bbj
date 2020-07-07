@@ -641,12 +641,14 @@ class public ExportDialog
         declare SheetConfiguration sheetConfiguration!
         sheetConfiguration! = new SheetConfiguration()
         
+        ar! = #grid!.getBinder().getAttributesRecord()
+        rem TODO: calculate the column width with labels instead of culumn names
         fieldWidths! = ColumnWidthCalculator.calculateColumnWidths(rs!, num(cvs(#lbFontSize!.getItemAt(#lbFontSize!.getSelectedIndex()),3)))
 
         visibleRowsVec! = #grid!.getGrid().getState().getVisibleColumns()
         for i = visibleRowsVec!.size() - 1 to 0 step - 1
             fieldName$ = visibleRowsVec!.get(i)
-            header! = dr!.getDataField(fieldName$).getAttribute("LABEL", err=*next)
+            header! = ar!.getDataField(fieldName$).getAttribute("LABEL", err=*next)
             if header! = null() then header! = fieldName$
             width = 80
             width = fieldWidths!.getFieldAsNumber(fieldName$, err=*next)
