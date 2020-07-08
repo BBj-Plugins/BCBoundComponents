@@ -1,42 +1,28 @@
-REM /**
-REM  * BCErrorHandler.bbj
-REM  * @author jcorea
-REM  *
-REM  * an error handler that reacts to the error signal from BCBinder
-REM  */
-
 use ::BusinessUIComponents/AbstractBCBoundWidget.bbj::AbstractBCBoundWidget
 use ::BBjGridExWidget/BBjGridExWidget.bbj::BBjGridExWidget
-use ::BusinessUIComponents/configurations/PropertiesManager.bbj::PropertiesManager
 use ::BusinessUIComponents/configurations/CustomConfigurationsBC.bbj::CustomConfigurationsBC
 use ::BusinessUIComponents/configurations/IPersistentState.bbj::IPersistentState
-use ::BusinessUIComponents/configurations/IPropertiesManager.bbj::IPropertiesManager
 use com.basiscomponents.bc.IConfigurationsBC
 use com.basiscomponents.bc.BCBound
 use com.basiscomponents.bc.IBCBound
 use com.basiscomponents.bc.BCBinder
 use ::BusinessUIComponents/utils/UIUtils.bbj::UIUtils
-
-
 use com.basiscomponents.db.ResultSet
 use com.basiscomponents.db.DataRow
+use com.basiscomponents.ui.theming.Theme
 
 class public WindowHandler implements IBCBound, IPersistentState
 
-    
     field protected BCBinder binder!
     field protected BBjWindow wnd!
     field protected IConfigurationsBC configBC!
     field protected String programName! = ""
     field protected String realm! = "WND"
     field protected BBjNumber closeMode
-    
     field protected static BBjNumber CLOSE_MODE_DESTROY = 100
     field protected static BBjNumber CLOSE_MODE_RELEASE = 110
     field protected static BBjNumber CLOSE_MODE_OFF = 120
-    
-    
-    field protected IPropertiesManager uiPropertiesManager!
+    field private Theme theme! = Theme.getInstance()
 
     method public WindowHandler(BBjWindow wnd!)
         #wnd! = wnd!
@@ -45,129 +31,119 @@ class public WindowHandler implements IBCBound, IPersistentState
         #closeMode = #CLOSE_MODE_RELEASE
         #updateProperties()
     methodend
-    
     rem -----------------------Close mode----------------------------------------
-    
     method public void setCloseMode(BBjNumber closeMode)
         #closeMode = closeMode
+
         if #closeMode = #CLOSE_MODE_OFF then
             #wnd!.clearCallback(BBjAPI().ON_CLOSE)
         endif
     methodend
-    
+
     method public BBjNumber CLOSE_MODE_DESTROY()
         methodret #CLOSE_MODE_DESTROY
     methodend
-    
+
     method public BBjNumber CLOSE_MODE_RELEASE()
         methodret #CLOSE_MODE_RELEASE
     methodend
-    
+
     method public BBjNumber CLOSE_MODE_OFF()
         methodret #CLOSE_MODE_OFF
     methodend
-    
     rem -------------------------BCBinder methods--------------------------------
     method public void setBinder(BCBinder binder!)
         #binder! = binder!
-    methodend   
-     
-    
+    methodend
+
     method public BCBinder getBinder()
         methodret #binder!
-    methodend    
-    
+    methodend
+
     method public DataRow getFieldsForFieldSelection()
         methodret new DataRow()
     methodend
-    
+
     method public void onSetData()
     methodend
-   
+
     method public void onSetSelection()
     methodend
-    
+
     method public Boolean canSetSelection()
         methodret BBjAPI.TRUE
     methodend
-    
+
     method public Boolean canTerminate()
         methodret BBjAPI.TRUE
     methodend
-    
+
     method public void onSignal(int signal!, Object payload!)
         if signal!=BCBinder.SIGNAL_TERMINATE then
-            PropertiesManager.getInstance().terminate();rem kills all instances of PropertiesManager, not just default instance
             #saveWindowConfig()
         endif
+
         if signal!=BCBinder.SIGNAL_DESTROY then
             if #closeMode = #CLOSE_MODE_RELEASE then
-                 release
-             else
+                release
+            else
                 #wnd!.destroy()
             endif
         endif
     methodend
-    
+
     method public DataRow getFieldsForWrite()
         methodret new DataRow()
     methodend
-    
     rem -------------------------custom methods--------------------------------
-    
     method public void onClose(BBjCloseEvent ev!)
-        if #binder! = null() then 
-            PropertiesManager.getInstance().terminate();rem kills all instances of PropertiesManager, not just default instance
+        if #binder! = null() then
             #saveWindowConfig()
             release
         endif
+
         if #closeMode = #CLOSE_MODE_OFF then
             wnd!.setVisible(0)
         else
             #binder!.sendSignal(BCBinder.SIGNAL_INITIATE_TERMINATE)
         endif
     methodend
-    
     rem IPersistentState for configuration BC to save window position and size
-    
-    
-    
     method public void setProgramName(String programName!)
         #programName! = programName!
     methodend
-    
-    
+
     method public void setConfigUser(String user!)
         #configBC!.setUserName(user!)
     methodend
-    
+
     method public void setRealm(String realm!)
         #realm! = realm!
-    methodend    
-    
+    methodend
+
     method public void applyWindowConfig()
         windowFilter! = #configBC!.getFilter().clone()
         windowFilter!.setFieldValue(#configBC!.getFieldNameKeyx(), #programName!)
         windowFilter!.setFieldValue(#configBC!.getFieldNameRealm(), #realm!)
         windowFilter!.setFieldValue(#configBC!.getFieldNameSetting(), "")
-REM         windowFilter!.setFieldValue(#configBC!.getFieldNameUserid(), #configBC!.getUserName())
-        
+        REM         windowFilter!.setFieldValue(#configBC!.getFieldNameUserid(), #configBC!.getUserName())
         #configBC!.setFilter(windowFilter!)
         rs! = #configBC!.retrieve()
         if !rs!.size() then methodret
         autoConfig! = rs!.get(0)
+
         if autoConfig! <> null() then
             config! = autoConfig!.getFieldAsString(#configBC!.getFieldNameConfig())
             #applyState(config!)
         endif
     methodend
-    
+
     method public void saveWindowConfig()
         config! = #getConfigFilter()
         config!.setFieldValue(#configBC!.getFieldNameConfig(), #retrieveState())
         #configBC!.write(config!)
     methodend
-    
+
     method public DataRow getConfigFilter()
         windowFilter! = new DataRow()
         windowFilter!.setFieldValue(#configBC!.getFieldNameKeyx(), #programName!)
@@ -176,7 +152,6 @@ REM         windowFilter!.setFieldValue(#configBC!.getFieldNameUserid(), #config
         windowFilter!.setFieldValue(#configBC!.getFieldNameUserid(), #configBC!.getUserName())
         methodret windowFilter!
     methodend
-    
     rem /**
     rem  * this method will be called to apply the state given by the widget
     rem  * @param state! state string with the state which was stored by the widget
@@ -192,7 +167,6 @@ REM         windowFilter!.setFieldValue(#configBC!.getFieldNameUserid(), #config
         #wnd!.setLocation(x,y)
         #wnd!.setSize(w,h)
     methodend
-    
     rem /**
     rem  * this method will provide the widget with the current state of the component.
     rem  * the widget will store this data for later retrieval
@@ -209,33 +183,24 @@ REM         windowFilter!.setFieldValue(#configBC!.getFieldNameUserid(), #config
         sb!.append(str(h))
         methodret sb!.toString()
     methodend
-    
     rem /**
     rem  * the widget will call this method to register itself for statechanges of the component
     rem  * the method should set a callback which should call the method 'methodName' on 'callable!' whenever the state changed
-    rem  * Event should be BBjCustomEvent. 
+    rem  * Event should be BBjCustomEvent.
     rem  */
     method public void setStateChangeCallback(String methodName!, CustomObject callable!)
         #wnd!.setCallback(#wnd!.ON_RESIZE, callable!, methodName!)
         #wnd!.setCallback(#wnd!.ON_WINDOW_MOVE, callable!, methodName!)
     methodend
-    
-    method public void setUIPropertiesManager(IPropertiesManager uiPropertiesManager!)
-        #uiPropertiesManager! = uiPropertiesManager!
-        #updateProperties()
-    methodend
-    
+
     method protected void updateProperties()
-        if #uiPropertiesManager! = null() then #uiPropertiesManager! = cast(IPropertiesManager, PropertiesManager.getInstance())
-        windowLogo! = #uiPropertiesManager!.getProperty("WINDOW_LOGO")
-        if !windowLogo!.equals("") then 
+        windowLogo! = #theme!.getProperty("WINDOW_LOGO")
+
+        if !windowLogo!.equals("") then
             #wnd!.setIcon(windowLogo!)
         endif
-        r = #uiPropertiesManager!.getPropertyAsNumber("BACKGROUND_RED")
-        g = #uiPropertiesManager!.getPropertyAsNumber("BACKGROUND_GREEN")
-        b = #uiPropertiesManager!.getPropertyAsNumber("BACKGROUND_BLUE")
-        bgColor! = BBjAPI().makeColor(r,g,b)
-        #wnd!.setBackColor(bgColor!)
+
+        #wnd!.setBackColor(#theme!.getBBjBackgroundColor())
         allControls! = UIUtils.getAllControlsRecursive(new BBjVector(), #wnd!, Boolean.TRUE)
         it! = allControls!.iterator()
         while it!.hasNext()
@@ -245,13 +210,12 @@ REM         windowFilter!.setFieldValue(#configBC!.getFieldNameUserid(), #config
                 case BBjControl.TOP_TYPE
                 case BBjControl.CHILD_TYPE
                 case BBjControl.TABCTRL_TYPE
-                    control!.setBackColor(bgColor!)
-REM                     control!.setForeColor(bgColor!)
+                    control!.setBackColor(#theme!.getBBjBackgroundColor())
                     break
                 case default
                     break
             swend
         wend
     methodend
-    
+
 classend

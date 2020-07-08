@@ -3,9 +3,6 @@ use ::BusinessUIComponents/AbstractBCBoundWidget.bbj::AbstractBCBoundWidget
 use ::BusinessUIComponents/BusinessGrid.bbj::BusinessGrid
 use ::BusinessUIComponents/bound/BCErrorHandler.bbj::BCErrorHandler
 use ::BusinessUIComponents/bound/WindowHandler.bbj::WindowHandler
-use ::BusinessUIComponents/configurations/IPropertiesManager.bbj::IPropertiesManager
-use ::BusinessUIComponents/configurations/PropertiesManager.bbj::PropertiesManager
-use ::BusinessUIComponents/configurations/LocalizedPropertiesManager.bbj::LocalizedPropertiesManager
 use com.basiscomponents.bc.BCBinder
 use com.basiscomponents.bc.BusinessComponent
 use com.basiscomponents.db.DataRow
@@ -18,7 +15,6 @@ class public SearchUI
     field protected BCBinder binder!
     field protected BBjSysGui sysgui!
     field protected BBjVector componentsWithProperties! = new BBjVector()
-    field protected IPropertiesManager pm!
     field protected BBjNumber height = 10
     
     field protected BusinessGrid bgrid!
@@ -45,7 +41,7 @@ class public SearchUI
             #wnd! = #sysgui!.addWindow(#sysgui!.getAvailableContext(), 100,100,1020,760,"",$41001010$)
         else
             #wnd! = #sysgui!.addWindow(#sysgui!.getAvailableContext(), 100,100,1020,760,"",$40000093$)
-        fi
+        endif
         #buttonOK! = #wnd!.addButton(1,560,950,100,20,"OK")
         #buttonOK!.setCallback(#buttonOK!.ON_BUTTON_PUSH, "gridSelect")
         #buttonCancel! = #wnd!.addButton(2,660,950,100,20,"Cancel")
@@ -61,7 +57,6 @@ class public SearchUI
         #quickFilterIcon!.setTabTraversable(0)
         #quickFilterIcon!.setFocusable(0)
         #wnd!.setCallback(BBjAPI.ON_RESIZE, #this!,"resize")
-        #updateProperties()
     methodend
     
     method public void initComponents()
@@ -141,7 +136,7 @@ class public SearchUI
     methodend
     
     method public void updateProperties()
-        if #pm! = null() then #pm! = cast(IPropertiesManager, PropertiesManager.getInstance())
+        
         icon! = #pm!.getProperty("SEARCHBAR_BTN_RETRIEVE_IMAGE")
         
         #height = #pm!.getPropertyAsNumber("EDIT_TOOLBAR_HEIGHT")
@@ -163,17 +158,7 @@ class public SearchUI
         #quickFilterIcon!.setImageSize(iconS - 2, iconS - 2)
     methodend
     
-    method public void setUIPropertiesManager(IPropertiesManager pm!)
-        #pm! = pm!
-        it! = #componentsWithProperties!.iterator()
-        while it!.hasNext()
-            component! = it!.next()
-            cast(AbstractBCBoundWidget, component!).setUIPropertiesManager(pm!)
-        wend
-        #windowHandler!.setUIPropertiesManager(pm!)
-        #updateProperties()
-    methodend
-    
+     
     rem ######### add methods for BC bound components #########
     
     method public BCBinder getBinder()
@@ -250,7 +235,6 @@ class public SearchUI
             #bgrid!.getGrid().focus()
         endif
     methodend
-    
     
 
 classend

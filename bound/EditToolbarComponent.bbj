@@ -1,13 +1,11 @@
 use ::BusinessUIComponents/AbstractBCBoundWidget.bbj::AbstractBCBoundWidget
-use ::BusinessUIComponents/configurations/IPropertiesManager.bbj::IPropertiesManager
-use ::BusinessUIComponents/configurations/PropertiesManager.bbj::PropertiesManager
 use ::BBjGridExWidget/BBjGridExWidget.bbj::BBjGridExWidget
 use com.basiscomponents.bc.BCBound
 use com.basiscomponents.bc.BCBinder
-
 use com.basiscomponents.db.ResultSet
 use com.basiscomponents.db.DataRow
-
+use com.basiscomponents.ui.theming.Theme
+use com.basiscomponents.i18n.Props
 rem /**
 rem  * A sample BBj Widget Implementation
 rem  */
@@ -19,24 +17,20 @@ class public EditToolbarComponent extends AbstractBCBoundWidget
     field protected BBjMenuButton btn_refresh!
     field protected BBjMenuButton btn_blank!
     field protected BBjMenuButton btn_background!
-    
-    
     field protected Boolean btn_new_enabled! = Boolean.TRUE
     field protected Boolean btn_save_enabled! = Boolean.TRUE
     field protected Boolean btn_delete_enabled! = Boolean.TRUE
     field protected Boolean btn_refresh_enabled! = Boolean.TRUE
     field protected Boolean btn_blank_enabled! = Boolean.FALSE
-    
     field private Boolean dirty! = BBjAPI.FALSE
-        
+    field private Theme theme! = Theme.getInstance()
+    field private Props props! = Props.getInstance()
     rem --------------------- constructors -------------------------------------
-    
     rem /**
     rem  * disabled default constructor
     rem  */
     method private EditToolbarComponent()
     methodend
-
     rem /**
     rem  * The constructor that creates the widget on wnd!
     rem * @param BBjWindow wnd!: parent window
@@ -49,10 +43,7 @@ class public EditToolbarComponent extends AbstractBCBoundWidget
     method public EditToolbarComponent(BBjWindow wnd!, BBjInt id!, BBjInt x!, BBjInt y!, BBjInt w!, BBjInt h!)
         #super!.create(wnd!,id!,x!,y!,w!,h!)
     methodend
-    
-
-    rem ---------------------- methods from BBjWidget -------------------------------- 
-
+    rem ---------------------- methods from BBjWidget --------------------------------
     rem /**
     rem  * @Override
     rem  * This method is called whenever the widget needs to be rendered
@@ -60,12 +51,16 @@ class public EditToolbarComponent extends AbstractBCBoundWidget
     rem  */
     method public void redraw(Boolean f_init!)
         if (f_init!) then
+            
             #getCanvas().setOpaque(0)
+            bgColor! = #theme!.getPrimaryColorPalette().getBBjColor()
             
             #btn_background! = #getCanvas().addMenuButton(99,0,0,20,20,"")
             #btn_background!.setTabTraversable(0)
             #btn_background!.setFocusable(0)
             #btn_background!.setBorderPainted(1)
+            #btn_background!.setForeColor(bgColor!)
+            #btn_background!.setBackColor(bgColor!)
             
             #btn_new! = #getCanvas().addMenuButton(100,0,0,20,20,"NEW")
             #btn_new!.setCallback(BBjAPI.ON_BUTTON_PUSH,#this!,"onBtnNew")
@@ -73,14 +68,17 @@ class public EditToolbarComponent extends AbstractBCBoundWidget
             #btn_new!.setFocusable(0)
             #btn_new!.setBorderPainted(0)
             #btn_new!.setOpaque(0)
-            
-            
+            #btn_new!.setImage(#theme!.getBBjImage("IC_NEW",#theme!.ON_PRIMARY))
+            #btn_new!.setBackColor(bgColor!)
+
             #btn_save! = #getCanvas().addMenuButton(101,20,0,20,20,"SAVE")
             #btn_save!.setCallback(BBjAPI.ON_BUTTON_PUSH,#this!,"onBtnSave")
             #btn_save!.setTabTraversable(0)
             #btn_save!.setFocusable(0)
             #btn_save!.setBorderPainted(0)
             #btn_save!.setOpaque(0)
+            #btn_save!.setImage(#theme!.getBBjImage("IC_SAVE",#theme!.ON_PRIMARY))
+            #btn_save!.setBackColor(bgColor!)
             
             #btn_delete! = #getCanvas().addMenuButton(102,40,0,20,20,"DELETE")
             #btn_delete!.setCallback(BBjAPI.ON_BUTTON_PUSH,#this!,"onBtnDelete")
@@ -88,6 +86,8 @@ class public EditToolbarComponent extends AbstractBCBoundWidget
             #btn_delete!.setFocusable(0)
             #btn_delete!.setBorderPainted(0)
             #btn_delete!.setOpaque(0)
+            #btn_delete!.setImage(#theme!.getBBjImage("IC_DELETE",#theme!.ON_PRIMARY))
+            #btn_delete!.setBackColor(bgColor!)
             
             #btn_refresh! = #getCanvas().addMenuButton(103,60,0,20,20,"REFRESH")
             #btn_refresh!.setCallback(BBjAPI.ON_BUTTON_PUSH,#this!,"onBtnRefresh")
@@ -95,6 +95,8 @@ class public EditToolbarComponent extends AbstractBCBoundWidget
             #btn_refresh!.setFocusable(0)
             #btn_refresh!.setBorderPainted(0)
             #btn_refresh!.setOpaque(0)
+            #btn_refresh!.setImage(#theme!.getBBjImage("IC_REFRESH",#theme!.ON_PRIMARY))
+            #btn_refresh!.setBackColor(bgColor!)
             
             #btn_blank! = #getCanvas().addMenuButton(104,60,0,20,20,"BLANK")
             #btn_blank!.setCallback(BBjAPI.ON_BUTTON_PUSH,#this!,"onBtnBlank")
@@ -102,102 +104,84 @@ class public EditToolbarComponent extends AbstractBCBoundWidget
             #btn_blank!.setFocusable(0)
             #btn_blank!.setBorderPainted(0)
             #btn_blank!.setOpaque(0)
+            #btn_blank!.setImage(#theme!.getBBjImage("IC_BLANK",#theme!.ON_PRIMARY))
+            #btn_blank!.setBackColor(bgColor!)            
             
+            #alignAndSizeButtons()
             
             #enableControls()
-            #updateProperties()
-        FI
-        #getCanvas().setSize(#getCanvas().getParentWindow().getWidth()+2, #getCanvas().getHeight())
-        #btn_background!.setSize(#getCanvas().getWidth()+4, #btn_background!.getHeight())
-    methodend
-    
-    rem /**
-    rem  * updating properties from properties manager
-    rem  */
-    method protected void updateProperties()
-            #super!.updateProperties()
-            uiProperties! = #getUIPropertiesManager()
-            #btn_new!.setImageFile(uiProperties!.getProperty("EDIT_TOOLBAR_BTN_NEW_IMAGE"))
-            #btn_save!.setImageFile(uiProperties!.getProperty("EDIT_TOOLBAR_BTN_SAVE_IMAGE"))
-            #btn_delete!.setImageFile(uiProperties!.getProperty("EDIT_TOOLBAR_BTN_DELETE_IMAGE"))
-            #btn_refresh!.setImageFile(uiProperties!.getProperty("EDIT_TOOLBAR_BTN_REFRESH_IMAGE"))
-            #btn_blank!.setImageFile(uiProperties!.getProperty("EDIT_TOOLBAR_BTN_BLANK_IMAGE"))
-            r = uiProperties!.getPropertyAsNumber("EDIT_TOOLBAR_BACKGROUND_RED")
-            g = uiProperties!.getPropertyAsNumber("EDIT_TOOLBAR_BACKGROUND_GREEN")
-            b = uiProperties!.getPropertyAsNumber("EDIT_TOOLBAR_BACKGROUND_BLUE")
-            bgColor! = BBjAPI().makeColor(r,g,b)
-            #btn_background!.setForeColor(bgColor!)
-            #btn_background!.setBackColor(bgColor!)
-            #alignAndSizeButtons()
+        endif
 
-            #btn_new!.setBackColor(bgColor!)
-            #btn_save!.setBackColor(bgColor!)
-            #btn_delete!.setBackColor(bgColor!)
-            #btn_refresh!.setBackColor(bgColor!)
-            #btn_blank!.setBackColor(bgColor!)
+        #getCanvas().setSize(#getCanvas().getParentWindow().getWidth() + 2, #getCanvas().getHeight())
+        #btn_background!.setSize(#getCanvas().getWidth() + 4, #btn_background!.getHeight())
     methodend
-    
+
+    REM TODO: this method might be removed. (?) Instead, place the buttons right away in the correct location!
+    REM check: enabled vs. visible
     method protected void alignAndSizeButtons()
-            height = #getUIPropertiesManager().getPropertyAsNumber("EDIT_TOOLBAR_HEIGHT")
-            #getCanvas().setSize(#getCanvas().getWidth(), height + 4)
-            imageSize = height - 4
-            #btn_background!.setSize(#btn_background!.getWidth(), height + 4)
-            currentXpos = 2
-            if #btn_blank_enabled! then
-                #btn_blank!.setImageSize(imageSize, imageSize)
-                #btn_blank!.setSize(height, height)
-                #btn_blank!.setLocation(currentXpos, 2)
-                #btn_blank!.setVisible(1)
-                currentXpos = currentXpos + height
-            else
-                #btn_blank!.setVisible(0)
-            endif
-            if #btn_new_enabled! then
-                #btn_new!.setImageSize(imageSize, imageSize)
-                #btn_new!.setSize(height, height)
-                #btn_new!.setLocation(currentXpos, 2)
-                #btn_new!.setVisible(1)
-                currentXpos = currentXpos + height
-            else
-                #btn_new!.setVisible(0)
-            endif
-            
-            if #btn_save_enabled! then
-                #btn_save!.setImageSize(imageSize, imageSize)
-                #btn_save!.setSize(height, height)
-                #btn_save!.setLocation(currentXpos, 2)
-                #btn_save!.setVisible(1)
-                currentXpos = currentXpos + height
-            else
-                #btn_save!.setVisible(0)
-            endif
-            if #btn_delete_enabled! then
-                #btn_delete!.setImageSize(imageSize, imageSize)
-                #btn_delete!.setSize(height, height)
-                #btn_delete!.setLocation(currentXpos, 2)
-                #btn_delete!.setVisible(1)
-                currentXpos = currentXpos + height
-            else
-                #btn_delete!.setVisible(0)
-            endif
-            if #btn_refresh_enabled! then
-                #btn_refresh!.setImageSize(imageSize, imageSize)
-                #btn_refresh!.setSize(height, height)
-                #btn_refresh!.setLocation(currentXpos, 2)
-                #btn_refresh!.setVisible(1)
-                currentXpos = currentXpos + height
-            else
-                #btn_refresh!.setVisible(0)
-            endif
+        height = #theme!.getNumProperty("PRIMARY_TB_HEIGHT")
+        #getCanvas().setSize(#getCanvas().getWidth(), height + 4)
+        imageSize = height - 4
+        #btn_background!.setSize(#btn_background!.getWidth(), height + 4)
+        currentXpos = 2
+
+        if #btn_blank_enabled! then
+            #btn_blank!.setImageSize(imageSize, imageSize)
+            #btn_blank!.setSize(height, height)
+            #btn_blank!.setLocation(currentXpos, 2)
+            #btn_blank!.setVisible(1)
+            currentXpos = currentXpos + height
+        else
+            #btn_blank!.setVisible(0)
+        endif
+
+        if #btn_new_enabled! then
+            #btn_new!.setImageSize(imageSize, imageSize)
+            #btn_new!.setSize(height, height)
+            #btn_new!.setLocation(currentXpos, 2)
+            #btn_new!.setVisible(1)
+            currentXpos = currentXpos + height
+        else
+            #btn_new!.setVisible(0)
+        endif
+
+        if #btn_save_enabled! then
+            #btn_save!.setImageSize(imageSize, imageSize)
+            #btn_save!.setSize(height, height)
+            #btn_save!.setLocation(currentXpos, 2)
+            #btn_save!.setVisible(1)
+            currentXpos = currentXpos + height
+        else
+            #btn_save!.setVisible(0)
+        endif
+
+        if #btn_delete_enabled! then
+            #btn_delete!.setImageSize(imageSize, imageSize)
+            #btn_delete!.setSize(height, height)
+            #btn_delete!.setLocation(currentXpos, 2)
+            #btn_delete!.setVisible(1)
+            currentXpos = currentXpos + height
+        else
+            #btn_delete!.setVisible(0)
+        endif
+
+        if #btn_refresh_enabled! then
+            #btn_refresh!.setImageSize(imageSize, imageSize)
+            #btn_refresh!.setSize(height, height)
+            #btn_refresh!.setLocation(currentXpos, 2)
+            #btn_refresh!.setVisible(1)
+            currentXpos = currentXpos + height
+        else
+            #btn_refresh!.setVisible(0)
+        endif
     methodend
-    
+
     method public void setEnabledButtons(Boolean btn_blank_enabled!, Boolean btn_new_enabled!, Boolean btn_save_enabled!, Boolean btn_delete_enabled!, Boolean btn_refresh_enabled!)
         #btn_new_enabled! = btn_new_enabled!
         #btn_save_enabled! = btn_save_enabled!
         #btn_delete_enabled! = btn_delete_enabled!
         #btn_refresh_enabled! = btn_refresh_enabled!
         #btn_blank_enabled! = btn_blank_enabled!
-        #alignAndSizeButtons()
     methodend
 
     method private void enableControls()
@@ -205,17 +189,17 @@ class public EditToolbarComponent extends AbstractBCBoundWidget
             #btn_new!.setEnabled(#dirty! = BBjAPI.FALSE)
             #btn_save!.setEnabled(#dirty!)
             #btn_delete!.setEnabled(#getBinder().getSelection().size()>0)
-        fi
+        endif
     methodend
-    
+
     method public void onBtnNew( BBjEvent ev! )
         #getBinder().sendSignal(BCBinder.SIGNAL_NEW)
     methodend
-    
+
     method public void onBtnRefresh( BBjEvent ev! )
         #getBinder().retrieve()
     methodend
-    
+
     method public void onBtnBlank( BBjEvent ev! )
         #getBinder().sendSignal(BCBinder.SIGNAL_BLANK)
     methodend
@@ -228,13 +212,14 @@ class public EditToolbarComponent extends AbstractBCBoundWidget
         bc! = binder!.getBC()
         filter! = bc!.getFilter(err=*next)
         rem if a filter is set, retrieve again, because the newly written record might be filtered out
-        if filter! <> null() and !filter!.isEmpty() then binder!.retrieve()
+        if filter! <> null() and !filter!.isEmpty() then
+            binder!.retrieve()
+        endif
     methodend
-    
-    
+
     method public void onBtnDelete( BBjEvent ev! )
-        text! = #getTextPropertiesManager().getProperty("EDIT_TOOLBAR_DIALOG_DELETE_DATA")
-        header! = #getTextPropertiesManager().getProperty("EDIT_TOOLBAR_DIALOG_HEADER")
+        text! = #props!.getText("EDIT_TOOLBAR_DIALOG_DELETE_DATA")
+        header! = #props!.getText("EDIT_TOOLBAR_DIALOG_HEADER")
         action = msgbox(text!, 33, header!);rem 33 = 1:ok+cancel, 32:?icon
         switch action
             case 1
@@ -244,22 +229,25 @@ class public EditToolbarComponent extends AbstractBCBoundWidget
                 break
             case default
                 break
-         swend
+        swend
     methodend
-    
+
     method public void onSignal(int signal!, Object payload!)
         if signal! = BCBinder.SIGNAL_DIRTY then
             #dirty! = BBjAPI.TRUE
-        fi
+        endif
+
         if signal! = BCBinder.SIGNAL_DELETE then
             #dirty! = BBjAPI.FALSE
-        fi
+        endif
+
         if signal! = BCBinder.SIGNAL_SAVE then
             #dirty! = BBjAPI.FALSE
-        fi
+        endif
+
         #enableControls()
     methodend
-    
+
     method public void onSetSelection()
         #enableControls()
     methodend
@@ -267,15 +255,15 @@ class public EditToolbarComponent extends AbstractBCBoundWidget
     method public void onSetData()
         #enableControls()
     methodend
-    
+
     method public Boolean canTerminate()
         methodret #canSetSelection()
     methodend
-    
+
     method public Boolean canSetSelection()
         if #dirty! then
-            text! = #getTextPropertiesManager().getProperty("EDIT_TOOLBAR_DIALOG_SAVE_DATA")
-            header! = #getTextPropertiesManager().getProperty("EDIT_TOOLBAR_DIALOG_HEADER")
+            text! = #props!.getText("EDIT_TOOLBAR_DIALOG_SAVE_DATA")
+            header! = #props!.getText("EDIT_TOOLBAR_DIALOG_HEADER")
             action = msgbox(text!, 35, header!);rem 33 = 3:yes+no+cancel, 32:?icon
             switch action
                 case 6
@@ -292,10 +280,10 @@ class public EditToolbarComponent extends AbstractBCBoundWidget
                     methodret BBjAPI.FALSE
                 case default
                     methodret BBjAPI.FALSE
-             swend
-        fi
+            swend
+        endif
+
         methodret BBjAPI.TRUE
     methodend
-    
 
 classend

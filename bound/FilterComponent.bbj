@@ -1,20 +1,16 @@
 use ::BusinessUIComponents/AbstractBCBoundWidget.bbj::AbstractBCBoundWidget
 use ::BBjGridExWidget/BBjGridExWidget.bbj::BBjGridExWidget
-use ::BusinessUIComponents/configurations/IPropertiesManager.bbj::IPropertiesManager
-use ::BusinessUIComponents/configurations/PropertiesManager.bbj::PropertiesManager
 use ::BusinessUIComponents/configurations/SelectionBC.bbj::SelectionBC
 use ::BusinessUIComponents/utils/QuickSearchField.bbj::QuickSearchField
 use ::BusinessUIComponents/bound/SimpleFormComponent.bbj::SimpleFormComponent
-
 use ::BusinessUIComponents/configurations/IPersistentState.bbj::IPersistentState
 use ::BusinessUIComponents/configurations/ConfigurationWidget.bbj::ConfigurationWidget
-
 use com.basiscomponents.bc.BCBound
 use com.basiscomponents.bc.BCBinder
 use com.basiscomponents.bc.BusinessComponent
 use com.basiscomponents.db.ResultSet
 use com.basiscomponents.db.DataRow
-
+use  com.basiscomponents.ui.theming.Theme
 use com.google.common.collect.BiMap
 use com.google.common.collect.HashBiMap
 use java.util.HashMap
@@ -22,23 +18,19 @@ use java.util.ArrayList
 use java.time.LocalDateTime
 use java.time.format.DateTimeFormatter
 
-rem /**
-rem  * A sample BBj Widget Implementation
-rem  */
 class public FilterComponent extends SimpleFormComponent
 
     field protected BCBinder mainBinder!
     field protected SelectionBC selectionBC!
     field protected BBjMenuButton fetchButton!
     field protected ConfigurationWidget configWidget!
+    field private Theme theme! = Theme.getInstance()
     rem --------------------- constructors -------------------------------------
-    
     rem /**
     rem  * disabled default constructor
     rem  */
     method private FilterComponent()
     methodend
-
     rem /**
     rem  * The constructor that creates the widget on wnd!
     rem * @param BBjWindow wnd!: parent window
@@ -57,11 +49,11 @@ class public FilterComponent extends SimpleFormComponent
         #setBinder(selectionBinder!)
         selectionBinder!.register(#this!)
     methodend
-    
+
     method public void setKey(String key!)
         #selectionBC!.setKey(key!)
     methodend
-    
+
     method public void setForm(BBjString res_name$, BBjNumber id)
         res = BBjAPI().getSysGui().resOpen(res_name$)
         #setcw(#getCanvas().createChildWindow(res, id, 100, 5, 27))
@@ -71,78 +63,65 @@ class public FilterComponent extends SimpleFormComponent
         #addButtons()
         #addConfigurationWidget()
     methodend
-    
+
     method public BBjNumber getHeight()
         methodret #getCanvas().getHeight()
     methodend
-    
+
     method public void redraw(Boolean f_init!)
         #super!.redraw(f_init!)
+
         if #configWidget! <> null() then
             rem min padding for config widget to allow for the export and fitToGrid buttons to the left
             #configWidget!.setLocation(#getWidth()-155, 2)
-        fi
+        endif
     methodend
-    
+
     method protected void addButtons()
         #fetchButton! = #getCanvas().addMenuButton(#getCanvas().getAvailableControlID(),0,2,20,20,"")
         #fetchButton!.setCallback(#fetchButton!.ON_BUTTON_PUSH,#this!,"buttonPushFetch")
-        #updateProperties()
+        #fetchButton!.setImage(#theme!.getBBjImage("IC_PLAY",Theme.PRIMARY))
+        size = #theme!.getNumProperty("SECONDARY_TB_HEIGHT")
+        #fetchButton!.setSize(size, size)
+        #fetchButton!.setImageSize(size - 4, size - 4)
+
+        if #configWidget! <> null()
+            #configWidget!.setMinPaddingLeft(#fetchButton!.getY() + #fetchButton!.getWidth())
+        endif
+    endif
+
+    #getCanvas().setBackColor(#theme!.getBBjBackgroundColor())
     methodend
-    
+
     method public void buttonPushFetch(BBjEvent ev!)
         #fetch()
     methodend
-    
+
     method protected void fetch()
         #getBinder().getRS().clear();rem clear to only have the write dr in the result set
-REM         #getBinder().setDebugLevel(1)
         #getBinder().sendSignal(BCBinder.SIGNAL_SAVE)
         filter! = #getBinder().getRS().get(0)
         #mainBinder!.getBC().setFilter(filter!)
         #mainBinder!.retrieve()
     methodend
-    
-    
-    
+
     method public void onSetData()
     methodend
 
     method public void onSetSelection()
     methodend
-    
-    
+
     method public DataRow getFieldsForWrite()
         sel! = #getBinder().getSelection()
         sel!.clear();rem clear selection and remove elements in selection because clear does not actually do that
         while sel!.size()
             sel!.remove(0,err=*next)
         wend
+
         fields! = #super!.getFieldsForWrite()
         fields!.setFieldValue(SelectionBC.FIELDNAME_SELECTION_DESC(), "")
         methodret fields!
     methodend
-    
-    method public void setUIPropertiesManager(IPropertiesManager uiPropertiesManager!)
-        #super!.setUIPropertiesManager(uiPropertiesManager!)
-        #updateProperties()
-        if #configWidget! <> null() then #configWidget!.setUIPropertiesManager(uiPropertiesManager!)
-    methodend
-    
-    method protected void updateProperties()
-        #super!.updateProperties()
-        if #fetchButton! <> null() then 
-            #fetchButton!.setImageFile(#getUIPropertiesManager().getProperty("FILTER_BTN_FETCH"))
-            size = #getUIPropertiesManager().getPropertyAsNumber("CONFIG_WIDGET_HEIGHT")
-            #fetchButton!.setSize(size, size)
-            #fetchButton!.setImageSize(size - 4, size - 4)
-            if #configWidget! <> null()
-                #configWidget!.setMinPaddingLeft(#fetchButton!.getY() + #fetchButton!.getWidth())
-            endif
-        endif
-        if #getCanvas() <> null() then #setBackgroundColor()
-    methodend
-    
     rem /**
     rem  * this method will provide the widget with the current state of the component.
     rem  * the widget will store this data for later retrieval
@@ -150,89 +129,35 @@ REM         #getBinder().setDebugLevel(1)
     method public String retrieveState()
         methodret #getFieldsForWrite().toJson(0)
     methodend
-    
     rem /**
     rem  * the widget will call this method to register itself for statechanges of the component
     rem  * the method should set a callback which should call the method 'methodName' on 'callable!' whenever the state changed
-    rem  * Event should be BBjCustomEvent. 
+    rem  * Event should be BBjCustomEvent.
     rem  */
     method public void setStateChangeCallback(String methodName!, CustomObject callable!)
         it! = #getcontrolList().iterator()
-        
         while it!.hasNext()
             c! = cast(BBjControl, it!.next())
             switch c!.getControlType()
                 case BBjControl.INPUTE_TYPE
                 case BBjControl.INPUTN_TYPE
                 case BBjControl.INPUTD_TYPE
-REM                     if c!.getUserData() <> null() then break
-                    c!.setCallback(BBjAPI.ON_INPUT_KEYPRESS,callable!,methodName!) 
+                    c!.setCallback(BBjAPI.ON_INPUT_KEYPRESS,callable!,methodName!)
                     break
                 case BBjControl.LISTBUTTON_TYPE
                 case BBjControl.LISTEDIT_TYPE
-REM                     c!.clearCallback(BBjAPI.ON_LIST_SELECT)
-                    c!.setCallback(BBjAPI.ON_LIST_SELECT,callable!,methodName!) 
+                    c!.setCallback(BBjAPI.ON_LIST_SELECT,callable!,methodName!)
                     break
                 case default
-REM                     c!.clearCallback(BBjAPI.ON_GAINED_FOCUS)
-                    c!.setCallback(BBjAPI.ON_GAINED_FOCUS,callable!,methodName!,err=*next) 
+                    c!.setCallback(BBjAPI.ON_GAINED_FOCUS,callable!,methodName!,err=*next)
                     break
             swend
         wend
     methodend
-    
+
     method protected void addConfigurationWidget()
         #configWidget! = new ConfigurationWidget(#getCanvas(),#getCanvas().getAvailableControlID(), #getWidth()-155, 2 , #this!, "SEL", #selectionBC!.getKey(), #selectionBC!.getConfigurationsBC() )
         #configWidget!.setMinPaddingLeft(#fetchButton!.getY() + #fetchButton!.getWidth())
     methodend
-    
-REM     
-REM     method public void buildControlMap()
-REM         #super!.buildControlMap()
-REM         #removeCallbacks()
-REM     methodend
-REM     
-REM     method protected void removeCallbacks()
-REM         it! = #getcontrolList().iterator()
-REM         while it!.hasNext()
-REM             c! = cast(BBjControl, it!.next())
-REM             switch c!.getControlType()
-REM                 case BBjControl.INPUTE_TYPE
-REM                 case BBjControl.INPUTN_TYPE
-REM                 case BBjControl.INPUTD_TYPE
-REM                     c!.clearCallback(BBjAPI.ON_EDIT_MODIFY, err=*next) 
-REM                     break
-REM                 case BBjControl.LISTBUTTON_TYPE
-REM                 case BBjControl.LISTEDIT_TYPE
-REM                     c!.clearCallback(BBjAPI.ON_LIST_SELECT, err=*next) 
-REM                     break
-REM                 case default
-REM                     c!.clearCallback(BBjAPI.ON_GAINED_FOCUS, err=*next) 
-REM                     break
-REM             swend
-REM         wend
-REM     methodend
-REM 
-REM     rem ---------------------- methods from BBjWidget -------------------------------- 
-REM 
-REM     
-REM     method public void onSignal(int signal!, Object payload!)
-REM         binder! = #getBinder()
-REM         switch signal!
-REM             case binder!.SIGNAL_BLANK
-REM                 #clearForm()
-REM                 break
-REM             case binder!.SIGNAL_TERMINATE
-REM                 it! = #getquickSearchElements().iterator()
-REM                 while it!.hasNext()
-REM                     qs! = cast(QuickSearchField, it!.next())
-REM                     qs!.terminateSearchUI()
-REM                 wend
-REM                 break
-REM             case default
-REM                 break
-REM         swend
-REM     methodend
-    
 
 classend

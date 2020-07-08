@@ -66,7 +66,7 @@ class public HorizontalSplitter extends BBjWidget
             #getCanvas().setCallback(BBjAPI.ON_MOUSE_DOWN,#this!,"onSplitMouseDown")
             #getCanvas().setCallback(BBjAPI.ON_MOUSE_UP,#this!,"onSplitMouseUp")
             #getCanvas().setCallback(BBjAPI.ON_MOUSE_MOVE,#this!,"onSplitMouseMove")
-        FI
+        endif
 
         
     methodend
@@ -133,12 +133,12 @@ class public HorizontalSplitter extends BBjWidget
     
         if #UiwTop! <> null() then
             #UiwTop!.setSize(#W,#SplitPos-4)
-        fi
+        endif
 
         if #UiwBottom! <> null() then
 
             #UiwBottom!.setSize(#W,#H-#SplitPos-4)
-        fi
+        endif
     
         #Split!.setLocation(0,#SplitPos)
         #Split!.setSize(#W,4)
@@ -166,7 +166,7 @@ class public HorizontalSplitter extends BBjWidget
         if #dragging then
             #SplitPos = min(ev!.getY())
             #Split!.setLocation(0,#SplitPos)
-        fi
+        endif
         
     methodend  
     

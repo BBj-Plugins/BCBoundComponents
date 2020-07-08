@@ -1,39 +1,24 @@
-REM /**
-REM  * SearchBar.bbj
-REM  * @author jcorea
-REM  *
-REM  */
-
-
 use ::BusinessUIComponents/AbstractBCBoundWidget.bbj::AbstractBCBoundWidget
-use ::BusinessUIComponents/configurations/IPropertiesManager.bbj::IPropertiesManager
-use ::BusinessUIComponents/configurations/PropertiesManager.bbj::PropertiesManager
 use ::BBjGridExWidget/BBjGridExWidget.bbj::BBjGridExWidget
 use com.basiscomponents.bc.BCBound
 use com.basiscomponents.bc.BCBinder
-
 use com.basiscomponents.db.ResultSet
 use com.basiscomponents.db.DataRow
+use com.basiscomponents.ui.theming.Theme
 
-rem /**
-rem  * A sample BBj Widget Implementation
-rem  */
 class public SearchBar extends AbstractBCBoundWidget
 
     field private BBjToolButton btn_retrieve!
     field private BBjInputE searchField!
-    
     field protected BBjNumber minLength = 100
+    field private Theme theme! = Theme.getInstance()
     
-        
     rem --------------------- constructors -------------------------------------
-    
     rem /**
     rem  * disabled default constructor
     rem  */
     method private SearchBar()
     methodend
-
     rem /**
     rem  * The constructor that creates the widget on wnd!
     rem * @param BBjWindow wnd!: parent window
@@ -46,10 +31,7 @@ class public SearchBar extends AbstractBCBoundWidget
     method public SearchBar(BBjWindow wnd!, BBjInt id!, BBjInt x!, BBjInt y!, BBjInt w!, BBjInt h!)
         #super!.create(wnd!,id!,x!,y!,w!,h!)
     methodend
-    
-
-    rem ---------------------- methods from BBjWidget -------------------------------- 
-
+    rem ---------------------- methods from BBjWidget --------------------------------
     rem /**
     rem  * @Override
     rem  * This method is called whenever the widget needs to be rendered
@@ -63,20 +45,17 @@ class public SearchBar extends AbstractBCBoundWidget
             #updateProperties()
             #searchField!.setCallback(#searchField!.ON_GAINED_FOCUS, #this!, "controlChangeBackColorOnGainedFocus")
             #searchField!.setCallback(#searchField!.ON_LOST_FOCUS, #this!, "controlChangeBackColorOnLostFocus")
-        FI
+        endif
     methodend
-    
     rem /**
     rem  * updating properties from properties manager
     rem  */
     method protected void updateProperties()
         #super!.updateProperties()
-        uiProperties! = #getUIPropertiesManager()
-        #btn_retrieve!.setImageFile(uiProperties!.getProperty("SEARCHBAR_BTN_RETRIEVE_IMAGE"))
-        size = uiProperties!.getPropertyAsNumber("SEARCHBAR_HEIGHT")
+        #btn_retrieve!.setImage(#theme!.getBBjImage("IC_SEARCH"))
+        size = #theme!.getNumProperty("SECONDARY_TB_HEIGHT")
         #btn_retrieve!.setImageSize(size, size)
     methodend
-
     rem /**
     rem  * adds "_SEARCH" field to the bc filter and fetches a retrieve
     rem  */
@@ -85,39 +64,42 @@ class public SearchBar extends AbstractBCBoundWidget
         binder! = #getBinder()
         bc! = binder!.getBC()
         filter! = bc!.getFilter(err=*next)
-        if filter! = null() then filter! = new DataRow()
+
+        if filter! = null() then
+            filter! = new DataRow()
+        endif
+
         if searchString!.trim().equals("") then
             filter!.removeField("_SEARCH", err=*next)
         else
             filter!.setFieldValue("_SEARCH", "*" + searchString! + "*")
         endif
+
         bc!.setFilter(filter!)
         binder!.retrieve()
     methodend
 
     method public void onSignal(int signal!, Object payload!)
     methodend
-    
+
     method public void onSetSelection()
     methodend
 
     method public void onSetData()
-        
     methodend
-    
+
     method public Boolean canSetSelection()
         methodret BBjAPI.TRUE
     methodend
-    
+
     method public void controlChangeBackColorOnGainedFocus(BBjGainedFocusEvent ev!)
         control! = ev!.getControl()
         control!.setBackColor(#getColorFocusGained())
     methodend
-    
+
     method public void controlChangeBackColorOnLostFocus(BBjLostFocusEvent ev!)
         control! = ev!.getControl()
         control!.setBackColor(#getColorFocusLost())
     methodend
-    
 
 classend

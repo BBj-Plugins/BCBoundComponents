@@ -12,6 +12,7 @@ BEGIN
     STATICTEXT 100, "Company:", 10, 51, 90, 25
     BEGIN
         NAME "Static Text100"
+        NOT OPAQUE
         NOT WORDWRAP
     END
 
@@ -26,6 +27,7 @@ BEGIN
     STATICTEXT 102, "Firstname:", 10, 82, 90, 25
     BEGIN
         NAME "Static Text102"
+        NOT OPAQUE
         NOT WORDWRAP
     END
 
@@ -40,6 +42,7 @@ BEGIN
     STATICTEXT 104, "Lastname:", 10, 112, 90, 25
     BEGIN
         NAME "Static Text104"
+        NOT OPAQUE
         NOT WORDWRAP
     END
 
@@ -54,42 +57,49 @@ BEGIN
     STATICTEXT 107, "Billing Address:", 10, 143, 90, 25
     BEGIN
         NAME "Static Text107"
+        NOT OPAQUE
         NOT WORDWRAP
     END
 
     STATICTEXT 109, "City:", 370, 20, 90, 25
     BEGIN
         NAME "Static Text109"
+        NOT OPAQUE
         NOT WORDWRAP
     END
 
     STATICTEXT 106, "State:", 370, 51, 90, 25
     BEGIN
         NAME "Static Text106"
+        NOT OPAQUE
         NOT WORDWRAP
     END
 
     STATICTEXT 110, "Country:", 370, 81, 90, 25
     BEGIN
         NAME "Static Text110"
+        NOT OPAQUE
         NOT WORDWRAP
     END
 
     STATICTEXT 111, "Post Code:", 370, 113, 90, 25
     BEGIN
         NAME "Static Text111"
+        NOT OPAQUE
         NOT WORDWRAP
     END
 
     STATICTEXT 112, "Phone:", 370, 144, 90, 25
     BEGIN
         NAME "Static Text112"
+        NOT OPAQUE
         NOT WORDWRAP
     END
 
     STATICTEXT 113, "Fax:", 370, 175, 90, 25
     BEGIN
         NAME "Static Text113"
+        NOT OPAQUE
         NOT WORDWRAP
     END
 
@@ -168,6 +178,7 @@ BEGIN
     STATICTEXT 122, "Customer Nr:", 10, 20, 90, 25
     BEGIN
         NAME "Static Text122"
+        NOT OPAQUE
         NOT WORDWRAP
     END
 
