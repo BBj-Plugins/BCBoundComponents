@@ -1,36 +1,26 @@
 use ::BusinessUIComponents/AbstractBCBoundWidget.bbj::AbstractBCBoundWidget
-use ::BusinessUIComponents/configurations/IPropertiesManager.bbj::IPropertiesManager
-use ::BusinessUIComponents/configurations/PropertiesManager.bbj::PropertiesManager
 use ::BBjGridExWidget/BBjGridExWidget.bbj::BBjGridExWidget
 use com.basiscomponents.bc.BCBound
 use com.basiscomponents.bc.BCBinder
-
 use com.basiscomponents.db.ResultSet
 use com.basiscomponents.db.DataRow
+use com.basiscomponents.ui.theming.Theme
 
-rem /**
-rem  * A sample BBj Widget Implementation
-rem  */
 class public NavigatorComponent extends AbstractBCBoundWidget
-
-REM     field private BBjNavigator nav!
     field private BBjToolButton btn_first!
     field private BBjToolButton btn_last!
     field private BBjToolButton btn_previous!
     field private BBjToolButton btn_next!
     field private BBjInputE     input_display!
-    
     field private BBjVector keys!
     field private BBjVector keyLabels!
-    
+    field private Theme theme! = Theme.getInstance()
     rem --------------------- constructors -------------------------------------
-    
     rem /**
     rem  * disabled default constructor
     rem  */
     method private NavigatorComponent()
     methodend
-
     rem /**
     rem  * The constructor that creates the widget on wnd!
     rem * @param BBjWindow wnd!: parent window
@@ -43,10 +33,7 @@ REM     field private BBjNavigator nav!
     method public NavigatorComponent(BBjWindow wnd!, BBjInt id!, BBjInt x!, BBjInt y!, BBjInt w!, BBjInt h!)
         #super!.create(wnd!,id!,x!,y!,w!,h!)
     methodend
-    
-
-    rem ---------------------- methods from BBjWidget -------------------------------- 
-
+    rem ---------------------- methods from BBjWidget --------------------------------
     rem /**
     rem  * @Override
     rem  * This method is called whenever the widget needs to be rendered
@@ -60,36 +47,31 @@ REM     field private BBjNavigator nav!
             #btn_previous!.setCallback(BBjAPI.ON_TOOL_BUTTON_PUSH,#this!,"onNavPrev")
             #btn_next!.setCallback(BBjAPI.ON_TOOL_BUTTON_PUSH,#this!,"onNavNext")
             #updateProperties()
-        FI
-        uiProperties! = #getUIPropertiesManager()
-        width = uiProperties!.getPropertyAsNumber("NAVIGATOR_WIDTH")
-        height = uiProperties!.getPropertyAsNumber("NAVIGATOR_HEIGHT")
+        endif
+
+        width = #theme!.getNumProperty("NAVIGATOR_WIDTH")
+        height = #theme!.getNumProperty("SECONDARY_TB_HEIGHT")
         #resizeComponents(width, height)
-REM         #resizeComponents(#getWidth(), #getHeight())
     methodend
-    
     rem /**
     rem  * updating properties from properties manager
     rem  */
     method protected void updateProperties()
-            #super!.updateProperties()
-            uiProperties! = #getUIPropertiesManager()
-            
-            #btn_first!.setImageFile(uiProperties!.getProperty("NAVIGATOR_BTN_FIRST_IMAGE"))
-            #btn_previous!.setImageFile(uiProperties!.getProperty("NAVIGATOR_BTN_PREVIOUS_IMAGE"))
-            #btn_last!.setImageFile(uiProperties!.getProperty("NAVIGATOR_BTN_LAST_IMAGE"))
-            #btn_next!.setImageFile(uiProperties!.getProperty("NAVIGATOR_BTN_NEXT_IMAGE"))
-            
-            
-            height = uiProperties!.getPropertyAsNumber("NAVIGATOR_HEIGHT")
-            if height > 0 then 
-                #btn_first!.setImageSize(height, height)
-                #btn_previous!.setImageSize(height, height)
-                #btn_last!.setImageSize(height, height)
-                #btn_next!.setImageSize(height, height)
-            endif
+        #super!.updateProperties()
+        #btn_first!.setImage(theme!.getBBjImage("IC_NAV_FIRST"))
+        #btn_previous!.setImage(theme!.getBBjImage("IC_NAV_PREVIOUS"))
+        #btn_last!.setImage(theme!.getBBjImage("IC_NAV_LAST"))
+        #btn_next!.setImage(theme!.getBBjImage("IC_NAV_NEXT"))
+        height = uiProperties!.getPropertyAsNumber("NAVIGATOR_HEIGHT")
+
+        if height > 0 then
+            #btn_first!.setImageSize(height, height)
+            #btn_previous!.setImageSize(height, height)
+            #btn_last!.setImageSize(height, height)
+            #btn_next!.setImageSize(height, height)
+        endif
     methodend
-    
+
     method private void generateNavigator(BBjNumber ID, BBjNumber x, BBjNumber y, BBjNumber width, BBjNumber height, String title!)
         #btn_first!     = #getCanvas().addToolButton(#getCanvas().getAvailableControlID(), x,y,height,height,"")
         #btn_previous!  = #getCanvas().addToolButton(#getCanvas().getAvailableControlID(), x + height,y,height,height,"")
@@ -98,21 +80,27 @@ REM         #resizeComponents(#getWidth(), #getHeight())
         displayWidth!   = #btn_next!.getX() - #btn_previous!.getX() - height
         #input_display! = #getCanvas().addInputE(#getCanvas().getAvailableControlID(), x + (2 * height),y,displayWidth!,height,"")
     methodend
-    
+
     method public void resizeComponents(BBjNumber width!, BBjNumber height!)
         x = 0
         y = 0
+
         if width! < (4*height!) then
             width! = 4*height!
         endif
+
         #btn_first!.setLocation(x,y)
         #btn_first!.setSize(height!, height!)
+        
         #btn_previous!.setLocation(x + height!,y)
         #btn_previous!.setSize(height!, height!)
+        
         #btn_last!.setLocation(x + width! - height!,y)
         #btn_last!.setSize(height!, height!)
+        
         #btn_next!.setLocation(x + width! - (2 * height!),y)
         #btn_next!.setSize(height!, height!)
+        
         #input_display!.setLocation(x + (2 * height!),y + 1)
         displayWidth!   = #btn_next!.getX() - #btn_previous!.getX() - height!
         #input_display!.setSize(displayWidth!, height! - 2)
@@ -121,62 +109,74 @@ REM         #resizeComponents(#getWidth(), #getHeight())
     method private void updateScreen()
         sel! = #getBinder().getSelection()
         rs! = #getBinder().getRS()
+
         if rs! <> null() then
             max = rs!.size()
         else
             max = 0
         endif
+
         if sel! <> null() then
             count = sel!.size()
         else
             count = 0
         endif
+
         text! = str(count) + " of " + str(max) + " selected. "
+
         declare DataRow firstSel!
+
         if count = 1 then
-REM             firstSel! = cast(DataRow, rs!.get(sel!.get(0)))
-REM             text! = text! + ": " + firstSel!.toJson(0)
-                text! = text! + #getRowDescription()
+            text! = text! + #getRowDescription()
         endif
+
         #input_display!.setText(text!)
     methodend
-    
+
     method protected String getRowDescription()
         #scanKeysAndLabels()
         sel! = #getBinder().getSelection()
         rs! = #getBinder().getRS()
         firstSel! = cast(DataRow, rs!.get(sel!.get(0)))
         rowDescription! = "("
-        if #keys!.isEmpty() then methodret ""
+
+        if #keys!.isEmpty() then
+            methodret ""
+        endif
+
         for i=0 to #keys!.size() - 1
             key! = #keys!.get(i)
             label! = #keyLabels!.get(i)
             value! = firstSel!.getFieldAsString(key!)
             rowDescription! = rowDescription! + label! + ":" + value! + ", "
         next i
+
         rowDescription! = rowDescription!.substring(0,rowDescription!.length() - 2) + ")"
         methodret rowDescription!
     methodend
-    
+
     method private void scanKeysAndLabels()
-        if #keys! <> null() then methodret
+        if #keys! <> null() then
+            methodret
+        endif
+
         #keys! = new BBjVector()
         #keyLabels! = new BBjVector()
         attributes! = #getBinder().getBC().getAttributesRecord()
         fieldNames! = attributes!.getFieldNames()
-        
         it! = fieldNames!.iterator()
         while it!.hasNext()
             fieldName! = it!.next()
-            
-            label! = ""; editable! = ""
+            label! = ""
+            editable! = ""
             editable! = attributes!.getFieldAttribute(fieldName!, "EDITABLE",err=*next)
             label! = attributes!.getFieldAttribute(fieldName!, "LABEL",err=*next)
-            
             rem no key field? continue
-            if !editable!.trim().equals("2") then continue
+            if !editable!.trim().equals("2") then
+                continue
+            endif
+
             #keys!.add(fieldName!)
-            
             rem if field has no label: use fieldname as label
             if label!.trim().equals("")  then
                 #keyLabels!.add(fieldName!)
@@ -185,7 +185,7 @@ REM             text! = text! + ": " + firstSel!.toJson(0)
             endif
         wend
     methodend
-    
+
     method public void onSetData()
         #updateScreen()
     methodend
@@ -197,15 +197,15 @@ REM             text! = text! + ": " + firstSel!.toJson(0)
     method public void onNavFirst( BBjToolButtonPushEvent ev! )
         #getBinder().setSelection(BCBinder.SEL_FIRST)
     methodend
-    
+
     method public void onNavNext ( BBjToolButtonPushEvent ev! )
         #getBinder().setSelection(BCBinder.SEL_NEXT)
     methodend
-    
+
     method public void onNavPrev( BBjToolButtonPushEvent ev! )
         #getBinder().setSelection(BCBinder.SEL_PREVIOUS)
     methodend
-    
+
     method public void onNavLast( BBjToolButtonPushEvent ev! )
         #getBinder().setSelection(BCBinder.SEL_LAST)
     methodend

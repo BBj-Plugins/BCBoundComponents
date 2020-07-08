@@ -1,51 +1,39 @@
 REM /**
 REM  * GridConfigurationWidget.bbj
-REM  * @author jcorea
 REM  * Configuration widget to save/load a state of a component in a VKEYED file.
 REM  *
 REM  */
-
 use ::BBjGridExWidget/BBjGridExWidget.bbj::BBjGridExWidget
 use ::BBjWidget/BBjWidget.bbj::BBjWidget
 use ::BBjGridExWidget/BBjGridExWidgetState.bbj::BBjGridExWidgetState
-use ::BusinessUIComponents/configurations/IPropertiesManager.bbj::IPropertiesManager
-use ::BusinessUIComponents/configurations/PropertiesManager.bbj::PropertiesManager
-use ::BusinessUIComponents/configurations/LocalizedPropertiesManager.bbj::LocalizedPropertiesManager
 use ::BusinessUIComponents/configurations/CustomConfigurationsBC.bbj::CustomConfigurationsBC
 use ::BusinessUIComponents/configurations/ConfigurationStateHandler.bbj::ConfigurationStateHandler
 use ::BusinessUIComponents/configurations/IPersistentState.bbj::IPersistentState
 use com.basiscomponents.bc.IConfigurationsBC
 use com.basiscomponents.db.DataRow
 use com.basiscomponents.db.ResultSet
+use com.basiscomponents.ui.theming.Theme
+use com.basiscomponents.i18n.Props
 use java.util.UUID
 use java.io.File
 
 class public ConfigurationWidget extends BBjWidget
 
-    field private IPropertiesManager uiPropertiesManager!
     field private IPropertiesManager textPropertiesManager!
-
     field protected BBjWindow container!
     field protected BBjMenuButton buttonDelete!
     field protected BBjMenuButton buttonSave!
     field protected BBjMenuButton buttonAdmin!
-    
     field protected Boolean buttonSaveEnabled! = Boolean.FALSE
     field protected Boolean buttonDeleteEnabled! = Boolean.FALSE
     field protected Boolean buttonAdminEnabled! = Boolean.FALSE
-    
     field protected Boolean popupMode! = Boolean.FALSE
-    
-    
     field protected BBjMenuButton popupButton!
     field protected BBjPopupMenu popupMenu!
     field protected BBjMenuItem menuDelete!
     field protected BBjMenuItem menuSave!
     field protected BBjCheckableMenuItem menuAdmin!
     field protected BBjCheckableMenuItem menuFactoryDefaults!
-    
-    
-    
     field protected BBjListEdit listEditOptions!
     field protected ResultSet availableConfigs!
     field protected IConfigurationsBC bc!
@@ -53,60 +41,48 @@ class public ConfigurationWidget extends BBjWidget
     field protected static Boolean allowAdmin! = Boolean.FALSE
     field protected static Boolean allowFactoryDefaults! = Boolean.FALSE
     field protected Boolean bcInitialized! = Boolean.FALSE
-    
     field protected String realm!
     field protected String keyx!
     field protected String userName!
-    
     field protected static BBjColor ADMIN_ENABLED_COLOR! = BBJAPI().makeColor(0,250,0)
     field protected static BBjColor ADMIN_DISABLED_COLOR!  = BBJAPI().makeColor(100,100,100)
-    
     field private BBjColor colorFocusGained! = BBjAPI().getSysGui().makeColor(255,255,255)
     field private BBjColor colorFocusLost! = BBjAPI().getSysGui().makeColor(255,255,255)
-
     field protected static String ON_STATE_CHANGE! = "STATE_CHANGE"
     field protected static String ON_CONFIGURATION_CHANGE! = "CONFIGURATION_CHANGE"
-    
     field protected static BBjNumber ACCESS_MODE_FACTORYDEFAULT = 0
     field protected static BBjNumber ACCESS_MODE_ADMIN          = 1
     field protected static BBjNumber ACCESS_MODE_USER           = 2
-    
     field protected BBjNumber selectedIndex = -1
     field protected String widgetID! = UUID.randomUUID().toString()
     field protected ConfigurationStateHandler stateHandler!
-    
     field protected BBjNumber minPaddingLeft = 0
     field protected BBjNumber widgetWidth = 0
     field protected BBjNumber widgetHeight = 0
     field protected BBjNumber listEditPopupHeight = 0
     field protected BBjNumber optionsListeditWidth = 0
+    field private Theme theme! = Theme.getInstance()
+    field private Props props! = Props.getInstance()
     rem /**
     rem  * default constructor disabled
     rem  */
     method private ConfigurationWidget()
     methodend
-    
     rem deprecated - allow admin is now static
     method public ConfigurationWidget(BBjWindow container!, BBjNumber id, BBjNumber x, BBjNumber y, IPersistentState statePersistable!, Boolean allowAdmin!)
         #this!(container!, id, x, y, statePersistable!,  "", "", null())
-        
         print 'SHOW',"Call to deprecated constructor of ConfigurationWidget - AllowAdmin is now globally set and static "
-        
     methodend
-
     rem deprecated - allow admin is now static
     method public ConfigurationWidget(BBjWindow container!, BBjNumber id, BBjNumber x, BBjNumber y, IPersistentState statePersistable!, Boolean allowAdmin!, String realm!, String keyx!, IConfigurationsBC bc!)
         #this!(container!, id, x, y, statePersistable!, realm!, keyx!, bc!)
-        
         print 'SHOW',"Call to deprecated constructor of ConfigurationWidget - AllowAdmin is now globally set and static "
-        
     methodend
 
     method public ConfigurationWidget(BBjWindow container!, BBjNumber id, BBjNumber x, BBjNumber y, IPersistentState statePersistable!)
         #this!(container!, id, x, y, statePersistable!,  "", "", null())
     methodend
-    
-    
+
     method public ConfigurationWidget(BBjWindow container!, BBjNumber id, BBjNumber x, BBjNumber y, IPersistentState statePersistable!, String realm!, String keyx!, IConfigurationsBC bc!)
         #super!()
         #accessMode = #ACCESS_MODE_USER
@@ -115,18 +91,20 @@ class public ConfigurationWidget extends BBjWidget
         if keyx!.length() > 35 then
             keyx! = keyx!.substring(keyx!.length() - 35)
         endif
+
         #keyx! = keyx!
         #container! = container!
+
         if bc! <> null() then
             #bc! = bc!
             #userName! = #bc!.getUserName()
-        else 
+        else
             #userName! = ""
         endif
+
         #stateHandler! = new ConfigurationStateHandler(statePersistable!, #this!)
         #create(container!,id,x,y,160,20)
     methodend
-    
     rem /**
     rem  * sets the bc and the userName from the bc and redraws, which triggers an init
     rem  */
@@ -136,7 +114,7 @@ class public ConfigurationWidget extends BBjWidget
         #setUserName(#bc!.getUserName())
         #redraw(0)
     methodend
-    
+
     method protected void createPopupButton()
         #popupButton! = #getCanvas().addMenuButton(#getCanvas().getAvailableControlID(), 100,0,20,20, "")
         #popupMenu! = #popupButton!.addDropdownMenu()
@@ -145,52 +123,53 @@ class public ConfigurationWidget extends BBjWidget
         #menuSave!   = #popupMenu!.insertMenuItem(1, 1100, "Save")
         #menuSave!.setCallback(BBjPopupMenu.ON_POPUP_ITEM_SELECT, #this!, "saveButtonPush")
         nextIndex = 2
+
         if #allowAdmin! then
             if #accessMode = #ACCESS_MODE_ADMIN then
                 isChecked! = Boolean.TRUE
             else
                 isChecked! = Boolean.FALSE
             endif
+
             #menuAdmin! = #popupMenu!.insertCheckableMenuItem(nextIndex, 1200, "Admin",isChecked!)
             #menuAdmin!.setCallback(#menuAdmin!.ON_POPUP_ITEM_SELECT, #this!, "adminButtonPush")
             nextIndex = nextIndex + 1
         endif
+
         if #allowFactoryDefaults! then
             if #accessMode = #ACCESS_MODE_FACTORYDEFAULT then
                 isChecked! = Boolean.TRUE
             else
                 isChecked! = Boolean.FALSE
             endif
+
             #menuFactoryDefaults! = #popupMenu!.insertCheckableMenuItem(nextIndex, 1300, "FactoryDefault",isChecked!)
             #menuFactoryDefaults!.setCallback(#menuFactoryDefaults!.ON_POPUP_ITEM_SELECT, #this!, "adminButtonPush")
         endif
     methodend
-    
+
     method protected void togglePopupMode(Boolean popupVisible!)
         #popupMode! = popupVisible!
         #updateButtons()
     methodend
-    
+
     method protected void updateButtons()
         if #popupMode! then
             #popupButton!.setVisible(1)
-REM             #listEditOptions!.setPopupMenu(#popupMenu!)
-REM             #popupMenu!.setVisible(Boolean.TRUE)
-            
+            REM             #listEditOptions!.setPopupMenu(#popupMenu!)
+            REM             #popupMenu!.setVisible(Boolean.TRUE)
             #buttonDelete!.setVisible(Boolean.FALSE)
             #buttonSave!.setVisible(Boolean.FALSE)
             if #allowAdmin! or #allowFactoryDefaults! then #buttonAdmin!.setVisible(Boolean.FALSE)
         else
             #popupButton!.setVisible(0)
-REM             #listEditOptions!.removePopupMenu()
-REM             #popupMenu!.setVisible(Boolean.TRUE)
-            
+            REM             #listEditOptions!.removePopupMenu()
+            REM             #popupMenu!.setVisible(Boolean.TRUE)
             #buttonDelete!.setVisible(#buttonDeleteEnabled!)
             #buttonSave!.setVisible(#buttonSaveEnabled!)
             if #allowAdmin! or #allowFactoryDefaults! then #buttonAdmin!.setVisible(Boolean.TRUE)
         endif
     methodend
-    
     rem /**
     rem  * sets the username in the widget and also in the bc depending if admin mode is enabled
     rem  */
@@ -209,36 +188,34 @@ REM             #popupMenu!.setVisible(Boolean.TRUE)
                 break
         swend
     methodend
-    
+
     method public void setRealm(String realm!)
         #realm! = realm!
     methodend
-    
+
     method public void setKeyX(String keyx!)
         #keyx! = keyx!
     methodend
-    
+
     method public String getRealm()
         methodret #realm!
     methodend
-    
+
     method public String getUserName()
         methodret #realm!
     methodend
-    
+
     method public String getKeyX()
         methodret #keyx!
     methodend
-    
-    
+
     method public void setMinPaddingLeft(BBjNumber minPaddingLeft)
         #minPaddingLeft = minPaddingLeft
     methodend
-    
+
     method public BBjNumber getMinPaddingLeft()
         methodret #minPaddingLeft
     methodend
-    
     rem /**
     rem  * @Override
     rem  * This method is called whenever the widget needs to be rendered
@@ -250,154 +227,147 @@ REM             #popupMenu!.setVisible(Boolean.TRUE)
             #listEditOptions!.setFieldHeight(18)
             #buttonDelete!      = #getCanvas().addMenuButton(#getCanvas().getAvailableControlID(), 100,0,20,20,"")
             #buttonSave!        = #getCanvas().addMenuButton(#getCanvas().getAvailableControlID(), 120,0,20,20,"")
-REM             #buttonSave!.setShortCue("save")
+            REM             #buttonSave!.setShortCue("save")
             if #allowAdmin! or #allowFactoryDefaults! then
                 #buttonAdmin!       = #getCanvas().addMenuButton(#getCanvas().getAvailableControlID(), 140,0,20,20,"")
                 #buttonAdmin!.setBorderPainted(1)
-REM                 #buttonAdmin!.setShortCue("Admin mode (currently disabled)")
+                REM                 #buttonAdmin!.setShortCue("Admin mode (currently disabled)")
             endif
+
             #createPopupButton()
             #toggleSaveButton(Boolean.FALSE)
-            #updateProperties()
+            #widgetWidth = cast(BBjNumber, #theme!.getNumProperty("CONFIG_WIDGET_WIDTH"))
+            #widgetHeight = cast(BBjNumber, #theme!.getNumProperty("SECONDARY_TB_HEIGHT"))
+            #listEditOptions!.setFieldHeight(#widgetHeight - 2)
+            #getCanvas().setSize(#widgetWidth + 2, #widgetHeight + 2)
+            #optionsListeditWidth = #widgetWidth - (3 * #widgetHeight);REM list edit is widget width minus the 3 buttons
+            #listEditPopupHeight = cast(BBjNumber, #theme!.getNumProperty("CONFIG_WIDGET_LISTEDIT_POPUP_HEIGHT"))
+            #buttonDelete!.setImage(#theme!.getBBjImage("IC_DELETE"))
+            size = #theme!.getNumProperty("SECONDARY_TB_HEIGHT") - 4
+            #buttonDelete!.setImageSize(size,size)
+            #buttonDelete!.setSize(size + 2, size + 2)
+            #buttonDelete!.setShortCue(#props!.getText("CONFIG_WIDGET_BTN_DELETE_SHORT_CUE"))
+            #buttonSave!.setImage(#theme!.getBBjImage("IC_SAVE"))
+            #buttonSave!.setImageSize(size,size)
+            #buttonSave!.setSize(size + 2, size + 2)
+            #buttonSave!.setShortCue(#props!.getText("CONFIG_WIDGET_BTN_SAVE_SHORT_CUE"))
+            #popupButton!.setLocation(#optionsListeditWidth, 0)
+
+            if #allowAdmin! or #allowFactoryDefaults! then
+                #buttonAdmin!.setImageSize(size,size)
+                #buttonAdmin!.setSize(size + 2, size + 2)
+                switch #accessMode
+                    case #ACCESS_MODE_FACTORYDEFAULT
+                        #buttonAdmin!.setImage(#theme!.getBBjImage("IC_FACTORYDEFAULTS_ENABLED",Theme.PRIMARY))
+                        #buttonAdmin!.setShortCue( #props!.getText("CONFIG_WIDGET_BTN_FACTORYDEFAULTS_ENABLED_SHORT_CUE"))
+                        break
+                    case #ACCESS_MODE_ADMIN
+                        #buttonAdmin!.setImage(#theme!.getBBjImage("IC_ADMIN_ENABLED",Theme.PRIMARY))
+                        #buttonAdmin!.setShortCue( #props!.getText("CONFIG_WIDGET_BTN_ADMIN_ENABLED_SHORT_CUE"))
+                        break
+                    case #ACCESS_MODE_USER
+                        #buttonAdmin!.setImage(#theme!.getBBjImage("IC_ADMIN_DISABLED",Theme.PRIMARY))
+                        #buttonAdmin!.setShortCue( #props!.getText("CONFIG_WIDGET_BTN_ADMIN_DISABLED_SHORT_CUE"))
+                        break
+                swend
+            endif
+
+            r = #theme!.getNumProperty("CONTROL_GAINED_FOCUS_RED")
+            g = #theme!.getNumProperty("CONTROL_GAINED_FOCUS_GREEN")
+            b = #theme!.getNumProperty("CONTROL_GAINED_FOCUS_BLUE")
+            #colorFocusGained! = BBjAPI().getSysGui().makeColor(r,g,b,err=*next)
+            #colorFocusLost! = #theme!.getBBjBackgroundColor()
             #listEditOptions!.setCallback(#listEditOptions!.ON_GAINED_FOCUS, #this!, "controlChangeBackColorOnGainedFocus")
             #listEditOptions!.setCallback(#listEditOptions!.ON_LOST_FOCUS, #this!, "controlChangeBackColorOnLostFocus")
-REM             #setCallback(BBjAPI.ON_PAGE_LOADED, #this!, "init")
-        FI
+            REM             #setCallback(BBjAPI.ON_PAGE_LOADED, #this!, "init")
+        endif
+
         if !#bcInitialized! and #bc!<> null() then
             #init()
-REM             BBjAPI().createTimer("configWidgetInit", 3, #this!, "timerInit")
+            REM             BBjAPI().createTimer("configWidgetInit", 3, #this!, "timerInit")
             #bcInitialized! = Boolean.TRUE
         endif
-        
-REM     field protected BBjNumber widgetWidth = 0
-REM     field protected BBjNumber widgetHeight = 0
-REM     field protected BBjNumber listEditPopupHeight = 0
-        
-        xEnd = #getX() + #widgetWidth 
+        REM     field protected BBjNumber widgetWidth = 0
+        REM     field protected BBjNumber widgetHeight = 0
+        REM     field protected BBjNumber listEditPopupHeight = 0
+        xEnd = #getX() + #widgetWidth
         if xEnd > #container!.getWidth() then xEnd = #container!.getWidth()
         xStart = xEnd - #widgetWidth
         if xStart < #minPaddingLeft then xStart = #minPaddingLeft
         totalLength = xEnd - xStart
-        
-        
         if totalLength < #optionsListeditWidth then totalLength = #optionsListeditWidth
         buttonsX = #optionsListeditWidth
         buttonsY = 0
         #getCanvas().setLocation(xStart,#getY())
+        #getCanvas().setBackColor(#theme!.getBBjBackgroundColor())
         #listEditOptions!.setLocation(0,1)
         #listEditOptions!.setSize(#optionsListeditWidth, #listEditPopupHeight)
         #buttonDelete!.setLocation(buttonsX,buttonsY)
         #buttonSave!.setLocation(buttonsX + #widgetHeight,buttonsY)
+
         if #allowAdmin! or #allowFactoryDefaults! then
             #buttonAdmin!.setLocation(buttonsX + (2 * #widgetHeight),buttonsY)
         endif
+
         if totalLength < #widgetWidth then
             #togglePopupMode(Boolean.TRUE)
         else
             #togglePopupMode(Boolean.FALSE)
         endif
-        
     methodend
-    
+
     method public void init(BBjEvent ev!)
         #init()
     methodend
-    
-    method protected void updateProperties()
-        if #getUIPropertiesManager() = null() then #setUIPropertiesManager(PropertiesManager.getInstance())
-        if #getTextPropertiesManager() = null() then #setTextPropertiesManager(LocalizedPropertiesManager.getInstance())
-        uiProperties! = #getUIPropertiesManager()
-        textProperties! = #getTextPropertiesManager()
-        #widgetWidth = cast(BBjNumber, uiProperties!.getPropertyAsNumber("CONFIG_WIDGET_WIDTH"))
-        #widgetHeight = cast(BBjNumber, uiProperties!.getPropertyAsNumber("CONFIG_WIDGET_HEIGHT"))
-        #listEditOptions!.setFieldHeight(#widgetHeight - 2)
-        #getCanvas().setSize(#widgetWidth + 2, #widgetHeight + 2)
-        #optionsListeditWidth = #widgetWidth - (3 * #widgetHeight);REM list edit is widget width minus the 3 buttons
-        #listEditPopupHeight = cast(BBjNumber, uiProperties!.getPropertyAsNumber("CONFIG_WIDGET_LISTEDIT_POPUP_HEIGHT"))
-        #buttonDelete!.setImageFile(uiProperties!.getProperty("CONFIG_WIDGET_BTN_DELETE_IMAGE"))
-        size = uiProperties!.getPropertyAsNumber("CONFIG_WIDGET_HEIGHT") - 4
-        #buttonDelete!.setImageSize(size,size)
-        #buttonDelete!.setSize(size + 2, size + 2)
-        #buttonDelete!.setShortCue(textProperties!.getProperty("CONFIG_WIDGET_BTN_DELETE_SHORT_CUE"))
-        #buttonSave!.setImageFile(uiProperties!.getProperty("CONFIG_WIDGET_BTN_SAVE_IMAGE"))
-        #buttonSave!.setImageSize(size,size)
-        #buttonSave!.setSize(size + 2, size + 2)
-        #buttonSave!.setShortCue(textProperties!.getProperty("CONFIG_WIDGET_BTN_SAVE_SHORT_CUE"))
-        #popupButton!.setLocation(#optionsListeditWidth, 0)
-        if #allowAdmin! or #allowFactoryDefaults! then
-            #buttonAdmin!.setImageSize(size,size)
-            #buttonAdmin!.setSize(size + 2, size + 2)
-            switch #accessMode
-                case #ACCESS_MODE_FACTORYDEFAULT
-                    #buttonAdmin!.setImageFile( uiProperties!.getProperty("CONFIG_WIDGET_BTN_FACTORYDEFAULTS_ENABLED_IMAGE"))
-                    #buttonAdmin!.setShortCue( textProperties!.getProperty("CONFIG_WIDGET_BTN_FACTORYDEFAULTS_ENABLED_SHORT_CUE"))
-                    break
-                case #ACCESS_MODE_ADMIN
-                    #buttonAdmin!.setImageFile( uiProperties!.getProperty("CONFIG_WIDGET_BTN_ADMIN_ENABLED_IMAGE"))
-                    #buttonAdmin!.setShortCue( textProperties!.getProperty("CONFIG_WIDGET_BTN_ADMIN_ENABLED_SHORT_CUE"))
-                    break
-                case #ACCESS_MODE_USER
-                    #buttonAdmin!.setImageFile( uiProperties!.getProperty("CONFIG_WIDGET_BTN_ADMIN_DISABLED_IMAGE"))
-                    #buttonAdmin!.setShortCue( textProperties!.getProperty("CONFIG_WIDGET_BTN_ADMIN_DISABLED_SHORT_CUE"))
-                    break
-            swend
-        endif
-        r = uiProperties!.getPropertyAsNumber("CONTROL_GAINED_FOCUS_RED")
-        g = uiProperties!.getPropertyAsNumber("CONTROL_GAINED_FOCUS_GREEN")
-        b = uiProperties!.getPropertyAsNumber("CONTROL_GAINED_FOCUS_BLUE")
-        #colorFocusGained! = BBjAPI().getSysGui().makeColor(r,g,b,err=*next)
-        r = uiProperties!.getPropertyAsNumber("CONTROL_LOST_FOCUS_RED")
-        g = uiProperties!.getPropertyAsNumber("CONTROL_LOST_FOCUS_GREEN")
-        b = uiProperties!.getPropertyAsNumber("CONTROL_LOST_FOCUS_BLUE")
-        #colorFocusLost! = BBjAPI().getSysGui().makeColor(r,g,b,err=*next)
-    methodend
-    
     rem /**
     rem  * sets the ConfigurationStateHandler to handle communication between the widget and the stateful component
     rem  */
     method public void setStateHandler(ConfigurationStateHandler stateHandler!)
         #stateHandler! = stateHandler!
     methodend
-    
+
     method public ConfigurationStateHandler getStateHandler()
         methodret #stateHandler!
     methodend
-    
     rem /**
     rem  * initialisation method. will be called by the state handler. sets icons, callbacks and loads/applies the available configurations
     rem  */
     method public void init()
-REM         #setIcons()
+        REM         #setIcons()
         #fetchAndFillOptionListEdit()
         #setCallbacks()
         rem first try to apply auto config, that should be the last opened config which would be saved on program exit
         autoConfig! = #getAutoConfig()
+
         if autoConfig! <> null() then
             config! = autoConfig!.getFieldAsString(#bc!.getFieldNameConfig())
             #stateHandler!.configurationChange(config!)
             methodret
         endif
         rem if no autoconfig, apply the default config and select it in the list edit
-        if !#availableConfigs!.isEmpty() then 
+        if !#availableConfigs!.isEmpty() then
             #selectedIndex = 0
             effectiveConfigs! = #bc!.getEffectiveConfiguration()
             if !effectiveConfigs!.size() then methodret
             effectiveConfig! = effectiveConfigs!.get(0)
             #availableConfigs!.iterator()
+
             if #availableConfigs!.size() then
                 for i=0 to #availableConfigs!.size() - 1
                     availableConfig! = #availableConfigs!.get(i)
+
                     if availableConfig!.equals(effectiveConfig!) then
                         #selectedIndex = i
                         break
                     endif
                 next i
             endif
+
             #listEditOptions!.selectIndex(#selectedIndex)
             #fireConfigurationChangeEvent()
         endif
     methodend
-    
+
     method protected DataRow getAutoConfig()
         oldFilter! = #bc!.getFilter()
         autoFilter! = oldFilter!.clone()
@@ -405,17 +375,17 @@ REM         #setIcons()
         autoFilter!.setFieldValue(#bc!.getFieldNameKeyx(), key!)
         autoFilter!.setFieldValue(#bc!.getFieldNameSetting(), "")
         #bc!.setFilter(autoFilter!)
-REM         escape
         rs! = #bc!.retrieve()
         #bc!.setFilter(oldFilter!)
+
         if rs!.size() then
             methodret rs!.get(0)
         else
             methodret null()
         endif
-REM         #stateHandler!.configurationChange(config!)
+        REM         #stateHandler!.configurationChange(config!)
     methodend
-    
+
     method public void saveAutoConfig(String config!)
         selectedConfig! = #getDataRowForWrite()
         key! = #keyx! + "_auto"
@@ -427,16 +397,14 @@ REM         #stateHandler!.configurationChange(config!)
         #bc!.write(selectedConfig!)
         #bc!.setFilter(oldFilter!)
     methodend
-    
-    
+
     method public String getOnStateChangeEventName()
         methodret #widgetID! + #ON_STATE_CHANGE!
     methodend
-    
+
     method public String getOnConfigurationChangeEventName()
         methodret #widgetID! + #ON_CONFIGURATION_CHANGE!
     methodend
-    
     rem /**
     rem  * fetches the available configs from the bc and updates the options list-edit
     rem  */
@@ -449,22 +417,24 @@ REM         #stateHandler!.configurationChange(config!)
         #availableConfigs! = #bc!.getAvailableConfigurations()
         #fillOptionListEdit()
     methodend
-    
     rem /**
     rem  * only updates the options list-edit without fetching new configurations from the bc
     rem  */
     method protected void fillOptionListEdit()
         #listEditOptions!.removeAllItems()
+
         if #availableConfigs! = null() OR #availableConfigs!.isEmpty() then
             methodret
         endif
+
         for i=0 to #availableConfigs!.size() - 1
             currentConfig! = #availableConfigs!.get(i)
             userID! = currentConfig!.getFieldAsString(#bc!.getFieldNameUserid())
             userSettingName! = currentConfig!.getFieldAsString(#bc!.getFieldNameSetting())
             description! = ""
+
             if userID!.trim().equals(#bc!.getAdminUser()) then
-                description! = "(" + #getTextPropertiesManager().getProperty("CONFIG_WIDGET_DEFAULT_CONFIG_DESCRIPTION") + ")"
+                description! = "(" + #props!.getText("CONFIG_WIDGET_DEFAULT_CONFIG_DESCRIPTION") + ")"
             else
                 if userID!.trim().equals(#bc!.getFactoryDefaultUser()) then
                     rem no prefix for factory default
@@ -472,12 +442,12 @@ REM         #stateHandler!.configurationChange(config!)
                     description! = "(" + userID!.trim() + ")"
                 endif
             endif
+
             description! = description! + " " + userSettingName!.trim()
             #listEditOptions!.addItem(description!)
         next i
-REM         #listEditOptions!.addItem("")
+        REM         #listEditOptions!.addItem("")
     methodend
-    
     rem /**
     rem  * returns the configuration as datarow which is currently selected in the list edit
     rem  */
@@ -485,10 +455,10 @@ REM         #listEditOptions!.addItem("")
         if #availableConfigs! = null() or #availableConfigs!.isEmpty() or #selectedIndex < 0 then
             methodret null()
         endif
+
         if #selectedIndex >= #availableConfigs!.size() then methodret null()
         methodret #availableConfigs!.get(#selectedIndex)
     methodend
-    
     rem /**
     rem  * sets callbacks for the grid, buttons and listedit
     rem  */
@@ -497,21 +467,20 @@ REM         #listEditOptions!.addItem("")
         #listEditOptions!.setCallback(BBjAPI.ON_LIST_SELECT, #this!,    "configsListEditSelect")
         #buttonDelete!.setCallback(BBjAPI.ON_BUTTON_PUSH, #this!,   "deleteButtonPush")
         #buttonSave!.setCallback(  BBjAPI.ON_BUTTON_PUSH, #this!, "saveButtonPush")
+
         if #allowAdmin! or #allowFactoryDefaults! then
             #buttonAdmin!.setCallback( BBjAPI.ON_BUTTON_PUSH, #this!, "adminButtonPush")
         endif
-REM         BBjAPI().setCustomEventCallback(#getOnStateChangeEventName(), #this!,"onColumnStateChange")
+        REM         BBjAPI().setCustomEventCallback(#getOnStateChangeEventName(), #this!,"onColumnStateChange")
     methodend
-    
     rem /**
-    rem  * Control validation for the list edit. 
+    rem  * Control validation for the list edit.
     rem  * Makes sure, setting name is saved after user typed it in the list edit
     rem  * Only when admin mode is enabled, user should be able to save default settings
     rem  */
     method public void listEditOptionsModify(BBjEvent ev!)
         #toggleSaveButton(Boolean.TRUE)
     methodend
-    
     rem /**
     rem  * in the listEdit, selects the index related to the given data row. only key fields are being considered.
     rem  */
@@ -519,6 +488,7 @@ REM         BBjAPI().setCustomEventCallback(#getOnStateChangeEventName(), #this!
         if dr! = null() or dr!.isEmpty() or #availableConfigs! = null() or #availableConfigs!.isEmpty() then
             goto deselect
         endif
+
         seterr deselect
         userid!     = dr!.getFieldAsString(#bc!.getFieldNameUserid()).trim()
         realm!      = dr!.getFieldAsString(#bc!.getFieldNameRealm()).trim()
@@ -531,32 +501,37 @@ REM         BBjAPI().setCustomEventCallback(#getOnStateChangeEventName(), #this!
             currentRealm!      = currentDR!.getFieldAsString(#bc!.getFieldNameRealm()).trim()
             currentKeyx!       = currentDR!.getFieldAsString(#bc!.getFieldNameKeyx()).trim()
             currentSetting!    = currentDR!.getFieldAsString(#bc!.getFieldNameSetting()).trim()
+
             if userid!.equals(currentUserid!) and realm!.equals(currentRealm!) and keyx!.equals(currentKeyx!) and setting!.equals(currentSetting!) then
                 #selectedIndex = i
                 #listEditOptions!.selectIndex(#selectedIndex)
                 #fireConfigurationChangeEvent()
                 methodret
             endif
+
             nexti:
         next i
+
         #fireConfigurationChangeEvent()
         methodret
+
         deselect:
             #selectedIndex = -1
             #listEditOptions!.deselect()
             #fireConfigurationChangeEvent()
     methodend
-    
     rem /**
     rem  * @return returns whether the given DataRow would overwrite an existing config when using this datarow in bc.write().
-    rem  * when false, this datarow would create a new entry. 
+    rem  * when false, this datarow would create a new entry.
     rem  * @param dr! datarow which is to be checked
     rem  */
     method protected Boolean wouldWriteOverrideOtherConfig(DataRow dr!)
         dr! = dr!.clone()
+
         if #accessMode = #ACCESS_MODE_USER then
             dr!.setFieldValue(#bc!.getFieldNameUserid(), #userName!)
         endif
+
         previousFilter! = new DataRow()
         previousFilter! = #bc!.getFilter(err=*next)
         #bc!.setFilter(dr!)
@@ -565,24 +540,25 @@ REM         BBjAPI().setCustomEventCallback(#getOnStateChangeEventName(), #this!
         if rs!.size() > 0 then methodret Boolean.TRUE
         methodret Boolean.FALSE
     methodend
-    
     rem /**
     rem  * returns the text of the list edit without the preceding user tag "(default)" or "(user)"
     rem  */
     method protected String getListEditOptionText()
         text! = #listEditOptions!.getEditText()
         if text! = null() or text!.trim().equals("") then methodret ""
-        adminPrefix! = "(" + #getTextPropertiesManager().getProperty("CONFIG_WIDGET_DEFAULT_CONFIG_DESCRIPTION") + ")"
+        adminPrefix! = "(" + #props!.getText("CONFIG_WIDGET_DEFAULT_CONFIG_DESCRIPTION") + ")"
         userPrefix! = "(" + #userName!+ ")"
+
         if text!.startsWith(adminPrefix!) then
             methodret text!.substring(adminPrefix!.length()).trim()
         endif
+
         if text!.startsWith(userPrefix!) then
             methodret text!.substring(userPrefix!.length()).trim()
         endif
+
         methodret text!.trim()
     methodend
-    
     rem /**
     rem  * event handler for delete button push
     rem  * deletes the currently selected configuration and selects the successor (or predecessor if last).
@@ -593,6 +569,7 @@ REM         BBjAPI().setCustomEventCallback(#getOnStateChangeEventName(), #this!
         if toBeDeletedDR! = null() or toBeDeletedDR!.isEmpty() then methodret
         #bc!.remove(toBeDeletedDR!)
         #fetchAndFillOptionListEdit()
+
         if #availableConfigs! = null() or #availableConfigs!.size() < 1 then
             #selectedIndex = -1
             #listEditOptions!.deselect()
@@ -600,23 +577,25 @@ REM         BBjAPI().setCustomEventCallback(#getOnStateChangeEventName(), #this!
             if #selectedIndex >= #availableConfigs!.size() then
                 #selectedIndex = #availableConfigs!.size() - 1
             endif
+
             #listEditOptions!.selectIndex(#selectedIndex)
             #fireConfigurationChangeEvent()
         endif
+
         #updateButtonDelete()
         methodret
+
         removalerror:
             exc! = BBjAPI().getLastJavaException()
+
             if exc! <> null() then
                 a = msgbox(exc!.getMessage())
             endif
     methodend
-    
     rem /**
     rem  * onclick event for the admin button. toggles mode and image
     rem  */
     method public void adminButtonPush(BBjEvent ev!)
-    
         switch #accessMode
             case #ACCESS_MODE_FACTORYDEFAULT
                 if #allowAdmin! then
@@ -624,6 +603,7 @@ REM         BBjAPI().setCustomEventCallback(#getOnStateChangeEventName(), #this!
                 else
                     #accessMode = #ACCESS_MODE_USER
                 endif
+
                 break
             case #ACCESS_MODE_ADMIN
                 #accessMode = #ACCESS_MODE_USER
@@ -636,45 +616,45 @@ REM         BBjAPI().setCustomEventCallback(#getOnStateChangeEventName(), #this!
                         #accessMode = #ACCESS_MODE_ADMIN
                     endif
                 endif
+
                 break
         swend
+
         #updateAccessButton()
         #updateButtonDelete()
     methodend
-    
+
     method protected void updateAccessButton()
         switch #accessMode
             case #ACCESS_MODE_ADMIN
-                #buttonAdmin!.setImageFile( #getUIPropertiesManager().getProperty("CONFIG_WIDGET_BTN_ADMIN_ENABLED_IMAGE"))
-                #buttonAdmin!.setShortCue( #getTextPropertiesManager().getProperty("CONFIG_WIDGET_BTN_ADMIN_ENABLED_SHORT_CUE"))
+                #buttonAdmin!.setImage( #theme!.getBBjImage("IC_ADMIN_ENABLED",Theme.PRIMARY))
+                #buttonAdmin!.setShortCue( #props!.getText("CONFIG_WIDGET_BTN_ADMIN_ENABLED_SHORT_CUE"))
                 if #menuAdmin! <> null() then #menuAdmin!.setSelected(Boolean.TRUE)
                 if #menuFactoryDefaults! <> null() then #menuFactoryDefaults!.setSelected(Boolean.FALSE)
                 #bc!.setUserName(#bc!.getAdminUser())
                 break
             case #ACCESS_MODE_USER
-                #buttonAdmin!.setImageFile( #getUIPropertiesManager().getProperty("CONFIG_WIDGET_BTN_ADMIN_DISABLED_IMAGE"))
-                #buttonAdmin!.setShortCue( #getTextPropertiesManager().getProperty("CONFIG_WIDGET_BTN_ADMIN_DISABLED_SHORT_CUE"))
+                #buttonAdmin!.setImage(  #theme!.getBBjImage("IC_ADMIN_DISABLED",Theme.PRIMARY))
+                #buttonAdmin!.setShortCue( #props!.getText("CONFIG_WIDGET_BTN_ADMIN_DISABLED_SHORT_CUE"))
                 if #menuAdmin! <> null() then #menuAdmin!.setSelected(Boolean.FALSE)
                 if #menuFactoryDefaults! <> null() then #menuFactoryDefaults!.setSelected(Boolean.FALSE)
                 #bc!.setUserName(#userName!)
                 break
             case #ACCESS_MODE_FACTORYDEFAULT
-                #buttonAdmin!.setImageFile( #getUIPropertiesManager().getProperty("CONFIG_WIDGET_BTN_FACTORYDEFAULTS_ENABLED_IMAGE"))
-                #buttonAdmin!.setShortCue( #getUIPropertiesManager().getProperty("CONFIG_WIDGET_BTN_FACTORYDEFAULTS_ENABLED_SHORT_CUE"))
+                #buttonAdmin!.setImage(  #theme!.getBBjImage("IC_FACTORYDEFAULTS",Theme.PRIMARY))
+                #buttonAdmin!.setShortCue( #props!.getText("CONFIG_WIDGET_BTN_FACTORYDEFAULTS_ENABLED_SHORT_CUE"))
                 if #menuAdmin! <> null() then #menuAdmin!.setSelected(Boolean.FALSE)
                 if #menuFactoryDefaults! <> null() then #menuFactoryDefaults!.setSelected(Boolean.TRUE)
                 #bc!.setUserName(#bc!.getFactoryDefaultUser())
                 break
         swend
     methodend
-    
     rem /**
     rem  * event handler for save button push
     rem  */
     method public void saveButtonPush(BBjEvent ev!)
         #saveConfiguration()
     methodend
-    
     rem /**
     rem  * event handler for config list edit selection
     rem  * disables the save button, fires change event and shows/unshows delete button
@@ -688,20 +668,20 @@ REM         BBjAPI().setCustomEventCallback(#getOnStateChangeEventName(), #this!
         #fireConfigurationChangeEvent()
         #updateButtonDelete()
     methodend
-    
     rem /**
     rem  * if a configuration is selected and the user has permission to delete this configuration, enables the delete button.
     rem  * otherwise the deletebutton is not enabled (not visible)
     rem  */
     method protected void updateButtonDelete()
         selectedConf! = #getSelectedConfig()
+
         if selectedConf! = null() or selectedConf!.isEmpty() then
             #toggleDeleteButton(Boolean.FALSE)
             methodret
         endif
+
         #toggleDeleteButton(#bc!.canModify(selectedConf!))
     methodend
-    
     rem /**
     rem  * defines what should happen when the state of the component changes.
     rem  * right now, the save button will enable
@@ -709,51 +689,52 @@ REM         BBjAPI().setCustomEventCallback(#getOnStateChangeEventName(), #this!
     method public void stateChange()
         #toggleSaveButton(Boolean.TRUE)
     methodend
-    
+
     method public void toggleMenuSaveButton(Boolean visible!)
         if visible! and #menuSave! <> null() then methodret
         if !visible! and #menuSave! = null() then methodret
         #popupMenu!.removeMenuItem(#menuSave!,err=*next)
         #menuSave! = null()
+
         if visible! then
             #menuSave! = #popupMenu!.insertMenuItem(0, 1100, "Save")
             #menuSave!.setCallback(BBjPopupMenu.ON_POPUP_ITEM_SELECT, #this!, "saveButtonPush")
         endif
     methodend
-    
-    
+
     method public void toggleMenuDeleteButton(Boolean visible!)
         if visible! and #menuDelete! <> null() then methodret
         if !visible! and #menuDelete! = null() then methodret
         #popupMenu!.removeMenuItem(#menuDelete!,err=*next)
         #menuDelete! = null()
+
         if visible! then
             #menuDelete! = #popupMenu!.insertMenuItem(0, 1100, "Delete")
             #menuDelete!.setCallback(BBjPopupMenu.ON_POPUP_ITEM_SELECT, #this!, "deleteButtonPush")
         endif
     methodend
-    
+
     method public void toggleSaveButton(Boolean visible!)
         if visible! then
             #buttonSaveEnabled! = Boolean.TRUE
         else
             #buttonSaveEnabled! = Boolean.FALSE
         endif
+
         #toggleMenuSaveButton(visible!)
         #updateButtons()
     methodend
-    
+
     method public void toggleDeleteButton(Boolean visible!)
         if visible! then
             #buttonDeleteEnabled! = Boolean.TRUE
         else
             #buttonDeleteEnabled! = Boolean.FALSE
         endif
+
         #toggleMenuDeleteButton(visible!)
         #updateButtons()
     methodend
-    
-    
     rem /**
     rem  * notifies the state handler that a configuration has changed. the statehandler will then apply this new config to the component.
     rem  */
@@ -764,33 +745,33 @@ REM         BBjAPI().setCustomEventCallback(#getOnStateChangeEventName(), #this!
         if config! = null() or config!.trim().equals("") then methodret
         #stateHandler!.configurationChange(config!)
     methodend
-    
     rem /**
     rem  * saves the configuration and refetches the configurations in the listEdit. also disables the save button.
-    rem  * 
+    rem  *
     rem  */
     method public void saveConfiguration()
-REM         if #currentConfig!.equals("") then methodret
-REM         gridstate! = #grid!.getColumnState()
+        REM         if #currentConfig!.equals("") then methodret
+        REM         gridstate! = #grid!.getColumnState()
         selectedConfig! = #getDataRowForWrite()
         #bc!.write(selectedConfig!)
         #fetchAndFillOptionListEdit()
         #selectDataRowInOptions(selectedConfig!)
-REM         #currentConfig! = ""
+        REM         #currentConfig! = ""
         #toggleSaveButton(Boolean.FALSE)
         #updateButtonDelete()
     methodend
-    
     rem /**
     rem  * returns a new dataRow with the right keys depending on user listedit input and admin mode
     rem  */
     method protected DataRow getDataRowForWrite()
         selectedConfig! = #getSelectedConfig()
-        if selectedConfig! = null() then 
+
+        if selectedConfig! = null() then
             selectedConfig! = new DataRow()
             selectedConfig!.setFieldValue(#bc!.getFieldNameKeyx(), #keyx!)
             selectedConfig!.setFieldValue(#bc!.getFieldNameRealm(), #realm!)
         endif
+
         selectedConfig!.setFieldValue(#bc!.getFieldNameSetting(), #getListEditOptionText())
         selectedConfig!.setFieldValue(#bc!.getFieldNameConfig(), #stateHandler!.getState())
         switch #accessMode
@@ -802,44 +783,26 @@ REM         #currentConfig! = ""
                 break
             case #ACCESS_MODE_USER
                 selectedConfig!.setFieldValue(#bc!.getFieldNameUserid(), #userName!)
-                endif
-                break
-        swend
-        methodret selectedConfig!
+            endif
+
+            break
+    swend
+
+    methodret selectedConfig!
     methodend
-    
+
     method public void controlChangeBackColorOnGainedFocus(BBjGainedFocusEvent ev!)
         control! = ev!.getControl()
         control!.setBackColor(#colorFocusGained!)
     methodend
-    
+
     method public void controlChangeBackColorOnLostFocus(BBjLostFocusEvent ev!)
         control! = ev!.getControl()
         control!.setBackColor(#colorFocusLost!)
     methodend
-    
 
-     rem ------------------properties manager--------------------------------------
-    method public void setUIPropertiesManager(IPropertiesManager propertiesManager!)
-        #uiPropertiesManager! = propertiesManager!
-        #updateProperties()
-    methodend
-    
-    method public IPropertiesManager getUIPropertiesManager()
-        methodret #uiPropertiesManager!
-    methodend
-    
-    method public void setTextPropertiesManager(IPropertiesManager propertiesManager!)
-        #textPropertiesManager! = propertiesManager!
-        #updateProperties()
-    methodend
-    
-    method public IPropertiesManager getTextPropertiesManager()
-        methodret #textPropertiesManager!
-    methodend
-    
     method public void setAdminEnabled(Boolean f_enable!)
-        #allowAdmin! = f_enable! 
+        #allowAdmin! = f_enable!
     methodend
 
     method public static void setAllowAdmin(Boolean f_allow!)

@@ -235,7 +235,7 @@ REM 		#super!.getControlByName("BCMetaData").setCallback(BBjAPI.ON_CLOSE,#this!,
         rem     edselect! = new GxCellEditorRichSelect()
         rem  else 
         rem     edselect! = new GxCellEditorSelect()
-        rem  fi
+        rem  endif
 
          edselect! = new GxCellEditorSelect()
          values! = new JsonArray()
@@ -387,7 +387,7 @@ REM 		#super!.getControlByName("BCMetaData").setCallback(BBjAPI.ON_CLOSE,#this!,
           layout! = meta!.getField("layout",err=*next).getObject()
           if layout! <> null() then
                 layout! = layout!.getField("fields").getObject()
-          fi
+          endif
 
 
           it! = fields!.iterator()
@@ -405,17 +405,17 @@ REM 		#super!.getControlByName("BCMetaData").setCallback(BBjAPI.ON_CLOSE,#this!,
                 f!.setFieldValue("TYPE",ar!.getFieldTypeName(f$))
                 f!.setFieldValue("HIDE",java.sql.Types.BOOLEAN,Boolean.FALSE)
                 f!.setFieldValue("ALIGN","")
-              fi
+              endif
 
               if layout! <> null() then
                     flayout! = layout!.getField(f$,err=*endif).getObject()
                     if flayout!.contains("ALIGN") then
                         f!.setFieldValue("ALIGN",flayout!.getFieldAsString("ALIGN"))
-                    fi
+                    endif
                     if flayout!.contains("HIDE") then
                         f!.setFieldValue("HIDE",str(flayout!.getFieldAsNumber("HIDE")>0))
-                    fi
-              fi
+                    endif
+              endif
             
               it1! = locales!.iterator()
               while it1!.hasNext()
@@ -441,8 +441,8 @@ REM 		#super!.getControlByName("BCMetaData").setCallback(BBjAPI.ON_CLOSE,#this!,
                           f!.setFieldValue(loc$+"_SHORTC",locmeta!.getField("fields",err=*next).getObject().getField(f$,err=*next).getObject().getFieldAsString("SHORTCUE",err=*next))
                           f!.setFieldValue(loc$+"_LONGC",locmeta!.getField("fields",err=*next).getObject().getField(f$,err=*next).getObject().getFieldAsString("LONGCUE",err=*next))
                           f!.setFieldValue(loc$+"_MASK",locmeta!.getField("fields",err=*next).getObject().getField(f$,err=*next).getObject().getFieldAsString("MASK",err=*next))
-                      fi
-                  fi
+                      endif
+                  endif
               wend
 
               rs!.add(f!)
@@ -498,15 +498,15 @@ REM 		#super!.getControlByName("BCMetaData").setCallback(BBjAPI.ON_CLOSE,#this!,
 	                fdr! = new DataRow()
 	                if align$<>"" then
 	                    fdr!.setFieldValue("ALIGN",align$)
-	                fi
+	                endif
 	                if hide! then
                         fdr!.setFieldValue("HIDE",hide!)
-                    fi
+                    endif
                     if fdr!.getFieldNames().size()>0 then
                         set!.setFieldValue(fieldname$,fdr!)
-                    fi
+                    endif
 
-	            fi
+	            endif
 	            
 	            
                 it1!=locales!.iterator()
@@ -521,41 +521,41 @@ REM 		#super!.getControlByName("BCMetaData").setCallback(BBjAPI.ON_CLOSE,#this!,
                     value$=row!.getFieldAsString(loc$+"_LABEL")
                     if value$>"" then
                         fdr!.setFieldValue("LABEL",value$)
-                    fi
+                    endif
 
                     value$=""
                     value$=row!.getFieldAsString(loc$+"_SHORTLABEL")
                     if value$>"" then
                         fdr!.setFieldValue("SHORT",value$)
-                    fi
+                    endif
 
                     value$=""
                     value$=row!.getFieldAsString(loc$+"_GROUP")
                     if value$>"" then
                         fdr!.setFieldValue("GROUP",value$)
-                    fi
+                    endif
 
                     value$=""
                     value$=row!.getFieldAsString(loc$+"_SHORTC")
                     if value$>"" then
                         fdr!.setFieldValue("SHORTCUE",value$)
-                    fi
+                    endif
 
                     value$=""
                     value$=row!.getFieldAsString(loc$+"_LONGC")
                     if value$>"" then
                         fdr!.setFieldValue("LONGCUE",value$)
-                    fi
+                    endif
 
                     value$=""
                     value$=row!.getFieldAsString(loc$+"_MASK")
                     if value$>"" then
                         fdr!.setFieldValue("MASK",value$)
-                    fi
+                    endif
 
                     if fdr!.getFieldNames().size()>0 then
                         loc!.setFieldValue(fieldname$,fdr!)
-                    fi
+                    endif
                 wend
 
 
@@ -605,7 +605,7 @@ REM 		#super!.getControlByName("BCMetaData").setCallback(BBjAPI.ON_CLOSE,#this!,
 		    binder!.register(#preview_grid!)
 		    ar!= binder!.getAttributesRecord()
 		    binder!.retrieve()
-		fi
+		endif
 		
 	methodend
 
@@ -620,7 +620,7 @@ REM 		#super!.getControlByName("BCMetaData").setCallback(BBjAPI.ON_CLOSE,#this!,
 	        w = ev!.getWidth()
 	        h = ev!.getHeight()
 	        #preview_grid!.setSize(w,h)
-	    fi
+	    endif
     methodend
 
 classend

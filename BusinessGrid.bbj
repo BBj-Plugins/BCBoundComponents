@@ -4,6 +4,11 @@ use com.basiscomponents.db.DataRow
 use com.basiscomponents.db.ResultSet
 use com.basiscomponents.db.util.SqlTypeNames
 
+use com.basiscomponents.ui.theming.Theme
+use com.basiscomponents.i18n.Props
+
+use com.google.gson.JsonObject
+
 use ::BBjGridExWidget/BBjGridExWidget.bbj::BBjGridExWidget
 
 use ::BBjGridExWidget/GxColumns.bbj::GxColumn
@@ -21,8 +26,6 @@ use ::BusinessUIComponents/ExportButton.bbj::ExportButton
 use ::BusinessUIComponents/configurations/ConfigurationWidget.bbj::ConfigurationWidget
 use ::BusinessUIComponents/configurations/CustomConfigurationsBC.bbj::CustomConfigurationsBC
 use ::BusinessUIComponents/configurations/IPersistentState.bbj::IPersistentState
-use ::BusinessUIComponents/configurations/IPropertiesManager.bbj::IPropertiesManager
-use ::BusinessUIComponents/configurations/PropertiesManager.bbj::PropertiesManager
 
 use java.util.HashMap
 
@@ -51,6 +54,7 @@ class public BusinessGrid extends AbstractBCBoundWidget implements IPersistentSt
     
     field private BBjNumber widgetHeight = 20
     
+    field private Theme theme! = Theme.getInstance()
     
     rem --------------------- constructors -------------------------------------
 
@@ -140,52 +144,65 @@ class public BusinessGrid extends AbstractBCBoundWidget implements IPersistentSt
             statusbar!.setComponentVisibility(GxStatusBarTotalAndFilteredRowCountComponent.getId(), Boolean.TRUE)
             statusbar!.setComponentVisibility(GxStatusBarSelectedRowCountComponent.getId(), Boolean.TRUE)
 
-            #updateProperties()
-        fi
+        #getCanvas().setBackColor(#theme!.getBBjBackgroundColor())
+        
+        textProperties! = Props.getInstance()
+        
+        #exportButton!.setImage(#theme!.getBBjImage("IC_EXPORT",Theme.PRIMARY))
+        #exportButton!.getButton().setToolTipText(textProperties!.getText("BUSINESS_GRID_TOOLTIP_EXPORT"))
+        
+        #fitToGridButton!.setImage(#theme!.getBBjImage("IC_FIT_TO_GRID",Theme.PRIMARY))
+        #fitToGridButton!.setToolTipText(textProperties!.getText("BUSINESS_GRID_TOOLTIP_FIT_TO_GRID"))
+        
+        #autoSizeColumnsButton!.setImage(#theme!.getBBjImage("IC_AUTO_SIZE_COLUMNS",Theme.PRIMARY))
+        #autoSizeColumnsButton!.setToolTipText(textProperties!.getText("BUSINESS_GRID_TOOLTIP_AUTO_SIZE_COLUMNS"))
+
+        #widgetHeight = cast(BBjNumber, #theme!.getNumProperty("SECONDARY_TB_HEIGHT"))
+        xPos = #exportButton!.getButton().getX()
+        yPos = #exportButton!.getButton().getY()
+        #exportButton!.setSize(#widgetHeight, #widgetHeight)
+        #exportButton!.setImageSize(#widgetHeight-4, #widgetHeight-4)
+        #exportButton!.setBackColor(#theme!.getBBjBackgroundColor())
+        xPos = xPos + #widgetHeight
+        #fitToGridButton!.setSize(#widgetHeight, #widgetHeight)
+        #fitToGridButton!.setImageSize(#widgetHeight-4, #widgetHeight-4)
+        #fitToGridButton!.setLocation(xPos, yPos)
+        #fitToGridButton!.setBackColor(#theme!.getBBjBackgroundColor())
+        xPos = xPos + #widgetHeight
+        #autoSizeColumnsButton!.setSize(#widgetHeight, #widgetHeight)
+        #autoSizeColumnsButton!.setImageSize(#widgetHeight-4, #widgetHeight-4)
+        #autoSizeColumnsButton!.setLocation(xPos, yPos)
+        #autoSizeColumnsButton!.setBackColor(#theme!.getBBjBackgroundColor())
+        
+        #grid!.setLocation(#grid!.getX(), #widgetHeight + 10)
+        if #cfgwidget! <> null() then 
+            xPos = xPos + #widgetHeight
+            #cfgwidget!.setMinPaddingLeft(xPos)
+        endif
+        
+        primary! = #theme!.getPrimaryColorPalette().getHexColor("300")
+        textColor! = #theme!.getPrimaryColorPalette().getForeColor()
+        
+        #grid!.setTheme( #grid!.GRID_THEME_BALHAM() )
+        balhamTheme! = new JsonObject()
+        balhamTheme!.addProperty("--ag-balham-active-color",primary!)
+        balhamTheme!.addProperty("--ag-selected-row-background-color",primary!)
+        #grid!.addStyle(".ag-theme-balham",balhamTheme!)
+        #grid!.addStyle(".ag-theme-balham .ag-row-selected", String.format("{""color"":""%s""}",textColor!))
+
+        endif
 
         #grid!.setSize(#getWidth(),#getHeight()-#widgetHeight - 10)
 
         if #cfgwidget! <> null() then
             rem min padding for config widget to allow for the export and fitToGrid buttons to the left
             #cfgwidget!.setLocation(#getWidth()-155, 5)
-        fi
-    methodend
-
-    rem /**
-    rem  *
-    rem  */
-    method protected void updateProperties()
-        #super!.updateProperties()
-        uiProperties! = #getUIPropertiesManager()
-        textProperties! = #getTextPropertiesManager()
-        
-        #exportButton!.setImageFile(uiProperties!.getProperty("EXPORT_BTN_IMAGE"))
-        #exportButton!.getButton().setToolTipText(textProperties!.getProperty("BUSINESS_GRID_TOOLTIP_EXPORT"))
-        
-        #fitToGridButton!.setImageFile(uiProperties!.getProperty("FIT_TO_GRID_IMAGE"))
-        #fitToGridButton!.setToolTipText(textProperties!.getProperty("BUSINESS_GRID_TOOLTIP_FIT_TO_GRID"))
-        
-        #autoSizeColumnsButton!.setImageFile(uiProperties!.getProperty("AUTO_SIZE_COLUMNS_IMAGE"))
-        #autoSizeColumnsButton!.setToolTipText(textProperties!.getProperty("BUSINESS_GRID_TOOLTIP_AUTO_SIZE_COLUMNS"))
-
-        #widgetHeight = cast(BBjNumber, uiProperties!.getPropertyAsNumber("CONFIG_WIDGET_HEIGHT"))
-        xPos = #exportButton!.getButton().getX()
-        yPos = #exportButton!.getButton().getY()
-        #exportButton!.setSize(#widgetHeight, #widgetHeight)
-        #exportButton!.setImageSize(#widgetHeight-4, #widgetHeight-4)
-        xPos = xPos + #widgetHeight
-        #fitToGridButton!.setSize(#widgetHeight, #widgetHeight)
-        #fitToGridButton!.setImageSize(#widgetHeight-4, #widgetHeight-4)
-        #fitToGridButton!.setLocation(xPos, yPos)
-        xPos = xPos + #widgetHeight
-        #autoSizeColumnsButton!.setSize(#widgetHeight, #widgetHeight)
-        #autoSizeColumnsButton!.setImageSize(#widgetHeight-4, #widgetHeight-4)
-        #autoSizeColumnsButton!.setLocation(xPos, yPos)
-        #grid!.setLocation(#grid!.getX(), #widgetHeight + 10)
-        if #cfgwidget! <> null() then 
-            xPos = xPos + #widgetHeight
-            #cfgwidget!.setMinPaddingLeft(xPos)
         endif
+        
+        
+        #getCanvas().setBackColor(#theme!.getBBjBackgroundColor())        
+
+        
     methodend
 
     rem ---------------------- Event Handlers --------------------------------
@@ -203,12 +220,6 @@ class public BusinessGrid extends AbstractBCBoundWidget implements IPersistentSt
     rem  */
     method public void setConfigurationWidgetUser(String user!)
         #cfgbc!.setUserName(user!)
-    methodend
-    
-    method public void setUIPropertiesManager(IPropertiesManager uiPropertiesManager!)
-        #super!.setUIPropertiesManager(uiPropertiesManager!)
-        #updateProperties()
-        if #cfgwidget! <> null() then #cfgwidget!.setUIPropertiesManager(uiPropertiesManager!)
     methodend
 
     rem ----------------------grid handling---------------------------------------------
@@ -270,7 +281,6 @@ class public BusinessGrid extends AbstractBCBoundWidget implements IPersistentSt
 
                 #grid!.getClientContext().addProperty("numberGroupSep",numberGroupSeparator$, err=*next)        
                 #grid!.getClientContext().addProperty("numberDecimalSep",numberDecimalSeparator$, err=*next)
-                #grid!.setTheme( #grid!.GRID_THEME_BALHAM() )
                 rem Render grid columns based on the attributes record (w/o any data)
                 
                 cgroups! = new java.util.HashMap()
@@ -278,101 +288,105 @@ class public BusinessGrid extends AbstractBCBoundWidget implements IPersistentSt
                 for rscol = 0 to ar!.getColumnCount() - 1
 
                     fieldName$ = ar!.getColumnName(rscol)
-                    fa! = ar!.getFieldAttributes(fieldName$);rem returns HashMap
-
-                    hide = BBjAPI.FALSE
-                    if fa!.containsKey("HIDE") then hide = num(fa!.get("HIDE"))
-                    if hide then
-                        rem don't add columns that should never show up in UI
-                        continue
-                    fi
+                    if !(fieldName$ = "_ENTITY" or fieldName$ = "_ENTITIES") then
                     
-                    label$ = fieldName$
-                    if fa!.containsKey("LABEL") then label$ = fa!.get("LABEL")
-
-                    type =  ar!.getFieldType(fieldName$)
-                    column! = #grid!.addColumn(fieldName$, label$, type)
-                    
-                    if fa!.containsKey("GROUP") then cgroup$ = fa!.get("GROUP")
-                    if cgroup$<>"" then
-                        cgroup! = cgroups!.get(cgroup$)
-                        if cgroup! = null() then
-                            cgroup! = new BBjVector()
-                            cgroups!.put(cgroup$,cgroup!)
-                        fi
-                        cgroup!.addItem(fieldName$)
-                    fi
-                    
-                    mask$ = ""
-                    align$ = ""
-                    
-                    if fa!.containsKey("MASK") then mask$ = cvs(fa!.get("MASK"),3)
-                    if mask$ <> "" then column!.setColumnMask(mask$)
-                    if type = java.sql.Types.DATE or type = java.sql.Types.TIMESTAMP or type = java.sql.Types.TIME or type = java.sql.Types.BOOLEAN then
-                        align$="R"
-                        if fa!.containsKey("MASK") then 
-                            mask$ = cvs(fa!.get("MASK"),3)
-                            column! = #grid!.getColumn(fieldName$)
-                            vfe! = column!.getValueFormatterExpression()
-                            vfe!.setMask(mask$)
-                        else
-                            if type = java.sql.Types.DATE then
-                                column! = #grid!.getColumn(fieldName$)
-                                vfe! = column!.getValueFormatterExpression()
-                                vfe!.setMask(dateMask$)
-                            endif
-                            if type = java.sql.Types.TIMESTAMP then
-                                column! = #grid!.getColumn(fieldName$)
-                                vfe! = column!.getValueFormatterExpression()
-                                vfe!.setMask(timestampMask$)
-                            endif
+                        fa! = ar!.getFieldAttributes(fieldName$);rem returns HashMap
+    
+                        hide = BBjAPI.FALSE
+                        if fa!.containsKey("HIDE") then hide = num(fa!.get("HIDE"))
+                        if hide then
+                            rem don't add columns that should never show up in UI
+                            continue
                         endif
-                    else
-                        if SqlTypeNames.isNumericType(type) then
+                        
+                        label$ = fieldName$
+                        if fa!.containsKey("LABEL") then label$ = fa!.get("LABEL")
+    
+                        type =  ar!.getFieldType(fieldName$)
+                        column! = #grid!.addColumn(fieldName$, label$, type)
+                        
+                        if fa!.containsKey("GROUP") then cgroup$ = fa!.get("GROUP")
+                        if cgroup$<>"" then
+                            cgroup! = cgroups!.get(cgroup$)
+                            if cgroup! = null() then
+                                cgroup! = new BBjVector()
+                                cgroups!.put(cgroup$,cgroup!)
+                            endif
+                            cgroup!.addItem(fieldName$)
+                        endif
+                        
+                        mask$ = ""
+                        align$ = ""
+                        
+                        if fa!.containsKey("MASK") then mask$ = cvs(fa!.get("MASK"),3)
+                        if mask$ <> "" then column!.setColumnMask(mask$)
+                        if type = java.sql.Types.DATE or type = java.sql.Types.TIMESTAMP or type = java.sql.Types.TIME or type = java.sql.Types.BOOLEAN then
                             align$="R"
-                            if mask$ = "" then
-                                rem blank when zero
-                                blankWhenZeroRenderer! = new GxRendererCustomHTML("<% print(params.data."+fieldName$+" == 0 ? '&nbsp;' : params.data."+fieldName$+") %>")
-                                column!.setCellRenderer(blankWhenZeroRenderer!)
+                            if fa!.containsKey("MASK") then 
+                                mask$ = cvs(fa!.get("MASK"),3)
+                                column! = #grid!.getColumn(fieldName$)
+                                vfe! = column!.getValueFormatterExpression()
+                                vfe!.setMask(mask$)
+                            else
+                                if type = java.sql.Types.DATE then
+                                    column! = #grid!.getColumn(fieldName$)
+                                    vfe! = column!.getValueFormatterExpression()
+                                    vfe!.setMask(dateMask$)
+                                endif
+                                if type = java.sql.Types.TIMESTAMP then
+                                    column! = #grid!.getColumn(fieldName$)
+                                    vfe! = column!.getValueFormatterExpression()
+                                    vfe!.setMask(timestampMask$)
+                                endif
+                            endif
+                        else
+                            if SqlTypeNames.isNumericType(type) then
+                                align$="R"
+                                if mask$ = "" then
+                                    rem blank when zero
+                                    blankWhenZeroRenderer! = new GxRendererCustomHTML("<% print(params.data."+fieldName$+" == 0 ? '&nbsp;' : params.data."+fieldName$+") %>")
+                                    column!.setCellRenderer(blankWhenZeroRenderer!)
+                                endif
                             endif
                         endif
-                    endif
-
-                    if fa!.containsKey("ALIGN") then align$ = fa!.get("ALIGN")
-
-                    switch align$
-                        case "R"
-                            column!.setHeaderAlignment(#grid!.GRID_ALIGN_RIGHT())
-                            column!.setAlignment(#grid!.GRID_ALIGN_RIGHT())
-                            break
-                        case "C"
-                            column!.setHeaderAlignment(#grid!.GRID_ALIGN_CENTER())
-                            column!.setAlignment(#grid!.GRID_ALIGN_CENTER())
-                            break
-                        case default
-                        case "L"
-                            column!.setHeaderAlignment(#grid!.GRID_ALIGN_LEFT())
-                            column!.setAlignment(#grid!.GRID_ALIGN_LEFT())
-                            break
-
-                    swend
-                    if type = java.sql.Types.BOOLEAN  OR type = java.sql.Types.BIT then
-                        checkboxRenderer! = new GxRendererBoolean()
-                        checkboxRenderer!.setTrueValue("<font size=+1>&#9745;</font>")
-                        checkboxRenderer!.setFalseValue("<font size=+1>&#9744;</font>")
-                        column!.setCellRenderer(checkboxRenderer!)
+    
+                        if fa!.containsKey("ALIGN") then align$ = fa!.get("ALIGN")
+    
+                        switch align$
+                            case "R"
+                                column!.setHeaderAlignment(#grid!.GRID_ALIGN_RIGHT())
+                                column!.setAlignment(#grid!.GRID_ALIGN_RIGHT())
+                                break
+                            case "C"
+                                column!.setHeaderAlignment(#grid!.GRID_ALIGN_CENTER())
+                                column!.setAlignment(#grid!.GRID_ALIGN_CENTER())
+                                break
+                            case default
+                            case "L"
+                                column!.setHeaderAlignment(#grid!.GRID_ALIGN_LEFT())
+                                column!.setAlignment(#grid!.GRID_ALIGN_LEFT())
+                                break
+    
+                        swend
+                        if type = java.sql.Types.BOOLEAN  OR type = java.sql.Types.BIT then
+                            checkboxRenderer! = new GxRendererBoolean()
+                            checkboxRenderer!.setTrueValue("<font size=+1>&#9745;</font>")
+                            checkboxRenderer!.setFalseValue("<font size=+1>&#9744;</font>")
+                            column!.setCellRenderer(checkboxRenderer!)
+                            
+                            rem checkboxRenderer!.setTrueValue("<input type='checkbox' checked/>")
+                            rem checkboxRenderer!.setFalseValue("<input type='checkbox' />")
+                            
+                            rem column!.getCellRenderer().setTrueValue(GxRendererBoolean.SWITCH_RENDERER())
+                            rem column!.getCellRenderer().setFalseValue(GxRendererBoolean.SWITCH_RENDERER())
+                        endif
+    
+                        if fa!.containsKey("PASSWORD") then
+                            column!.setCellRenderer(new GxRendererCustomHTML("<%= ""<input readonly type='password' value='"" + params.value + ""' />"" %>"))
+                        endif
                         
-                        rem checkboxRenderer!.setTrueValue("<input type='checkbox' checked/>")
-                        rem checkboxRenderer!.setFalseValue("<input type='checkbox' />")
-                        
-                        rem column!.getCellRenderer().setTrueValue(GxRendererBoolean.SWITCH_RENDERER())
-                        rem column!.getCellRenderer().setFalseValue(GxRendererBoolean.SWITCH_RENDERER())
                     endif
-
-                    if fa!.containsKey("PASSWORD") then
-                        column!.setCellRenderer(new GxRendererCustomHTML("<%= ""<input readonly type='password' value='"" + params.value + ""' />"" %>"))
-                    endif
-                        
+                    
                 next rscol
 
                 if cgroups!.size()>0 then
@@ -381,7 +395,7 @@ class public BusinessGrid extends AbstractBCBoundWidget implements IPersistentSt
                         cgroup$=it!.next()
                         #grid!.addColumnGroup(cgroup$ , cgroup$, cgroups!.get(cgroup$) , 0 , "")
                     wend
-                fi
+                endif
 
                 #columnConfigurationSet! = Boolean.TRUE
             endif
@@ -407,7 +421,7 @@ class public BusinessGrid extends AbstractBCBoundWidget implements IPersistentSt
                 sel$ = #getBinder().getSelection().get(0).toString()
                 if  #getBinder().getRS().get(sel$+"A",err=*endif) <> null() then
                     #getBinder().setSelection(sel$)
-                fi
+                endif
             endif
         endif
     methodend
@@ -433,7 +447,7 @@ REM                 i = rs!.indexOf(rowkey$)
             if (s!.size()>0) then
                 #grid!.setSelectedRows(s!)
                 #grid!.ensureIndexVisible(s!.getItem(0), #grid!.GRID_ROWPOS_MIDDLE())
-            fi
+            endif
     methodend
 
     rem /**
@@ -443,7 +457,7 @@ REM                 i = rs!.indexOf(rowkey$)
         if #ignoreNext! then
             #ignoreNext! = Boolean.FALSE
             methodret
-        fi
+        endif
 
         if #getBinder().canSetSelection() then
               x! = ev!.getObject()
@@ -467,7 +481,7 @@ REM               endif
          else
             #onSetSelection()
             #ignoreNext! = Boolean.TRUE
-         fi
+         endif
     methodend
 
     rem methods from interface IPersistentState
@@ -527,7 +541,7 @@ REM         #grid!.setState(new GxState(state!))
             x$ = x$(pos("::"=x$)+2)
         wend
         #cfgwidget! = new ConfigurationWidget(#getCanvas(),201, #getWidth()-155, 5 , #this!, #realm!, x$, #cfgbc! )
-        #updateProperties()
+
     methodend
     
     method public void onSignal(int signal!, Object payload!)

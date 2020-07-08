@@ -11,8 +11,6 @@ use ::BusinessUIComponents/bound/MenuBar.bbj::MenuBar
 use ::BusinessUIComponents/bound/BCErrorHandler.bbj::BCErrorHandler
 use ::BusinessUIComponents/bound/WindowHandler.bbj::WindowHandler
 use ::BusinessUIComponents/unbound/HorizontalSplitter.bbj::HorizontalSplitter
-use ::BusinessUIComponents/configurations/IPropertiesManager.bbj::IPropertiesManager
-use ::BusinessUIComponents/configurations/LocalizedPropertiesManager.bbj::LocalizedPropertiesManager
 use com.basiscomponents.bc.BCBinder
 use com.basiscomponents.db.DataRow
 use com.basiscomponents.db.ResultSet
@@ -44,7 +42,7 @@ class public BusinessMonitorUI
             #wnd! = #sysgui!.addWindow(100,100,1200,760,TITLE$,$01001010$)
         else
             #wnd! = #sysgui!.addWindow(100,100,1200,760,TITLE$,$00000093$)
-        fi
+        endif
 
         #wnd!.setCallback(BBjAPI.ON_RESIZE, #this!,"resize")
 
@@ -83,24 +81,6 @@ class public BusinessMonitorUI
         process_events
     methodend
     
-    rem ######### propertiesManager Setters #########
-    
-    method public void setTextPropertiesManager(IPropertiesManager pm!)
-        it! = #componentsWithProperties!.iterator()
-        while it!.hasNext()
-            component! = it!.next()
-            cast(AbstractBCBoundWidget, component!).setTextPropertiesManager(pm!)
-        wend
-    methodend
-    
-    method public void setUIPropertiesManager(IPropertiesManager pm!)
-        it! = #componentsWithProperties!.iterator()
-        while it!.hasNext()
-            component! = it!.next()
-            cast(AbstractBCBoundWidget, component!).setUIPropertiesManager(pm!)
-        wend
-        if #wh! <> null() then #wh!.setUIPropertiesManager(pm!)
-    methodend
     
     rem ######### add methods for BC bound components #########
     
@@ -117,7 +97,7 @@ class public BusinessMonitorUI
                 filter!.setKey(#pgm!)
                 filter!.setForm(dr!.getFieldAsString("ARC"), dr!.getFieldAsNumber("CWID"))
                 #componentsWithProperties!.add(filter!)
-            fi
+            endif
             if controlPrefixMap! <> null() then
                 filter!.setControlPrefixMap(controlPrefixMap!)
             endif
@@ -141,7 +121,7 @@ REM             #binder!.register(filter!)
                 filter!.setKey(#pgm!)
                 filter!.setForm(dr!.getFieldAsString("ARC"), dr!.getFieldAsNumber("CWID"))
                 #componentsWithProperties!.add(filter!)
-            fi
+            endif
             if controlPrefixMap! <> null() then
                 filter!.setControlPrefixMap(controlPrefixMap!)
             endif
@@ -160,8 +140,6 @@ REM             #binder!.register(filter!)
         menuBar! = new MenuBar(#wnd!)
         #binder!.register(menuBar!)
         menuBar!.setBinder(#binder!)
-        REM #componentsWithProperties!.add(menuBar!) ; rem currently useless
-        menuBar!.setTextPropertiesManager(LocalizedPropertiesManager.getInstance())
         menuBar!.initMonitor()
     methodend
     

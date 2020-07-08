@@ -77,6 +77,11 @@ class public ExportButton
         #exportButton!.setImageFile(imageFilePath$)
         #setImageSize(#exportButton!.getWidth()-4, #exportButton!.getWidth()-4)
     methodend
+
+    method public void setImage(BBjImage image!)
+        #exportButton!.setImage(image!)
+        #setImageSize(#exportButton!.getWidth()-4, #exportButton!.getWidth()-4)
+    methodend
     
     method public void setSize(BBjNumber width, BBjNumber height)
         #exportButton!.setSize(width, height)
@@ -85,6 +90,10 @@ class public ExportButton
     
     method public void setImageSize(BBjNumber width, BBjNumber height)
         #exportButton!.setImageSize(width, height)
+    methodend
+    
+    method public void setBackColor(BBjColor color!)
+        #exportButton!.setBackColor(color!)
     methodend
     
     method public void setCustomReports(HashMap customReports!)

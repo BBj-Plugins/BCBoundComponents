@@ -9,9 +9,10 @@ use com.basiscomponents.bc.BCBinder
 use com.basiscomponents.db.BBArrayList
 use com.basiscomponents.db.ResultSet
 use com.basiscomponents.db.DataRow
+
+use com.basiscomponents.ui.theming.Theme
+
 use ::BusinessUIComponents/SearchUI.bbj::SearchUI
-use ::BusinessUIComponents/configurations/IPropertiesManager.bbj::IPropertiesManager
-use ::BusinessUIComponents/configurations/PropertiesManager.bbj::PropertiesManager
 
 class public QuickSearchField
     field protected BBjInputE control!
@@ -26,12 +27,13 @@ class public QuickSearchField
     field protected Boolean passEnter!
     field protected Boolean passTab!
     field protected String uniqueID! = java.util.UUID.randomUUID().toString()
-    field private IPropertiesManager uiPropertiesManager!
     field protected BCBinder binder!
     field protected BBjMenuButton searchButton!
     field protected SearchUI searchUI!
     
     field protected BBjVector optionIDs!
+    
+    field private Theme theme! = Theme.getInstance()
     
     method public QuickSearchField(BBjInputE control!, BusinessComponent bc!)
         #control! = control!
@@ -45,8 +47,8 @@ class public QuickSearchField
         #popup! = cast(BBjListButton, wnd!.addListButton(wnd!.getAvailableControlID(), popupX, popupY, popupW, popupH, ""))
         #popup!.setFieldHeight(0)
         #popup!.setVisible(0)
-        #popup!.setCallback(BBjControl.ON_LIST_SELECT, #this!, "popupSelect")
         #popup!.setFont(#control!.getFont())
+        #popup!.setCallback(BBjControl.ON_LIST_SELECT, #this!, "popupSelect")
         #control!.setCallback(BBjControl.ON_EDIT_MODIFY, #this!, "onEditModifyEvent")
         #control!.setCallback(BBjControl.ON_INPUT_KEYPRESS, #this!, "onKeyPressed")
         #parseAttributes()
@@ -283,10 +285,13 @@ REM         #control!.setCaretPosition(text!.length() - 1)
         buttonX = #control!.getX() + #control!.getWidth() - buttonSize - 1
         buttonY = #control!.getY() + 1
         wnd! = #control!.getParentWindow()
-        
         #searchButton! = cast(BBjMenuButton, wnd!.addMenuButton(wnd!.getAvailableControlID(), buttonX, buttonY, buttonSize, buttonSize, ""))
         #searchButton!.setCallback(#searchButton!.ON_BUTTON_PUSH,#this!,"searchButtonClick")
-        #updateProperties()
+        #searchButton!.setImage(#theme!.getBBjImage("IC_SEARCH",Theme.ON_PRIMARY))
+        #searchButton!.setBackColor(#theme!.getPrimaryColorPalette().getBBjColor())
+        size = #searchButton!.getWidth() - 4
+        #searchButton!.setImageSize(size, size)
+
     methodend
     
     method public void searchButtonClick(BBjEvent ev!)
@@ -295,7 +300,6 @@ REM         #control!.setCaretPosition(text!.length() - 1)
             #searchUI!.setBC(#bc!)
             #searchUI!.initComponents()
             #searchUI!.applyWindowConfig()
-            #searchUI!.setUIPropertiesManager(#uiPropertiesManager!)
         endif
         #bc!.setFilter(new DataRow())
         #searchUI!.doModal()
@@ -324,18 +328,7 @@ REM         #control!.setCaretPosition(text!.length() - 1)
         #searchUI!.getBinder().sendSignal(#searchUI!.getBinder().SIGNAL_TERMINATE)
     methodend
     
-    method public void setUIPropertiesManager(IPropertiesManager uiPropertiesManager!)
-        #uiPropertiesManager! = uiPropertiesManager!
-        #updateProperties()
-        if #searchUI! <> null() then #searchUI!.setUIPropertiesManager(uiPropertiesManager!)
-    methodend
     
-    method protected void updateProperties()
-        if #uiPropertiesManager! = null() then #uiPropertiesManager! = cast(IPropertiesManager, PropertiesManager.getInstance())
-        #searchButton!.setImageFile(#uiPropertiesManager!.getProperty("SIMPLE_FORM_BTN_QUICK_SEARCH"))
-        size = #searchButton!.getWidth() - 4
-        #searchButton!.setImageSize(size, size)
-    methodend
     
     
 classend
