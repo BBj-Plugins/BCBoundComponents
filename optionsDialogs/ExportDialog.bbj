@@ -125,8 +125,8 @@ class public ExportDialog
             wnd! = cast(BBjTopLevelWindow, sysGui!.addWindow(sysGui!.getAvailableContext(),10,10,500,492,windowTitle$, $40000000$))
         
         endif
-        wnd!.setCallback(BBjAPI.ON_CLOSE, #this!, "onClose")
         #mainWindow! = wnd!
+        #mainWindow!.setCallback(BBjAPI.ON_CLOSE, #this!, "onClose")
         methodret #mainWindow!
     methodend
     
@@ -149,10 +149,13 @@ class public ExportDialog
                 #fileChooser!.addFileFilter(key!, "*.pdf")
             wend
         endif
-        
+
         #fileChooser!.setCallback(#fileChooser!.ON_FILECHOOSER_FILTER, #this!, "onFileChooserFilter")
         #fileChooser!.setCallback(#fileChooser!.ON_FILECHOOSER_CANCEL, #this!, "onFileChooserCancel")
         #fileChooser!.setCallback(#fileChooser!.ON_FILECHOOSER_APPROVE, #this!, "onFileChooserApprove")
+        
+        exportMethod$ = #getLatestExportMethodAsString()
+        #fileChooser!.setActiveFileFilter(exportMethod$, err=*next)
     methodend
     
     method public void onFileChooserFilter(BBjFileChooserFilterEvent ev!)
@@ -462,6 +465,8 @@ class public ExportDialog
     methodend
     
     method private void exportXlsx(BBjString outputFilePath$)
+        SETERR errHandling
+        
         rs! = #grid!.getGrid().getRS()
         
         dr! = rs!.get(0)
@@ -502,9 +507,15 @@ class public ExportDialog
         
         #saveConfiguration()
         #mainWindow!.destroy()
+        methodret
+        
+        errHandling:
+        #handleExportError()
     methodend
     
     method private void exportHtml(BBjString outputFilePath$)
+        SETERR errHandling
+        
         rs! = #grid!.getGrid().getRS()
         if rs! = null() or rs!.isEmpty() then methodret
         
@@ -533,9 +544,15 @@ class public ExportDialog
         
         #saveConfiguration()
         #mainWindow!.destroy()
+        methodret
+        
+        errHandling:
+        #handleExportError()
     methodend
     
     method private void exportXml(BBjString outputFilePath$)
+        SETERR errHandling
+        
         rs! = #grid!.getGrid().getRS()
         
         rootTagName! = #ieRootTagName!.getText()
@@ -568,9 +585,15 @@ class public ExportDialog
         
         #saveConfiguration()
         #mainWindow!.destroy()
+        methodret
+        
+        errHandling:
+        #handleExportError()
     methodend
     
     method private void exportTxt(BBjString outputFilePath$)
+        SETERR errHandling
+        
         rs! = #grid!.getGrid().getRS()
         if rs! = null() or rs!.isEmpty() then methodret
         
@@ -599,9 +622,15 @@ class public ExportDialog
         
         #saveConfiguration()
         #mainWindow!.destroy()
+        methodret
+        
+        errHandling:
+        #handleExportError()
     methodend
     
     method private void exportCsv(BBjString outputFilePath$)
+        SETERR errHandling
+        
         rs! = #grid!.getGrid().getRS()
         
         rem exporting
@@ -627,9 +656,15 @@ class public ExportDialog
         
         #saveConfiguration()
         #mainWindow!.destroy()
+        methodret
+        
+        errHandling:
+        #handleExportError()
     methodend
     
     method private void exportPdf(BBjString outputFilePath$)
+        SETERR errHandling
+    
         declare File outputFile!
         outputFile! = new File(outputFilePath$)
         fileName$ = outputFile!.getName()
@@ -673,10 +708,16 @@ class public ExportDialog
         
         #saveConfiguration()
         #mainWindow!.destroy()
+        methodret
+        
+        errHandling:
+        #handleExportError()
     methodend
     
     method private void exportCustomReport(BBjString outputFilePath$, BBjString customReportFilePath$)
-    
+        SETERR errHandling
+        
+        
         rem TODO: auﬂen vor lassen
             
     
@@ -737,6 +778,10 @@ REM         bc!.setFieldSelection(originalFieldSelection!)
         
         #saveConfiguration()
         #mainWindow!.destroy()
+        methodret
+        
+        errHandling:
+        #handleExportError()
     methodend
     
     method private void openExportetFile(File outputFile!)
@@ -815,10 +860,20 @@ REM         bc!.setFieldSelection(originalFieldSelection!)
                 methodret
         swend
         
+        rem saving export config
         config!.setFieldValue(#cfgBC!.getFieldNameKeyx(), key$)
         config!.setFieldValue(#cfgBC!.getFieldNameRealm(), "exp")
         config!.setFieldValue(#cfgBC!.getFieldNameSetting(), "std")
         config!.setFieldValue(#cfgBC!.getFieldNameConfig(), json!)
+        config!.setFieldValue(#cfgBC!.getFieldNameUserid(), #cfgBC!.getUserName())
+        #cfgBC!.write(config!)
+
+        rem latest export
+        config! = new DataRow()
+        config!.setFieldValue(#cfgBC!.getFieldNameKeyx(), "latestExport")
+        config!.setFieldValue(#cfgBC!.getFieldNameRealm(), "exp")
+        config!.setFieldValue(#cfgBC!.getFieldNameSetting(), "lst")
+        config!.setFieldValue(#cfgBC!.getFieldNameConfig(), key$)
         config!.setFieldValue(#cfgBC!.getFieldNameUserid(), #cfgBC!.getUserName())
         #cfgBC!.write(config!)
     methodend
@@ -898,12 +953,35 @@ REM         bc!.setFieldSelection(originalFieldSelection!)
         methodret rs!
     methodend
     
+    method private BBjString getLatestExportMethodAsString()
+        filter! = new DataRow()
+        filter!.setFieldValue("KEYX", "latestExport")
+        filter!.setFieldValue("USERID", #cfgBC!.getUserName())
+        filter!.setFieldValue("REALM", "exp")
+        filter!.setFieldValue("SETTING", "lst")
+        #cfgBC!.setFilter(filter!)
+        rs! = #cfgBC!.retrieve()
+        
+        if !rs!.isEmpty() then
+            dr! = rs!.get(0)
+            exportMethod$ = dr!.getFieldAsString("CONFIG")
+            methodret exportMethod$
+        endif
+        
+        methodret ""
+    methodend
+    
     method public void onClose(BBjEvent ev!)
         #mainWindow!.destroy()
     methodend
     
     method public void setShowsBaristaHeader(Boolean b!)
         #showsBaristaHeader! = b!
+    methodend
+    
+    method private void handleExportError()
+        errMsg$ = errmes(-1)
+        a = msgbox(errMsg$, 16)
     methodend
     
 classend
