@@ -63,11 +63,7 @@ class public SimpleFormComponent extends AbstractBCBoundWidget implements IPersi
     rem  */
     method public void redraw(Boolean f_init!)
         if (f_init!) then
-            it! = #calendarButtons!.iterator()
-            while it!.hasNext()
-                calendarButton! = it!.next()
-                calendarButton!.setImage(#theme!.getBBjImage("IC_CALENDAR"))
-            wend
+            
         endif
 
         if (#cw! <> null()) then
@@ -645,8 +641,10 @@ class public SimpleFormComponent extends AbstractBCBoundWidget implements IPersi
     method protected void addCalendarButton(BBjInputD control!)
         calendarButton! = #getCanvas().addMenuButton(#getCanvas().getAvailableControlID(), control!.getX() + control!.getWidth() - control!.getHeight() + 1, control!.getY() + 1, control!.getHeight() - 2, control!.getHeight() - 2, "")
         #calendarButtons!.add(calendarButton!)
-        REM         calendarButton!.setImageFile("BusinessUIComponents/icon/ic_insert_invitation_black_24dp.png")
         calendarButton!.setImageSize(control!.getHeight() - 6,control!.getHeight() - 6)
+        calendarButton!.setImage(#theme!.getBBjImage("IC_CALENDAR",Theme.ON_PRIMARY))
+        calendarButton!.setBackColor(#theme!.getPrimaryColorPalette().getBBjColor())
+
         calendarButton!.setUserData(control!)
         calendarButton!.setCallback(BBjAPI.ON_BUTTON_PUSH,#this!,"onCalendarButtonPush")
     methodend

@@ -287,7 +287,8 @@ REM         #control!.setCaretPosition(text!.length() - 1)
         wnd! = #control!.getParentWindow()
         #searchButton! = cast(BBjMenuButton, wnd!.addMenuButton(wnd!.getAvailableControlID(), buttonX, buttonY, buttonSize, buttonSize, ""))
         #searchButton!.setCallback(#searchButton!.ON_BUTTON_PUSH,#this!,"searchButtonClick")
-        #searchButton!.setImage(#theme!.getBBjImage("IC_SEARCH"))
+        #searchButton!.setImage(#theme!.getBBjImage("IC_SEARCH",Theme.ON_PRIMARY))
+        #searchButton!.setBackColor(#theme!.getPrimaryColorPalette().getBBjColor())
         size = #searchButton!.getWidth() - 4
         #searchButton!.setImageSize(size, size)
 
