@@ -22,7 +22,7 @@ class public BCMetaDataJSONModel implements IBCMetaDataModel
         
         if fid$(1,1) <> $05$ then
             throw "File "+folder!+" is not a directory!",17
-        fi
+        endif
         
         #folder! = folder!
         
@@ -67,7 +67,7 @@ class public BCMetaDataJSONModel implements IBCMetaDataModel
     
         if #meta! = null() then
             throw "no model loaded!",14
-        fi
+        endif
     
         while 1
             loc$=locale!
@@ -75,7 +75,7 @@ class public BCMetaDataJSONModel implements IBCMetaDataModel
             locmeta! = meta!.getField(loc$,err=*next).getObject()
             if locmeta! = null() then
                 locmeta! = meta!.getField(loc$(1,2),err=*next).getObject()
-            fi
+            endif
             if locmeta! <> null() then
                 dr!.setFieldValue("_ENTITY", "")
                 dr!.setFieldAttribute("_ENTITY", "HIDE", "1")
@@ -91,9 +91,9 @@ class public BCMetaDataJSONModel implements IBCMetaDataModel
                               dr!.setFieldAttribute(f$,"GROUP",locmeta!.getField("fields",err=*next).getObject().getField(f$,err=*next).getObject().getFieldAsString("GROUP",err=*next))
                               dr!.setFieldAttribute(f$,"MASK",locmeta!.getField("fields",err=*next).getObject().getField(f$,err=*next).getObject().getFieldAsString("MASK",err=*next))
                               rem auch: SHORT, SHORTCUE, LONGCUE
-                          fi
+                          endif
                 wend
-            fi
+            endif
             
             
             general! = meta!.getField("general",err=*next).getObject()
@@ -113,10 +113,10 @@ class public BCMetaDataJSONModel implements IBCMetaDataModel
                 flayout! = fmeta!.getField(f$,err=*continue).getObject()
                 if flayout!.contains("ALIGN") then
                     dr!.setFieldAttribute(f$,"ALIGN",flayout!.getFieldAsString("ALIGN"))
-                fi
+                endif
                 if flayout!.contains("HIDE") then
                     dr!.setFieldAttribute(f$,"HIDE",str(flayout!.getFieldAsNumber("HIDE")>0))
-                fi
+                endif
             wend
 
             break

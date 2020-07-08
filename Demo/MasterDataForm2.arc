@@ -9,9 +9,11 @@ BEGIN
     EVENTMASK 0
     KEYBOARDNAVIGATION
     NAME "Child Window100"
+    NOT OPAQUE
     STATICTEXT 100, "Shipping Zone:", 50, 61, 90, 25
     BEGIN
         NAME "Static Text100"
+        NOT OPAQUE
         NOT WORDWRAP
     END
 
@@ -26,6 +28,7 @@ BEGIN
     STATICTEXT 102, "Shipping Method:", 50, 92, 90, 25
     BEGIN
         NAME "Static Text102"
+        NOT OPAQUE
         NOT WORDWRAP
     END
 
@@ -40,48 +43,56 @@ BEGIN
     STATICTEXT 104, "Last Purchase:", 50, 122, 90, 25
     BEGIN
         NAME "Static Text104"
+        NOT OPAQUE
         NOT WORDWRAP
     END
 
     STATICTEXT 107, "Last Payment:", 50, 153, 90, 25
     BEGIN
         NAME "Static Text107"
+        NOT OPAQUE
         NOT WORDWRAP
     END
 
     STATICTEXT 109, "Over 30:", 410, 30, 90, 25
     BEGIN
         NAME "Static Text109"
+        NOT OPAQUE
         NOT WORDWRAP
     END
 
     STATICTEXT 106, "Over 60:", 410, 61, 90, 25
     BEGIN
         NAME "Static Text106"
+        NOT OPAQUE
         NOT WORDWRAP
     END
 
     STATICTEXT 110, "Over 90", 410, 91, 90, 25
     BEGIN
         NAME "Static Text110"
+        NOT OPAQUE
         NOT WORDWRAP
     END
 
     STATICTEXT 111, "Over 120:", 410, 123, 90, 25
     BEGIN
         NAME "Static Text111"
+        NOT OPAQUE
         NOT WORDWRAP
     END
 
     STATICTEXT 112, "Sales MTD:", 410, 154, 90, 25
     BEGIN
         NAME "Static Text112"
+        NOT OPAQUE
         NOT WORDWRAP
     END
 
     STATICTEXT 113, "Sales YTD:", 410, 185, 90, 25
     BEGIN
         NAME "Static Text113"
+        NOT OPAQUE
         NOT WORDWRAP
     END
 
@@ -160,18 +171,21 @@ BEGIN
     STATICTEXT 122, "Sales Person:", 50, 30, 90, 25
     BEGIN
         NAME "Static Text122"
+        NOT OPAQUE
         NOT WORDWRAP
     END
 
     STATICTEXT 123, "Credit Code:", 50, 185, 90, 25
     BEGIN
         NAME "Static Text123"
+        NOT OPAQUE
         NOT WORDWRAP
     END
 
     STATICTEXT 124, "Current Balance:", 50, 216, 90, 25
     BEGIN
         NAME "Static Text124"
+        NOT OPAQUE
         NOT WORDWRAP
     END
 
@@ -187,6 +201,7 @@ BEGIN
     STATICTEXT 126, "Sales LY:", 410, 216, 90, 25
     BEGIN
         NAME "Static Text126"
+        NOT OPAQUE
         NOT WORDWRAP
     END
 

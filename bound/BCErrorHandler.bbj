@@ -1,79 +1,72 @@
 REM /**
 REM  * BCErrorHandler.bbj
-REM  * @author jcorea
 REM  *
 REM  * an error handler that reacts to the error signal from BCBinder
 REM  */
-
 use ::BusinessUIComponents/AbstractBCBoundWidget.bbj::AbstractBCBoundWidget
 use ::BBjGridExWidget/BBjGridExWidget.bbj::BBjGridExWidget
 use com.basiscomponents.bc.BCBound
 use com.basiscomponents.bc.IBCBound
 use com.basiscomponents.bc.BCBinder
-
-
 use com.basiscomponents.db.ResultSet
 use com.basiscomponents.db.DataRow
 
 class public BCErrorHandler implements IBCBound
 
-    
     field protected BCBinder binder!
     field protected String title! = ""
-    
 
     method public BCErrorHandler()
-    
     methodend
-    
+
     method public void setTitle(String title!)
         #title! = title!
     methodend
-    
     rem -------------------------BCBinder methods--------------------------------
     method public void setBinder(BCBinder binder!)
         #binder! = binder!
-    methodend    
-    
+    methodend
+
     method public BCBinder getBinder()
         methodret #binder!
-    methodend    
-    
+    methodend
+
     method public void onSetData()
     methodend
-   
+
     method public void onSetSelection()
     methodend
-    
+
     method public DataRow getFieldsForFieldSelection()
         methodret new DataRow()
     methodend
-    
+
     method public Boolean canSetSelection()
         methodret BBjAPI.TRUE
     methodend
-    
+
     method public Boolean canTerminate()
         methodret BBjAPI.TRUE
     methodend
-    
+
     method public void onSignal(int signal!, Object payload!)
         if signal!=BCBinder.SIGNAL_ERROR then
             rem BCBinder.SIGNAL_ERROR
             exception! = cast(Exception, payload!)
             cause! = exception!.getCause()
+
             if cause! <> null() then
                 message! = cause!.getMessage()
             else
                 message! = exception!.getMessage()
             endif
+
             a = msgbox(message!,16,#title!);rem 16 = OK button + stop sign
         endif
     methodend
-    
+
     method public DataRow getFieldsForWrite()
         methodret new DataRow()
     methodend
-    
 
 classend
