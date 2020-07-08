@@ -258,15 +258,15 @@ class public ConfigurationWidget extends BBjWidget
                 #buttonAdmin!.setSize(size + 2, size + 2)
                 switch #accessMode
                     case #ACCESS_MODE_FACTORYDEFAULT
-                        #buttonAdmin!.setImage(#theme!.getBBjImage("IC_FACTORYDEFAULTS_ENABLED"))
+                        #buttonAdmin!.setImage(#theme!.getBBjImage("IC_FACTORYDEFAULTS_ENABLED",Theme.PRIMARY))
                         #buttonAdmin!.setShortCue( #props!.getText("CONFIG_WIDGET_BTN_FACTORYDEFAULTS_ENABLED_SHORT_CUE"))
                         break
                     case #ACCESS_MODE_ADMIN
-                        #buttonAdmin!.setImage(#theme!.getBBjImage("IC_ADMIN_ENABLED"))
+                        #buttonAdmin!.setImage(#theme!.getBBjImage("IC_ADMIN_ENABLED",Theme.PRIMARY))
                         #buttonAdmin!.setShortCue( #props!.getText("CONFIG_WIDGET_BTN_ADMIN_ENABLED_SHORT_CUE"))
                         break
                     case #ACCESS_MODE_USER
-                        #buttonAdmin!.setImage(#theme!.getBBjImage("IC_ADMIN_DISABLED"))
+                        #buttonAdmin!.setImage(#theme!.getBBjImage("IC_ADMIN_DISABLED",Theme.PRIMARY))
                         #buttonAdmin!.setShortCue( #props!.getText("CONFIG_WIDGET_BTN_ADMIN_DISABLED_SHORT_CUE"))
                         break
                 swend
@@ -627,21 +627,21 @@ class public ConfigurationWidget extends BBjWidget
     method protected void updateAccessButton()
         switch #accessMode
             case #ACCESS_MODE_ADMIN
-                #buttonAdmin!.setImage( #theme!.getBBjImage("IC_ADMIN_ENABLED"))
+                #buttonAdmin!.setImage( #theme!.getBBjImage("IC_ADMIN_ENABLED",Theme.PRIMARY))
                 #buttonAdmin!.setShortCue( #props!.getText("CONFIG_WIDGET_BTN_ADMIN_ENABLED_SHORT_CUE"))
                 if #menuAdmin! <> null() then #menuAdmin!.setSelected(Boolean.TRUE)
                 if #menuFactoryDefaults! <> null() then #menuFactoryDefaults!.setSelected(Boolean.FALSE)
                 #bc!.setUserName(#bc!.getAdminUser())
                 break
             case #ACCESS_MODE_USER
-                #buttonAdmin!.setImageFile(  #theme!.getBBjImage("IC_ADMIN_DISABLED"))
+                #buttonAdmin!.setImage(  #theme!.getBBjImage("IC_ADMIN_DISABLED",Theme.PRIMARY))
                 #buttonAdmin!.setShortCue( #props!.getText("CONFIG_WIDGET_BTN_ADMIN_DISABLED_SHORT_CUE"))
                 if #menuAdmin! <> null() then #menuAdmin!.setSelected(Boolean.FALSE)
                 if #menuFactoryDefaults! <> null() then #menuFactoryDefaults!.setSelected(Boolean.FALSE)
                 #bc!.setUserName(#userName!)
                 break
             case #ACCESS_MODE_FACTORYDEFAULT
-                #buttonAdmin!.setImageFile(  #theme!.getBBjImage("IC_FACTORYDEFAULTS"))
+                #buttonAdmin!.setImage(  #theme!.getBBjImage("IC_FACTORYDEFAULTS",Theme.PRIMARY))
                 #buttonAdmin!.setShortCue( #props!.getText("CONFIG_WIDGET_BTN_FACTORYDEFAULTS_ENABLED_SHORT_CUE"))
                 if #menuAdmin! <> null() then #menuAdmin!.setSelected(Boolean.FALSE)
                 if #menuFactoryDefaults! <> null() then #menuFactoryDefaults!.setSelected(Boolean.TRUE)
