@@ -52,7 +52,7 @@ class public BusinessMasterDataUI
         #formTabCtrl! = #splitter!.getBottomCanvas().addTabCtrl(115, 0, 0, 500, 500)
         #formTabCtrl!.setBackColor(#theme!.getBBjBackgroundColor())
         #formTabCtrl!.setForeColor(#theme!.getPrimaryColorPalette().getBBjColor("A700"))
-        #formTabCtrl!.setFont(#theme!.getBBjFont("h6"))
+        #formTabCtrl!.setFont(#theme!.getBBjFont())
         
         #splitter!.getBottomCanvas().setBackColor(#theme!.getBBjBackgroundColor())
         #splitter!.getTopCanvas().setBackColor(#theme!.getBBjBackgroundColor())

@@ -7,6 +7,8 @@ use com.basiscomponents.db.util.SqlTypeNames
 use com.basiscomponents.ui.theming.Theme
 use com.basiscomponents.i18n.Props
 
+use com.google.gson.JsonObject
+
 use ::BBjGridExWidget/BBjGridExWidget.bbj::BBjGridExWidget
 
 use ::BBjGridExWidget/GxColumns.bbj::GxColumn
@@ -177,6 +179,16 @@ class public BusinessGrid extends AbstractBCBoundWidget implements IPersistentSt
             xPos = xPos + #widgetHeight
             #cfgwidget!.setMinPaddingLeft(xPos)
         endif
+        
+        primary! = #theme!.getPrimaryColorPalette().getHexColor("300")
+        textColor! = #theme!.getPrimaryColorPalette().getForeColor()
+        
+        #grid!.setTheme( #grid!.GRID_THEME_BALHAM() )
+        balhamTheme! = new JsonObject()
+        balhamTheme!.addProperty("--ag-balham-active-color",primary!)
+        balhamTheme!.addProperty("--ag-selected-row-background-color",primary!)
+        #grid!.addStyle(".ag-theme-balham",balhamTheme!)
+        #grid!.addStyle(".ag-theme-balham .ag-row-selected", String.format("{""color"":""%s""}",textColor!))
 
         endif
 
@@ -269,7 +281,6 @@ class public BusinessGrid extends AbstractBCBoundWidget implements IPersistentSt
 
                 #grid!.getClientContext().addProperty("numberGroupSep",numberGroupSeparator$, err=*next)        
                 #grid!.getClientContext().addProperty("numberDecimalSep",numberDecimalSeparator$, err=*next)
-                #grid!.setTheme( #grid!.GRID_THEME_BALHAM() )
                 rem Render grid columns based on the attributes record (w/o any data)
                 
                 cgroups! = new java.util.HashMap()
