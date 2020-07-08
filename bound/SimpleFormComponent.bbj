@@ -386,7 +386,7 @@ class public SimpleFormComponent extends AbstractBCBoundWidget implements IPersi
         #fieldList! = CAST(BBjVector,fieldList!)
     methodend
 
-    method public void controlChangeBackColorOnGainedFocus(BBjEvent ev!)
+    method public void controlChangeBackColorOnGainedFocus(BBjGainedFocusEvent ev!)
         control! = ev!.getControl()
         control!.setBackColor(#getColorFocusGained())
     methodend
@@ -674,7 +674,7 @@ class public SimpleFormComponent extends AbstractBCBoundWidget implements IPersi
         #super!.setBinder(binder!)
     methodend
 
-    method public void onControlGainedFocus(BBjGainedFocusEvent ev!)
+    method public void onControlGainedFocus(BBjEvent ev!)
         #getBinder().sendSignal(BCBinder.SIGNAL_DIRTY)
     methodend
 
