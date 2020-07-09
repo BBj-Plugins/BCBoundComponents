@@ -674,7 +674,7 @@ class public SimpleFormComponent extends AbstractBCBoundWidget implements IPersi
         #super!.setBinder(binder!)
     methodend
 
-    method public void onControlGainedFocus(BBjGainedFocusEvent ev!)
+    method public void onControlGainedFocus(BBjEvent ev!)
         #getBinder().sendSignal(BCBinder.SIGNAL_DIRTY)
     methodend
 
