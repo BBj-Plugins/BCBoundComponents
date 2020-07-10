@@ -120,10 +120,9 @@ class public ExportDialog
         sysGui! = BBjAPI().getSysGui()
         declare BBjTopLevelWindow wnd!
         if info(3,6) = "5" then
-            wnd! = cast(BBjTopLevelWindow, sysGui!.addWindow(sysGui!.getAvailableContext(),10,10,500,155,windowTitle$, $40000000$))
+            wnd! = cast(BBjTopLevelWindow, sysGui!.addWindow(sysGui!.getAvailableContext(),10,10,500,155,windowTitle$, $40000103$))
         else
-            wnd! = cast(BBjTopLevelWindow, sysGui!.addWindow(sysGui!.getAvailableContext(),10,10,500,492,windowTitle$, $40000000$))
-        
+            wnd! = cast(BBjTopLevelWindow, sysGui!.addWindow(sysGui!.getAvailableContext(),10,10,500,492,windowTitle$, $40000103$))
         endif
         #mainWindow! = wnd!
         #mainWindow!.setCallback(BBjAPI.ON_CLOSE, #this!, "onClose")
