@@ -1,0 +1,225 @@
+REM /**
+REM  * GridConfigurationWidget.bbj
+REM  * Configuration widget to save/load a state of a component in a VKEYED file.
+REM  *
+REM  */
+use ::BBjGridExWidget/BBjGridExWidget.bbj::BBjGridExWidget
+use ::BBjWidget/BBjWidget.bbj::BBjWidget
+use ::BBjGridExWidget/BBjGridExWidgetState.bbj::BBjGridExWidgetState
+use ::BusinessUIComponents/configurations/CustomConfigurationsBC.bbj::CustomConfigurationsBC
+use ::BusinessUIComponents/configurations/ConfigurationStateHandler.bbj::ConfigurationStateHandler
+use ::BusinessUIComponents/configurations/IPersistentState.bbj::IPersistentState
+use com.basiscomponents.bc.IConfigurationsBC
+use com.basiscomponents.db.DataRow
+use com.basiscomponents.db.ResultSet
+use com.basiscomponents.ui.theming.Theme
+use com.basiscomponents.i18n.Props
+use java.util.UUID
+use java.io.File
+
+class public ConfigurationButton extends BBjWidget
+
+    field protected IConfigurationsBC bc!
+    field protected String realm!
+    field protected String keyx!
+    field protected String userName!
+    field protected static Boolean allowAdmin! = Boolean.FALSE
+    field protected static Boolean allowFactoryDefaults! = Boolean.FALSE
+    field protected Theme theme! = Theme.getInstance()
+    field protected Props props! = Props.getInstance()
+    field protected BBjMenuButton popupButton!
+    field protected BBjPopupMenu popupMenu!
+    field protected ResultSet availableConfigs!
+    field protected ConfigurationStateHandler stateHandler!
+    field protected DataRow currentConfiguration!
+    
+    rem /**
+    rem  * default constructor disabled
+    rem  */
+    method private ConfigurationButton()
+    methodend
+
+    method public ConfigurationButton(BBjWindow container!, BBjNumber id, BBjNumber x, BBjNumber y, IPersistentState statePersistable!)
+        #this!(container!, id, x, y, statePersistable!,  "", "", null())
+    methodend
+
+    method public ConfigurationButton(BBjWindow container!, BBjNumber id, BBjNumber x, BBjNumber y, IPersistentState statePersistable!, String realm!, String keyx!, IConfigurationsBC bc!)
+        #super!()
+        #realm! = realm!
+        rem trim key to max length
+        if keyx!.length() > 35 then
+            keyx! = keyx!.substring(keyx!.length() - 35)
+        endif
+
+        #keyx! = keyx!
+        if bc! <> null() then
+            #bc! = bc!
+            #userName! = #bc!.getUserName()
+        else
+            #userName! = ""
+        endif
+        #stateHandler! = new ConfigurationStateHandler(statePersistable!, #this!)
+        #create(container!,id,x,y,160,20)
+    methodend
+    
+    method public void redraw(Boolean f_init!)
+        if f_init! then
+            #getCanvas().setBackColor(#theme!.getBBjBackgroundColor())
+            buttonSize = #theme!.getNumProperty("SECONDARY_TB_HEIGHT")
+            buttonImageSize = buttonSize - 4
+            #popupButton! = #getCanvas().addMenuButton(#getCanvas().getAvailableControlID(), 0, 0, buttonSize + 12, buttonSize, "")
+            #popupButton!.setBackColor(#theme!.getBBjBackgroundColor())
+            #popupButton!.setImage( #theme!.getBBjImage("IC_SETTINGS",Theme.PRIMARY))
+            #popupButton!.setImageSize(buttonImageSize, buttonImageSize)
+            #popupButton!.setCallback(#popupButton!.ON_BUTTON_PUSH, #this!, "settingsTool")
+            #popupMenu! = #popupButton!.addDropdownMenu()
+            #fetchAndUpdatePopup()
+        endif
+    methodend
+    
+    rem /**
+    rem  * fetches the available configs from the bc and updates popup menu
+    rem  */
+    method protected void fetchAndUpdatePopup()
+        dr! = new DataRow()
+        dr!.setFieldValue(#bc!.getFieldNameRealm(), #realm!)
+        dr!.setFieldValue(#bc!.getFieldNameKeyx(), #keyx!)
+        dr!.setFieldValue(#bc!.getFieldNameUserid(), #userName!)
+        #bc!.setFilter(dr!)
+        #availableConfigs! = #bc!.retrieve()
+        #fillPopup()
+    methodend
+    
+    rem /**
+    rem  * only updates the options list-edit without fetching new configurations from the bc
+    rem  */
+    method protected void fillPopup()
+        #popupButton!.removeDropdownMenu()
+        #popupMenu! = #popupButton!.addDropdownMenu()
+        if #availableConfigs! = null() OR #availableConfigs!.isEmpty() then
+            settingsToolMenuItem! = #popupMenu!.addMenuItem(200, "More...")
+            cast(BBjMenuItem, settingsToolMenuItem!).setCallback(BBjPopupMenu.ON_POPUP_ITEM_SELECT, #this!, "settingsTool")
+            methodret
+        endif
+
+        declare BBjMenuItem menuItem!
+        for i=0 to #availableConfigs!.size() - 1
+            currentConfig! = #availableConfigs!.get(i)
+            userSettingName! = currentConfig!.getFieldAsString(#bc!.getFieldNameSetting())
+            description! = ""
+            description! = userSettingName!.trim()
+            menuItem! = #popupMenu!.insertMenuItem(i, 200 + i, description!)
+            menuItem!.setUserData(currentConfig!)
+            cast(BBjMenuItem, menuItem!).setCallback(BBjPopupMenu.ON_POPUP_ITEM_SELECT, #this!, "settingSelect")
+        next i
+        #popupMenu!.addSeparator()
+        settingsToolMenuItem! = #popupMenu!.addMenuItem(200 + i, "More...")
+        cast(BBjMenuItem, settingsToolMenuItem!).setCallback(BBjPopupMenu.ON_POPUP_ITEM_SELECT, #this!, "settingsTool")
+    methodend
+    
+    method public void updateConfiguration()
+        if #currentConfiguration! <> null() then
+            #applyConfiguration(#currentConfiguration!)
+        endif
+    methodend
+    
+    method public void stateChange()
+        
+    methodend
+    
+    rem /**
+    rem  * sets the ConfigurationStateHandler to handle communication between the widget and the stateful component
+    rem  */
+    method public void setStateHandler(ConfigurationStateHandler stateHandler!)
+        #stateHandler! = stateHandler!
+    methodend
+
+    method public ConfigurationStateHandler getStateHandler()
+        methodret #stateHandler!
+    methodend
+    
+    method protected void applyConfiguration(DataRow config!)
+        state! = config!.getFieldAsString(#bc!.getFieldNameConfig(), err=*next)
+        if state! = null() or state!.trim().equals("") then methodret
+        #currentConfiguration! = config!
+        #stateHandler!.configurationChange(state!)
+    methodend
+    
+    method public void saveAutoConfig(String config!)
+        selectedConfig! = #getDataRowForWrite()
+        key! = #keyx! + "_auto"
+        selectedConfig!.setFieldValue(#bc!.getFieldNameKeyx(), key!)
+        selectedConfig!.setFieldValue(#bc!.getFieldNameSetting(), "")
+        selectedConfig!.setFieldValue(#bc!.getFieldNameConfig(), config!)
+        oldFilter! = #bc!.getFilter()
+        #bc!.setFilter(selectedConfig!)
+        #bc!.write(selectedConfig!)
+        #bc!.setFilter(oldFilter!)
+    methodend
+    
+    
+    method public void applyAutoConfig()
+        rem first try to apply auto config, that should be the last opened config which would be saved on program exit
+        autoConfig! = #getAutoConfig()
+
+        if autoConfig! <> null() then
+            config! = autoConfig!.getFieldAsString(#bc!.getFieldNameConfig())
+            #stateHandler!.configurationChange(config!)
+            methodret
+        endif
+    methodend
+    
+    rem /**
+    rem  * the config that was saved the last time the user exited the program
+    rem  */
+    method protected DataRow getAutoConfig()
+        oldFilter! = #bc!.getFilter()
+        autoFilter! = oldFilter!.clone()
+        key! = #keyx! + "_auto"
+        autoFilter!.setFieldValue(#bc!.getFieldNameKeyx(), key!)
+        autoFilter!.setFieldValue(#bc!.getFieldNameSetting(), "")
+        #bc!.setFilter(autoFilter!)
+        rs! = #bc!.retrieve()
+        #bc!.setFilter(oldFilter!)
+
+        if rs!.size() then
+            methodret rs!.get(0)
+        else
+            methodret null()
+        endif
+        REM         #stateHandler!.configurationChange(config!)
+    methodend
+    
+    rem /**
+    rem  * returns a new dataRow with the right keys depending on user listedit input and admin mode
+    rem  */
+    method protected DataRow getDataRowForWrite()
+        selectedConfig! = new DataRow()
+        
+        selectedConfig!.setFieldValue(#bc!.getFieldNameKeyx(), #keyx!)
+        selectedConfig!.setFieldValue(#bc!.getFieldNameRealm(), #realm!)
+        selectedConfig!.setFieldValue(#bc!.getFieldNameSetting(), "")
+        selectedConfig!.setFieldValue(#bc!.getFieldNameConfig(), #stateHandler!.getState())
+        selectedConfig!.setFieldValue(#bc!.getFieldNameUserid(), #userName!)
+        methodret selectedConfig!
+    methodend
+    
+
+    
+    REM Events --------------------------
+    
+    method public void settingSelect(BBjPopupSelectEvent ev!)
+        menuItem! = ev!.getMenuItem()
+        ud! = menuItem!.getUserData()
+        if ud! <> null() then
+            #applyConfiguration(ud!)
+            methodret
+        endif
+    methodend
+    
+    method public void settingsTool(BBjEvent ev!)
+        rem TODO on 'more...' open dialog
+    methodend
+   
+
+classend

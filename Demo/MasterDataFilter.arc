@@ -12,12 +12,14 @@ BEGIN
     STATICTEXT 106, "State:", 10, 20, 90, 25
     BEGIN
         NAME "Static Text106"
+        NOT OPAQUE
         NOT WORDWRAP
     END
 
     STATICTEXT 110, "Country:", 370, 20, 90, 25
     BEGIN
         NAME "Static Text110"
+        NOT OPAQUE
         NOT WORDWRAP
     END
 

@@ -8,18 +8,18 @@ REM  *
 REM  */
 
 use ::BusinessUIComponents/configurations/IPersistentState.bbj::IPersistentState
-use ::BusinessUIComponents/configurations/ConfigurationWidget.bbj::ConfigurationWidget
+use ::BusinessUIComponents/configurations/ConfigurationButton.bbj::ConfigurationButton
 
 class public ConfigurationStateHandler
     field protected IPersistentState statefulObject!
-    field protected ConfigurationWidget configurationWidget!
+    field protected ConfigurationButton configurationButton!
     field protected Boolean suppressNextStateChangeEvent! = Boolean.FALSE
     
-    method public ConfigurationStateHandler(IPersistentState statefulObject!, ConfigurationWidget configurationWidget!)
+    method public ConfigurationStateHandler(IPersistentState statefulObject!, ConfigurationButton configurationButton!)
         #statefulObject! = statefulObject!
-        #configurationWidget! = configurationWidget!
-        configurationWidget!.setStateHandler(#this!)
-REM         configurationWidget!.init()
+        #configurationButton! = configurationButton!
+        configurationButton!.setStateHandler(#this!)
+REM         configurationButton!.init()
         #registerCallbacks()
     methodend
     
@@ -39,8 +39,8 @@ REM         BBjAPI().setCustomEventCallback(#getOnConfigurationChangeEventName()
         if #suppressNextStateChangeEvent! then
             #suppressNextStateChangeEvent! = Boolean.FALSE
         else
-            #configurationWidget!.stateChange()
-REM             BBjAPI().postPriorityCustomEvent(#gridConfigurationWidget!.getOnStateChangeEventName(), rs!.toJson())
+            #configurationButton!.stateChange()
+REM             BBjAPI().postPriorityCustomEvent(#gridconfigurationButton!.getOnStateChangeEventName(), rs!.toJson())
         endif
     methodend
     
@@ -65,7 +65,7 @@ REM             BBjAPI().postPriorityCustomEvent(#gridConfigurationWidget!.getOn
     rem  * refires the configuration event on the widget which reapplies the current state
     rem  */
     method public void refreshConfiguration()
-        #configurationWidget!.fireConfigurationChangeEvent()
+        #configurationButton!.updateConfiguration()
     methodend
 
 classend
