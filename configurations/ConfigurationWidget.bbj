@@ -19,7 +19,6 @@ use java.io.File
 
 class public ConfigurationWidget extends BBjWidget
 
-    field private IPropertiesManager textPropertiesManager!
     field protected BBjWindow container!
     field protected BBjMenuButton buttonDelete!
     field protected BBjMenuButton buttonSave!
