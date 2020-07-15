@@ -19,6 +19,7 @@ use ::BBjGridExWidget/GxRenderers.bbj::GxRendererBoolean
 use ::BBjGridExWidget/GxState.bbj::GxState
 use ::BBjGridExWidget/GxStatusBar.bbj::GxStatusBarTotalAndFilteredRowCountComponent
 use ::BBjGridExWidget/GxStatusBar.bbj::GxStatusBarSelectedRowCountComponent
+use ::BBjGridExWidget/GxFilters.bbj::GxFilterSetFilter
 
 use ::BusinessUIComponents/AbstractBCBoundWidget.bbj::AbstractBCBoundWidget
 use ::BusinessUIComponents/ExportButton.bbj::ExportButton
@@ -309,7 +310,12 @@ REM         endif
     
                         type =  ar!.getFieldType(fieldName$)
                         column! = #grid!.addColumn(fieldName$, label$, type)
+                        column!.setEnableFilter(1)
                         
+                        if fa!.containsKey("LOOKUP") AND str(fa!.get("LOOKUP")) = "1" then
+                            column!.setFilter(new GxFilterSetFilter())
+                        fi
+
                         if fa!.containsKey("GROUP") then cgroup$ = fa!.get("GROUP")
                         if cgroup$<>"" then
                             cgroup! = cgroups!.get(cgroup$)
