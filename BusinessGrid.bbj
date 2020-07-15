@@ -313,7 +313,9 @@ REM         endif
                         column!.setEnableFilter(1)
                         
                         if fa!.containsKey("LOOKUP") AND str(fa!.get("LOOKUP")) = "1" then
-                            column!.setFilter(new GxFilterSetFilter())
+                            if(BBjGridExWidget.isLicensed() AND #grid!.getForceCommunityBuild() <> 1)
+                                column!.setFilter(new GxFilterSetFilter())
+                            fi
                         fi
 
                         if fa!.containsKey("GROUP") then cgroup$ = fa!.get("GROUP")
