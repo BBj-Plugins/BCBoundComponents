@@ -1,5 +1,5 @@
 REM /**
-REM  * GridConfigurationWidget.bbj
+REM  * ConfigurationWidget.bbj
 REM  * Configuration widget to save/load a state of a component in a VKEYED file.
 REM  *
 REM  */
