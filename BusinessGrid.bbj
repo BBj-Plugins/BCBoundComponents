@@ -42,7 +42,7 @@ class public BusinessGrid extends AbstractBCBoundWidget implements IPersistentSt
     
     field private String realm! = "GRD"
 
-    field private ConfigurationWidget    cfgwidget!
+REM     field private ConfigurationWidget    cfgwidget!
     field private ConfigurationButton    cfgbutton!
     field private CustomConfigurationsBC cfgbc!
     field private ExportButton           exportButton!
