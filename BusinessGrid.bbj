@@ -46,6 +46,7 @@ class public BusinessGrid extends AbstractBCBoundWidget implements IPersistentSt
     field private ExportButton           exportButton!
     field private BBjMenuButton          fitToGridButton!
     field private BBjMenuButton          autoSizeColumnsButton!
+    field private Boolean                barista!
 
     field private Boolean columnConfigurationSet! = Boolean.FALSE
     field private Boolean initialRetrieve! = Boolean.TRUE
@@ -144,51 +145,55 @@ class public BusinessGrid extends AbstractBCBoundWidget implements IPersistentSt
             statusbar!.setComponentVisibility(GxStatusBarTotalAndFilteredRowCountComponent.getId(), Boolean.TRUE)
             statusbar!.setComponentVisibility(GxStatusBarSelectedRowCountComponent.getId(), Boolean.TRUE)
 
-        #getCanvas().setBackColor(#theme!.getBBjBackgroundColor())
-        
-        textProperties! = Props.getInstance()
-        
-        #exportButton!.setImage(#theme!.getBBjImage("IC_EXPORT",Theme.PRIMARY))
-        #exportButton!.getButton().setToolTipText(textProperties!.getText("BUSINESS_GRID_TOOLTIP_EXPORT"))
-        
-        #fitToGridButton!.setImage(#theme!.getBBjImage("IC_FIT_TO_GRID",Theme.PRIMARY))
-        #fitToGridButton!.setToolTipText(textProperties!.getText("BUSINESS_GRID_TOOLTIP_FIT_TO_GRID"))
-        
-        #autoSizeColumnsButton!.setImage(#theme!.getBBjImage("IC_AUTO_SIZE_COLUMNS",Theme.PRIMARY))
-        #autoSizeColumnsButton!.setToolTipText(textProperties!.getText("BUSINESS_GRID_TOOLTIP_AUTO_SIZE_COLUMNS"))
-
-        #widgetHeight = cast(BBjNumber, #theme!.getNumProperty("SECONDARY_TB_HEIGHT"))
-        xPos = #exportButton!.getButton().getX()
-        yPos = #exportButton!.getButton().getY()
-        #exportButton!.setSize(#widgetHeight, #widgetHeight)
-        #exportButton!.setImageSize(#widgetHeight-4, #widgetHeight-4)
-        #exportButton!.setBackColor(#theme!.getBBjBackgroundColor())
-        xPos = xPos + #widgetHeight
-        #fitToGridButton!.setSize(#widgetHeight, #widgetHeight)
-        #fitToGridButton!.setImageSize(#widgetHeight-4, #widgetHeight-4)
-        #fitToGridButton!.setLocation(xPos, yPos)
-        #fitToGridButton!.setBackColor(#theme!.getBBjBackgroundColor())
-        xPos = xPos + #widgetHeight
-        #autoSizeColumnsButton!.setSize(#widgetHeight, #widgetHeight)
-        #autoSizeColumnsButton!.setImageSize(#widgetHeight-4, #widgetHeight-4)
-        #autoSizeColumnsButton!.setLocation(xPos, yPos)
-        #autoSizeColumnsButton!.setBackColor(#theme!.getBBjBackgroundColor())
-        
-        #grid!.setLocation(#grid!.getX(), #widgetHeight + 10)
-        if #cfgwidget! <> null() then 
+            #getCanvas().setBackColor(#theme!.getBBjBackgroundColor())
+            
+            textProperties! = Props.getInstance()
+            
+            #exportButton!.setImage(#theme!.getBBjImage("IC_EXPORT",Theme.PRIMARY))
+            #exportButton!.getButton().setToolTipText(textProperties!.getText("BUSINESS_GRID_TOOLTIP_EXPORT"))
+            
+            #fitToGridButton!.setImage(#theme!.getBBjImage("IC_FIT_TO_GRID",Theme.PRIMARY))
+            #fitToGridButton!.setToolTipText(textProperties!.getText("BUSINESS_GRID_TOOLTIP_FIT_TO_GRID"))
+            
+            baristaProp = #theme!.getNumProperty("BARISTA").intValue()
+            #barista! = (baristaProp = 1)
+            
+            #autoSizeColumnsButton!.setImage(#theme!.getBBjImage("IC_AUTO_SIZE_COLUMNS",Theme.PRIMARY))
+            #autoSizeColumnsButton!.setToolTipText(textProperties!.getText("BUSINESS_GRID_TOOLTIP_AUTO_SIZE_COLUMNS"))
+    
+            #widgetHeight = cast(BBjNumber, #theme!.getNumProperty("SECONDARY_TB_HEIGHT"))
+            xPos = #exportButton!.getButton().getX()
+            yPos = #exportButton!.getButton().getY()
+            #exportButton!.setSize(#widgetHeight, #widgetHeight)
+            #exportButton!.setImageSize(#widgetHeight-4, #widgetHeight-4)
+            #exportButton!.setBackColor(#theme!.getBBjBackgroundColor())
+            #exportButton!.setBaristaHeaderVisible(#barista!)
             xPos = xPos + #widgetHeight
-            #cfgwidget!.setMinPaddingLeft(xPos)
-        endif
-        
-        primary! = #theme!.getPrimaryColorPalette().getHexColor("300")
-        textColor! = #theme!.getPrimaryColorPalette().getForeColor()
-        
-        #grid!.setTheme( #grid!.GRID_THEME_BALHAM() )
-        balhamTheme! = new JsonObject()
-        balhamTheme!.addProperty("--ag-balham-active-color",primary!)
-        balhamTheme!.addProperty("--ag-selected-row-background-color",primary!)
-        #grid!.addStyle(".ag-theme-balham",balhamTheme!)
-        #grid!.addStyle(".ag-theme-balham .ag-row-selected", String.format("{""color"":""%s""}",textColor!))
+            #fitToGridButton!.setSize(#widgetHeight, #widgetHeight)
+            #fitToGridButton!.setImageSize(#widgetHeight-4, #widgetHeight-4)
+            #fitToGridButton!.setLocation(xPos, yPos)
+            #fitToGridButton!.setBackColor(#theme!.getBBjBackgroundColor())
+            xPos = xPos + #widgetHeight
+            #autoSizeColumnsButton!.setSize(#widgetHeight, #widgetHeight)
+            #autoSizeColumnsButton!.setImageSize(#widgetHeight-4, #widgetHeight-4)
+            #autoSizeColumnsButton!.setLocation(xPos, yPos)
+            #autoSizeColumnsButton!.setBackColor(#theme!.getBBjBackgroundColor())
+            
+            #grid!.setLocation(#grid!.getX(), #widgetHeight + 10)
+            if #cfgwidget! <> null() then 
+                xPos = xPos + #widgetHeight
+                #cfgwidget!.setMinPaddingLeft(xPos)
+            endif
+            
+            primary! = #theme!.getPrimaryColorPalette().getHexColor("300")
+            textColor! = #theme!.getPrimaryColorPalette().getForeColor()
+            
+            #grid!.setTheme( #grid!.GRID_THEME_BALHAM() )
+            balhamTheme! = new JsonObject()
+            balhamTheme!.addProperty("--ag-balham-active-color",primary!)
+            balhamTheme!.addProperty("--ag-selected-row-background-color",primary!)
+            #grid!.addStyle(".ag-theme-balham",balhamTheme!)
+            #grid!.addStyle(".ag-theme-balham .ag-row-selected", String.format("{""color"":""%s""}",textColor!))
 
         endif
 
