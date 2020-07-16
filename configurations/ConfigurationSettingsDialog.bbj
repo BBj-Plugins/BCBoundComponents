@@ -319,11 +319,11 @@ REM         endif
       
       method public void clearAllSelections()
         #suppressSelectionEvent! = Boolean.TRUE
-        #groupMySettings!.setSelectedItem(null())
+        if #groupMySettings! <> null() then #groupMySettings!.setSelectedItem(null())
         #suppressSelectionEvent! = Boolean.TRUE
-        #groupFactoryDefaults!.setSelectedItem(null())
+        if #groupFactoryDefaults! <> null() then #groupFactoryDefaults!.setSelectedItem(null())
         #suppressSelectionEvent! = Boolean.TRUE
-        #groupShared!.setSelectedItem(null())
+        if #groupShared! <> null() then #groupShared!.setSelectedItem(null())
         #suppressSelectionEvent! = Boolean.FALSE
         #currentlySelectedItem! = null()
       methodend
