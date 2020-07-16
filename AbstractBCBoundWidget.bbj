@@ -10,7 +10,6 @@ use ::BusinessUIComponents/utils/UIUtils.bbj::UIUtils
 class public AbstractBCBoundWidget extends BBjWidget implements IBCBound
 
     field private BCBinder binder!
-    field private IPropertiesManager textPropertiesManager!
     field private BBjColor colorFocusGained! = BBjAPI().getSysGui().makeColor(255,255,255)
     field private BBjColor colorFocusLost! = BBjAPI().getSysGui().makeColor(255,255,255)
     

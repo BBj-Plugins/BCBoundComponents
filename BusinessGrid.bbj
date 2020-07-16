@@ -19,11 +19,13 @@ use ::BBjGridExWidget/GxRenderers.bbj::GxRendererBoolean
 use ::BBjGridExWidget/GxState.bbj::GxState
 use ::BBjGridExWidget/GxStatusBar.bbj::GxStatusBarTotalAndFilteredRowCountComponent
 use ::BBjGridExWidget/GxStatusBar.bbj::GxStatusBarSelectedRowCountComponent
+use ::BBjGridExWidget/GxFilters.bbj::GxFilterSetFilter
 
 use ::BusinessUIComponents/AbstractBCBoundWidget.bbj::AbstractBCBoundWidget
 use ::BusinessUIComponents/ExportButton.bbj::ExportButton
 
-use ::BusinessUIComponents/configurations/ConfigurationWidget.bbj::ConfigurationWidget
+REM use ::BusinessUIComponents/configurations/ConfigurationWidget.bbj::ConfigurationWidget
+use ::BusinessUIComponents/configurations/ConfigurationButton.bbj::ConfigurationButton
 use ::BusinessUIComponents/configurations/CustomConfigurationsBC.bbj::CustomConfigurationsBC
 use ::BusinessUIComponents/configurations/IPersistentState.bbj::IPersistentState
 
@@ -41,7 +43,8 @@ class public BusinessGrid extends AbstractBCBoundWidget implements IPersistentSt
     
     field private String realm! = "GRD"
 
-    field private ConfigurationWidget    cfgwidget!
+REM     field private ConfigurationWidget    cfgwidget!
+    field private ConfigurationButton    cfgbutton!
     field private CustomConfigurationsBC cfgbc!
     field private ExportButton           exportButton!
     field private BBjMenuButton          fitToGridButton!
@@ -144,7 +147,7 @@ class public BusinessGrid extends AbstractBCBoundWidget implements IPersistentSt
             statusbar!.addComponent(new GxStatusBarSelectedRowCountComponent("center"))
             statusbar!.setComponentVisibility(GxStatusBarTotalAndFilteredRowCountComponent.getId(), Boolean.TRUE)
             statusbar!.setComponentVisibility(GxStatusBarSelectedRowCountComponent.getId(), Boolean.TRUE)
-
+            
             #getCanvas().setBackColor(#theme!.getBBjBackgroundColor())
             
             textProperties! = Props.getInstance()
@@ -155,19 +158,15 @@ class public BusinessGrid extends AbstractBCBoundWidget implements IPersistentSt
             #fitToGridButton!.setImage(#theme!.getBBjImage("IC_FIT_TO_GRID",Theme.PRIMARY))
             #fitToGridButton!.setToolTipText(textProperties!.getText("BUSINESS_GRID_TOOLTIP_FIT_TO_GRID"))
             
-            baristaProp = #theme!.getNumProperty("BARISTA").intValue()
-            #barista! = (baristaProp = 1)
-            
             #autoSizeColumnsButton!.setImage(#theme!.getBBjImage("IC_AUTO_SIZE_COLUMNS",Theme.PRIMARY))
             #autoSizeColumnsButton!.setToolTipText(textProperties!.getText("BUSINESS_GRID_TOOLTIP_AUTO_SIZE_COLUMNS"))
-    
+      
             #widgetHeight = cast(BBjNumber, #theme!.getNumProperty("SECONDARY_TB_HEIGHT"))
             xPos = #exportButton!.getButton().getX()
             yPos = #exportButton!.getButton().getY()
             #exportButton!.setSize(#widgetHeight, #widgetHeight)
             #exportButton!.setImageSize(#widgetHeight-4, #widgetHeight-4)
             #exportButton!.setBackColor(#theme!.getBBjBackgroundColor())
-            #exportButton!.setBaristaHeaderVisible(#barista!)
             xPos = xPos + #widgetHeight
             #fitToGridButton!.setSize(#widgetHeight, #widgetHeight)
             #fitToGridButton!.setImageSize(#widgetHeight-4, #widgetHeight-4)
@@ -180,11 +179,14 @@ class public BusinessGrid extends AbstractBCBoundWidget implements IPersistentSt
             #autoSizeColumnsButton!.setBackColor(#theme!.getBBjBackgroundColor())
             
             #grid!.setLocation(#grid!.getX(), #widgetHeight + 10)
-            if #cfgwidget! <> null() then 
-                xPos = xPos + #widgetHeight
-                #cfgwidget!.setMinPaddingLeft(xPos)
-            endif
-            
+      REM         if #cfgbutton! <> null() then 
+      REM             xPos = xPos + #widgetHeight
+      REM             #cfgbutton!.setLocation(xPos, yPos)
+      REM         endif
+      REM         if #cfgwidget! <> null() then 
+      REM             xPos = xPos + #widgetHeight
+      REM             #cfgwidget!.setMinPaddingLeft(xPos)
+      REM         endif
             primary! = #theme!.getPrimaryColorPalette().getHexColor("300")
             textColor! = #theme!.getPrimaryColorPalette().getForeColor()
             
@@ -198,11 +200,11 @@ class public BusinessGrid extends AbstractBCBoundWidget implements IPersistentSt
         endif
 
         #grid!.setSize(#getWidth(),#getHeight()-#widgetHeight - 10)
-
-        if #cfgwidget! <> null() then
-            rem min padding for config widget to allow for the export and fitToGrid buttons to the left
-            #cfgwidget!.setLocation(#getWidth()-155, 5)
-        endif
+REM 
+REM         if #cfgwidget! <> null() then
+REM             rem min padding for config widget to allow for the export and fitToGrid buttons to the left
+REM             #cfgwidget!.setLocation(#getWidth()-155, 5)
+REM         endif
         
         
         #getCanvas().setBackColor(#theme!.getBBjBackgroundColor())        
@@ -309,7 +311,14 @@ class public BusinessGrid extends AbstractBCBoundWidget implements IPersistentSt
     
                         type =  ar!.getFieldType(fieldName$)
                         column! = #grid!.addColumn(fieldName$, label$, type)
+                        column!.setEnableFilter(1)
                         
+                        if fa!.containsKey("LOOKUP") AND str(fa!.get("LOOKUP")) = "1" then
+                            if(BBjGridExWidget.isLicensed() AND #grid!.getForceCommunityBuild() <> 1)
+                                column!.setFilter(new GxFilterSetFilter())
+                            fi
+                        fi
+
                         if fa!.containsKey("GROUP") then cgroup$ = fa!.get("GROUP")
                         if cgroup$<>"" then
                             cgroup! = cgroups!.get(cgroup$)
@@ -545,8 +554,11 @@ REM         #grid!.setState(new GxState(state!))
         while pos("::"=x$)>0
             x$ = x$(pos("::"=x$)+2)
         wend
-        #cfgwidget! = new ConfigurationWidget(#getCanvas(),201, #getWidth()-155, 5 , #this!, #realm!, x$, #cfgbc! )
-
+REM         #cfgwidget! = new ConfigurationWidget(#getCanvas(),201, #getWidth()-155, 5 , #this!, #realm!, x$, #cfgbc! )
+        xPos = #exportButton!.getButton().getX() + (3 * #widgetHeight)
+        yPos = #exportButton!.getButton().getY()
+        #cfgbutton! = new ConfigurationButton(#getCanvas(),201, xPos, yPos, #this!, #realm!, x$, #cfgbc! )
+        #cfgbutton!.applyAutoConfig()
     methodend
     
     method public void onSignal(int signal!, Object payload!)
@@ -556,7 +568,8 @@ REM         #grid!.setState(new GxState(state!))
                 #grid!.focus()
                 break
             case binder!.SIGNAL_TERMINATE
-                #cfgwidget!.saveAutoConfig(#retrieveState())
+REM                 #cfgwidget!.saveAutoConfig(#retrieveState())
+                #cfgbutton!.saveAutoConfig(#retrieveState())
                 break
             case default
                 break
@@ -609,9 +622,13 @@ REM         #grid!.setState(new GxState(state!))
         
     method public void setRealm(String realm!)
         #realm! = realm!
-        if #cfgwidget! <> null() then 
-            #cfgwidget!.setRealm(realm!)
-            #cfgwidget!.init()
+REM         if #cfgwidget! <> null() then 
+REM             #cfgwidget!.setRealm(realm!)
+REM             #cfgwidget!.init()
+REM         endif
+        if #cfgbutton! <> null() then 
+            #cfgbutton!.setRealm(realm!)
+            #cfgbutton!.applyAutoConfig()
         endif
     methodend
    

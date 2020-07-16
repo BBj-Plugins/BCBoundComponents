@@ -4,7 +4,8 @@ use ::BusinessUIComponents/configurations/SelectionBC.bbj::SelectionBC
 use ::BusinessUIComponents/utils/QuickSearchField.bbj::QuickSearchField
 use ::BusinessUIComponents/bound/SimpleFormComponent.bbj::SimpleFormComponent
 use ::BusinessUIComponents/configurations/IPersistentState.bbj::IPersistentState
-use ::BusinessUIComponents/configurations/ConfigurationWidget.bbj::ConfigurationWidget
+use ::BusinessUIComponents/configurations/ConfigurationButton.bbj::ConfigurationButton
+REM use ::BusinessUIComponents/configurations/ConfigurationWidget.bbj::ConfigurationWidget
 use com.basiscomponents.bc.BCBound
 use com.basiscomponents.bc.BCBinder
 use com.basiscomponents.bc.BusinessComponent
@@ -23,7 +24,8 @@ class public FilterComponent extends SimpleFormComponent
     field protected BCBinder mainBinder!
     field protected SelectionBC selectionBC!
     field protected BBjMenuButton fetchButton!
-    field protected ConfigurationWidget configWidget!
+REM     field protected ConfigurationWidget configWidget!
+    field protected ConfigurationButton configButton!
     field private Theme theme! = Theme.getInstance()
     rem --------------------- constructors -------------------------------------
     rem /**
@@ -61,7 +63,7 @@ class public FilterComponent extends SimpleFormComponent
         #getcw().setVisible(Boolean.TRUE)
         #buildControlMap()
         #addButtons()
-        #addConfigurationWidget()
+REM         #addConfigurationWidget()
     methodend
 
     method public BBjNumber getHeight()
@@ -70,24 +72,20 @@ class public FilterComponent extends SimpleFormComponent
 
     method public void redraw(Boolean f_init!)
         #super!.redraw(f_init!)
-
-        if #configWidget! <> null() then
-            rem min padding for config widget to allow for the export and fitToGrid buttons to the left
-            #configWidget!.setLocation(#getWidth()-155, 2)
-        endif
     methodend
 
     method protected void addButtons()
         #fetchButton! = #getCanvas().addMenuButton(#getCanvas().getAvailableControlID(),0,2,20,20,"")
         #fetchButton!.setCallback(#fetchButton!.ON_BUTTON_PUSH,#this!,"buttonPushFetch")
         #fetchButton!.setImage(#theme!.getBBjImage("IC_PLAY",Theme.PRIMARY))
+        #fetchButton!.setBackColor(#theme!.getBBjBackgroundColor())
         size = #theme!.getNumProperty("SECONDARY_TB_HEIGHT")
         #fetchButton!.setSize(size, size)
         #fetchButton!.setImageSize(size - 4, size - 4)
-
-        if #configWidget! <> null()
-            #configWidget!.setMinPaddingLeft(#fetchButton!.getY() + #fetchButton!.getWidth())
-        endif
+        #configButton! = new ConfigurationButton(#getCanvas(),#getCanvas().getAvailableControlID(), size, 2 , #this!, "SEL", #selectionBC!.getKey(), #selectionBC!.getConfigurationsBC() )
+REM         if #configWidget! <> null()
+REM             #configWidget!.setMinPaddingLeft(#fetchButton!.getY() + #fetchButton!.getWidth())
+REM         endif
     endif
 
     #getCanvas().setBackColor(#theme!.getBBjBackgroundColor())
@@ -155,9 +153,9 @@ class public FilterComponent extends SimpleFormComponent
         wend
     methodend
 
-    method protected void addConfigurationWidget()
-        #configWidget! = new ConfigurationWidget(#getCanvas(),#getCanvas().getAvailableControlID(), #getWidth()-155, 2 , #this!, "SEL", #selectionBC!.getKey(), #selectionBC!.getConfigurationsBC() )
-        #configWidget!.setMinPaddingLeft(#fetchButton!.getY() + #fetchButton!.getWidth())
-    methodend
+REM     method protected void addConfigurationWidget()
+REM         #configWidget! = new ConfigurationWidget(#getCanvas(),#getCanvas().getAvailableControlID(), #getWidth()-155, 2 , #this!, "SEL", #selectionBC!.getKey(), #selectionBC!.getConfigurationsBC() )
+REM         #configWidget!.setMinPaddingLeft(#fetchButton!.getY() + #fetchButton!.getWidth())
+REM     methodend
 
 classend
