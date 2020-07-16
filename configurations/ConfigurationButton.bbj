@@ -238,6 +238,13 @@ REM         escape
         methodret selectedConfig!
     methodend
     
+    method public static void setAllowAdmin(Boolean allowAdmin!)
+        #allowAdmin! = allowAdmin!
+    methodend
+    
+    method public static void setAllowFactoryDefaults(Boolean allowFactoryDefaults!)
+        #allowFactoryDefaults! = allowFactoryDefaults!
+    methodend
 
     
     REM Events --------------------------
