@@ -191,10 +191,10 @@ REM 		#super!.getControlByName("BCMetaData").setCallback(BBjAPI.ON_CLOSE,#this!,
 	#C_BCMetaData__LB_CLASS!.deselect()
 
 
-	#grid! = new BBjGridExWidget(#C_BCMetaData!,500,0,80,#C_BCMetaData!.getWidth(),#C_BCMetaData!.getHeight()-80)
+    #grid! = new BBjGridExWidget(#C_BCMetaData!,500,0,80,#C_BCMetaData!.getWidth(),#C_BCMetaData!.getHeight()-80)
 	grid! = #grid!
     grid!.setTheme( grid!.GRID_THEME_BALHAM() )
-    rem grid!.getOptions().setSingleClickEdit(1)
+    grid!.getOptions().setSingleClickEdit(1)
 
     grid!.setCallback(grid!.ON_GRID_CELL_EDITING_STOPPED(),#this!,"cellEditingStopped")
 
@@ -205,12 +205,13 @@ REM 		#super!.getControlByName("BCMetaData").setCallback(BBjAPI.ON_CLOSE,#this!,
         filedNameColumn!.setLabel("Field Name")
         filedNameColumn!.setWidth(150)
         filedNameColumn!.setPinned(GxColumn.PINNED_LEFT())
-
+        filedNameColumn!.setEnableFilter(1)
 
         typeColumn! = grid!.addColumn("TYPE")
         typeColumn!.setLabel("Type")
         typeColumn!.setWidth(80)
         typeColumn!.setPinned(GxColumn.PINNED_LEFT())
+        typeColumn!.setEnableFilter(1)
 
         hideColumn! = grid!.addColumn("HIDE")
         hideColumn!.setLabel("Hide")
@@ -219,15 +220,15 @@ REM 		#super!.getControlByName("BCMetaData").setCallback(BBjAPI.ON_CLOSE,#this!,
         hideColumn!.setPinned(GxColumn.PINNED_LEFT())
         hideColumn!.setEditable(1)
         hideColumn!.setEditableExpression(isEditableExp!)
+        hideColumn!.setEnableFilter(1)
 
         alignColumn! = grid!.addColumn("ALIGN")
         alignColumn!.setLabel("Align")
         alignColumn!.setEditable(1)
         alignColumn!.setEditableExpression(isEditableExp!)
-
         alignColumn!.setWidth(80)
         alignColumn!.setPinned(GxColumn.PINNED_LEFT())
-
+        alignColumn!.setEnableFilter(1)
 
         rem GxCellEditorRichSelect is only available in the enhanced version
         rem you can fallback to GxCellEditorSelect like this 
@@ -246,32 +247,43 @@ REM 		#super!.getControlByName("BCMetaData").setCallback(BBjAPI.ON_CLOSE,#this!,
          edselect!.setValues(values!)
          alignColumn!.setCellEditor(edselect!)
 
-
         it1! = locales!.iterator()
         while it1!.hasNext()
             loc$ = it1!.next()
             col! = grid!.addColumn(loc$+"_LABEL","Label")
             col!.setEditable(1)
+            col!.setEnableFilter(1)
+            col!.getCellEditor().setRequired(0)
 
             col! = grid!.addColumn(loc$+"_SHORTLABEL","Short")
             col!.setEditable(1)
             col!.setEditableExpression(isEditableExp!)
+            col!.setEnableFilter(1)
+            col!.getCellEditor().setRequired(0)
 
             col! = grid!.addColumn(loc$+"_GROUP","Group")
             col!.setEditable(1)
             col!.setEditableExpression(isEditableExp!)
+            col!.setEnableFilter(1)
+            col!.getCellEditor().setRequired(0)
 
             col! = grid!.addColumn(loc$+"_SHORTC","Short Cue")
             col!.setEditable(1)
             col!.setEditableExpression(isEditableExp!)
+            col!.setEnableFilter(1)
+            col!.getCellEditor().setRequired(0)
 
             col! = grid!.addColumn(loc$+"_LONGC","Long Cue")
             col!.setEditable(1)
             col!.setEditableExpression(isEditableExp!)
+            col!.setEnableFilter(1)
+            col!.getCellEditor().setRequired(0)
 
             col! = grid!.addColumn(loc$+"_MASK","Mask")
             col!.setEditable(1)
             col!.setEditableExpression(isEditableExp!)
+            col!.setEnableFilter(1)
+            col!.getCellEditor().setRequired(0)
         wend
 
 

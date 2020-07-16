@@ -5,8 +5,9 @@ REM  *
 REM  */
 
 use ::BusinessUIComponents/BusinessGrid.bbj::BusinessGrid
+use ::BusinessUIComponents/bound/ExportDialog.bbj::ExportDialog
 
-use ::BusinessUIComponents/optionsDialogs/ExportDialog.bbj::ExportDialog
+use ::BBjWidget/BBjWidget.bbj::BBjWidget
 
 use java.util.HashMap
 
@@ -21,7 +22,7 @@ use com.basiscomponents.db.export.ReportDetails
 use com.basiscomponents.db.export.ColumnWidthCalculator
 use com.basiscomponents.db.BBArrayList
 
-class public ExportButton
+class public ExportButton extends BBjWidget
 
     field private BBjMenuButton exportButton!
     field private BusinessGrid grid!
@@ -34,6 +35,9 @@ class public ExportButton
     field private BBjWindow mainWindow!
     
     field private Boolean baristaHeaderVisible! = Boolean.FALSE
+    
+    method private ExportButton()
+    methodend
 
     method public ExportButton(BBjWindow wnd!, BBjNumber id, BBjNumber x, BBjNumber y, BBjNumber width, BBjNumber height)
         #exportButton! = wnd!.addMenuButton(id, x, y, width, height, "Export")
@@ -44,9 +48,10 @@ class public ExportButton
     method public void onExportButtonPush(BBjEvent ev!)
         if #export! = null() then
             #export! = new ExportDialog(#pgmName$, #grid!, #customReports!)
-            #export!.setConfigurationsBC(#cfgBC!)
         endif
     
+        #export!.setConfigurationsBC(#cfgBC!)
+        #export!.setBaristaHeaderVisible(#baristaHeaderVisible!)
         #export!.createDialogWindow()
     methodend
     
@@ -58,15 +63,14 @@ class public ExportButton
         #cfgBC! = cfgBC!
     methodend
     
-    
     method public void setBaristaHeaderVisible(Boolean visible!)
         #baristaHeaderVisible! = visible!
         
-        if #exportPdfDialog! = null() then
-            #exportPdfDialog! = new ExportPdfDialog(#grid!, Boolean.FALSE)
+        if #export! = null() then
+            #export! = new ExportDialog(#pgmName$, #grid!, #customReports!)
         endif
         
-        #exportPdfDialog!.setBaristaHexerVisible(#baristaHeaderVisible!)
+        #export!.setBaristaHeaderVisible(#baristaHeaderVisible!)
     methodend
     
     method public void setProgramName(BBjString pgmName$)

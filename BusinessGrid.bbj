@@ -19,6 +19,7 @@ use ::BBjGridExWidget/GxRenderers.bbj::GxRendererBoolean
 use ::BBjGridExWidget/GxState.bbj::GxState
 use ::BBjGridExWidget/GxStatusBar.bbj::GxStatusBarTotalAndFilteredRowCountComponent
 use ::BBjGridExWidget/GxStatusBar.bbj::GxStatusBarSelectedRowCountComponent
+use ::BBjGridExWidget/GxFilters.bbj::GxFilterSetFilter
 
 use ::BusinessUIComponents/AbstractBCBoundWidget.bbj::AbstractBCBoundWidget
 use ::BusinessUIComponents/ExportButton.bbj::ExportButton
@@ -42,12 +43,13 @@ class public BusinessGrid extends AbstractBCBoundWidget implements IPersistentSt
     
     field private String realm! = "GRD"
 
-    field private ConfigurationWidget    cfgwidget!
+REM     field private ConfigurationWidget    cfgwidget!
     field private ConfigurationButton    cfgbutton!
     field private CustomConfigurationsBC cfgbc!
     field private ExportButton           exportButton!
     field private BBjMenuButton          fitToGridButton!
     field private BBjMenuButton          autoSizeColumnsButton!
+    field private Boolean                barista!
 
     field private Boolean columnConfigurationSet! = Boolean.FALSE
     field private Boolean initialRetrieve! = Boolean.TRUE
@@ -145,48 +147,55 @@ REM             #cfgbc! = new CustomConfigurationsBC("test")
             statusbar!.addComponent(new GxStatusBarTotalAndFilteredRowCountComponent("right"))
             statusbar!.addComponent(new GxStatusBarSelectedRowCountComponent("center"))
             statusbar!.setComponentVisibility(GxStatusBarTotalAndFilteredRowCountComponent.getId(), Boolean.TRUE)
-            statusbar!.setComponentVisibility(GxStatusBarSelectedRowCountComponent.getId(), Boolean.TRUE)
-
-        #getCanvas().setBackColor(#theme!.getBBjBackgroundColor())
-        
-        textProperties! = Props.getInstance()
-        
-        #exportButton!.setImage(#theme!.getBBjImage("IC_EXPORT",Theme.PRIMARY))
-        #exportButton!.getButton().setToolTipText(textProperties!.getText("BUSINESS_GRID_TOOLTIP_EXPORT"))
-        
-        #fitToGridButton!.setImage(#theme!.getBBjImage("IC_FIT_TO_GRID",Theme.PRIMARY))
-        #fitToGridButton!.setToolTipText(textProperties!.getText("BUSINESS_GRID_TOOLTIP_FIT_TO_GRID"))
-        
-        #autoSizeColumnsButton!.setImage(#theme!.getBBjImage("IC_AUTO_SIZE_COLUMNS",Theme.PRIMARY))
-        #autoSizeColumnsButton!.setToolTipText(textProperties!.getText("BUSINESS_GRID_TOOLTIP_AUTO_SIZE_COLUMNS"))
-
-        #widgetHeight = cast(BBjNumber, #theme!.getNumProperty("SECONDARY_TB_HEIGHT"))
-        xPos = #exportButton!.getButton().getX()
-        yPos = #exportButton!.getButton().getY()
-        #exportButton!.setSize(#widgetHeight, #widgetHeight)
-        #exportButton!.setImageSize(#widgetHeight-4, #widgetHeight-4)
-        #exportButton!.setBackColor(#theme!.getBBjBackgroundColor())
-        xPos = xPos + #widgetHeight
-        #fitToGridButton!.setSize(#widgetHeight, #widgetHeight)
-        #fitToGridButton!.setImageSize(#widgetHeight-4, #widgetHeight-4)
-        #fitToGridButton!.setLocation(xPos, yPos)
-        #fitToGridButton!.setBackColor(#theme!.getBBjBackgroundColor())
-        xPos = xPos + #widgetHeight
-        #autoSizeColumnsButton!.setSize(#widgetHeight, #widgetHeight)
-        #autoSizeColumnsButton!.setImageSize(#widgetHeight-4, #widgetHeight-4)
-        #autoSizeColumnsButton!.setLocation(xPos, yPos)
-        #autoSizeColumnsButton!.setBackColor(#theme!.getBBjBackgroundColor())
-        
-        #grid!.setLocation(#grid!.getX(), #widgetHeight + 10)
-        primary! = #theme!.getPrimaryColorPalette().getHexColor("300")
-        textColor! = #theme!.getPrimaryColorPalette().getForeColor()
-        
-        #grid!.setTheme( #grid!.GRID_THEME_BALHAM() )
-        balhamTheme! = new JsonObject()
-        balhamTheme!.addProperty("--ag-balham-active-color",primary!)
-        balhamTheme!.addProperty("--ag-selected-row-background-color",primary!)
-        #grid!.addStyle(".ag-theme-balham",balhamTheme!)
-        #grid!.addStyle(".ag-theme-balham .ag-row-selected", String.format("{""color"":""%s""}",textColor!))
+            
+            #getCanvas().setBackColor(#theme!.getBBjBackgroundColor())
+            
+            textProperties! = Props.getInstance()
+            
+            #exportButton!.setImage(#theme!.getBBjImage("IC_EXPORT",Theme.PRIMARY))
+            #exportButton!.getButton().setToolTipText(textProperties!.getText("BUSINESS_GRID_TOOLTIP_EXPORT"))
+            
+            #fitToGridButton!.setImage(#theme!.getBBjImage("IC_FIT_TO_GRID",Theme.PRIMARY))
+            #fitToGridButton!.setToolTipText(textProperties!.getText("BUSINESS_GRID_TOOLTIP_FIT_TO_GRID"))
+            
+            #autoSizeColumnsButton!.setImage(#theme!.getBBjImage("IC_AUTO_SIZE_COLUMNS",Theme.PRIMARY))
+            #autoSizeColumnsButton!.setToolTipText(textProperties!.getText("BUSINESS_GRID_TOOLTIP_AUTO_SIZE_COLUMNS"))
+      
+            #widgetHeight = cast(BBjNumber, #theme!.getNumProperty("SECONDARY_TB_HEIGHT"))
+            xPos = #exportButton!.getButton().getX()
+            yPos = #exportButton!.getButton().getY()
+            #exportButton!.setSize(#widgetHeight, #widgetHeight)
+            #exportButton!.setImageSize(#widgetHeight-4, #widgetHeight-4)
+            #exportButton!.setBackColor(#theme!.getBBjBackgroundColor())
+            xPos = xPos + #widgetHeight
+            #fitToGridButton!.setSize(#widgetHeight, #widgetHeight)
+            #fitToGridButton!.setImageSize(#widgetHeight-4, #widgetHeight-4)
+            #fitToGridButton!.setLocation(xPos, yPos)
+            #fitToGridButton!.setBackColor(#theme!.getBBjBackgroundColor())
+            xPos = xPos + #widgetHeight
+            #autoSizeColumnsButton!.setSize(#widgetHeight, #widgetHeight)
+            #autoSizeColumnsButton!.setImageSize(#widgetHeight-4, #widgetHeight-4)
+            #autoSizeColumnsButton!.setLocation(xPos, yPos)
+            #autoSizeColumnsButton!.setBackColor(#theme!.getBBjBackgroundColor())
+            
+            #grid!.setLocation(#grid!.getX(), #widgetHeight + 10)
+      REM         if #cfgbutton! <> null() then 
+      REM             xPos = xPos + #widgetHeight
+      REM             #cfgbutton!.setLocation(xPos, yPos)
+      REM         endif
+      REM         if #cfgwidget! <> null() then 
+      REM             xPos = xPos + #widgetHeight
+      REM             #cfgwidget!.setMinPaddingLeft(xPos)
+      REM         endif
+            primary! = #theme!.getPrimaryColorPalette().getHexColor("300")
+            textColor! = #theme!.getPrimaryColorPalette().getForeColor()
+            
+            #grid!.setTheme( #grid!.GRID_THEME_BALHAM() )
+            balhamTheme! = new JsonObject()
+            balhamTheme!.addProperty("--ag-balham-active-color",primary!)
+            balhamTheme!.addProperty("--ag-selected-row-background-color",primary!)
+            #grid!.addStyle(".ag-theme-balham",balhamTheme!)
+            #grid!.addStyle(".ag-theme-balham .ag-row-selected", String.format("{""color"":""%s""}",textColor!))
 
         endif
 
@@ -302,7 +311,14 @@ REM         endif
     
                         type =  ar!.getFieldType(fieldName$)
                         column! = #grid!.addColumn(fieldName$, label$, type)
+                        column!.setEnableFilter(1)
                         
+                        if fa!.containsKey("LOOKUP") AND str(fa!.get("LOOKUP")) = "1" then
+                            if(BBjGridExWidget.isLicensed() AND #grid!.getForceCommunityBuild() <> 1)
+                                column!.setFilter(new GxFilterSetFilter())
+                            fi
+                        fi
+
                         if fa!.containsKey("GROUP") then cgroup$ = fa!.get("GROUP")
                         if cgroup$<>"" then
                             cgroup! = cgroups!.get(cgroup$)

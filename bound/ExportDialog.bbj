@@ -31,6 +31,7 @@ use java.util.HashMap
 
 use java.io.File
 use java.io.FileWriter
+use java.io.FileOutputStream
 
 use java.nio.file.Paths
 use java.nio.file.Path
@@ -64,28 +65,45 @@ class public ExportDialog
     field private BBjListButton lbPageFittingOptions!
     field private BBjListButton lbFontSize!
     field private BBjListButton lbPageLayout!
+    field private BBjCheckBox cbPdfLabel!
     field private BBjCheckBox cbPdfOpen!
+    field private BBjGroupBox gbPdf!
 
     field private BBjChildWindow cwXlsx!
     field private BBjCheckBox cbWriteHeader!
+    field private BBjCheckBox cbXlsxLabel!
     field private BBjCheckBox cbXlsxOpen!
+    field private BBjGroupBox gbXlsx!
     
     field private BBjChildWindow cwXml!
     field private BBjInputE ieRootTagName!
     field private BBjInputE ieEntityName!
+    field private BBjCheckBox cbXmlLabel!
     field private BBjCheckBox cbXmlOpen!
+    field private BBjGroupBox gbXml!
     
     field private BBjChildWindow cwCustomPdf!
+    field private BBjCheckBox cbCustomPdfLabel!
     field private BBjCheckBox cbCustomPdfOpen!
+    field private BBjGroupBox gbCustomPdf!
     
     field private BBjChildWindow cwHtml!
+    field private BBjCheckBox cbHtmlLabel!
     field private BBjCheckBox cbHtmlOpen!
+    field private BBjGroupBox gbHtml!
     
     field private BBjChildWindow cwTxt!
+    field private BBjCheckBox cbTxtLabel!
     field private BBjCheckBox cbTxtOpen!
+    field private BBjGroupBox gbTxt!
     
     field private BBjChildWindow cwCsv!
+    field private BBjCheckBox cbCsvLabel!
     field private BBjCheckBox cbCsvOpen!
+    field private BBjGroupBox gbCsv!
+    
+    field private BBjVector childWindowList! = new BBjVector()
+    field private BBjVector groupBoxList! = new BBjVector()
     
     field private BBjChildWindow cwCurrentlyVisible!
     
@@ -107,10 +125,10 @@ class public ExportDialog
         wnd! = #createDialogWindow("Export file")
         if info(3,6) = "5" then
             #addBaseLayout(wnd!)
-            #addExportLayouts(0, 40, 500, 85)
+            #addExportLayouts(0, 40, 500, 110)
         else
             #addFileChooser(wnd!)
-            #addExportLayouts(0, 350, 500, 135)
+            #addExportLayouts(0, 350, 500, 160)
         endif
         #fillFormWithConfigurations()
         #setCallbacks()
@@ -120,13 +138,32 @@ class public ExportDialog
         sysGui! = BBjAPI().getSysGui()
         declare BBjTopLevelWindow wnd!
         if info(3,6) = "5" then
-            wnd! = cast(BBjTopLevelWindow, sysGui!.addWindow(sysGui!.getAvailableContext(),10,10,500,155,windowTitle$, $40000103$))
+            wnd! = cast(BBjTopLevelWindow, sysGui!.addWindow(sysGui!.getAvailableContext(),10,10,500,180,windowTitle$, $40000003$))
         else
-            wnd! = cast(BBjTopLevelWindow, sysGui!.addWindow(sysGui!.getAvailableContext(),10,10,500,492,windowTitle$, $40000103$))
+            wnd! = cast(BBjTopLevelWindow, sysGui!.addWindow(sysGui!.getAvailableContext(),10,10,500,517,windowTitle$, $40000003$))
         endif
         #mainWindow! = wnd!
         #mainWindow!.setCallback(BBjAPI.ON_CLOSE, #this!, "onClose")
+        #mainWindow!.setCallback(#mainWindow!.ON_RESIZE, #this!, "onResize")
         methodret #mainWindow!
+    methodend
+    
+    method public void onResize(BBjResizeEvent ev!)
+        h = ev!.getHeight()
+        w = ev!.getWidth()
+        
+        if #fileChooser! <> null() then
+            #fileChooser!.setSize(w, h - #cwPdf!.getHeight())
+        endif
+        
+        for i = 0 to #childWindowList!.size() -1
+            cw! = #childWindowList!.getItem(i)
+            gb! = #groupBoxList!.getItem(i)
+            
+            cw!.setSize(w, cw!.getHeight())
+            cw!.setLocation(0, h-cw!.getHeight())
+            gb!.setSize(w - 20, gb!.getHeight())
+        next i
     methodend
     
     method public void addFileChooser(BBjWindow wnd!)
@@ -153,8 +190,17 @@ class public ExportDialog
         #fileChooser!.setCallback(#fileChooser!.ON_FILECHOOSER_CANCEL, #this!, "onFileChooserCancel")
         #fileChooser!.setCallback(#fileChooser!.ON_FILECHOOSER_APPROVE, #this!, "onFileChooserApprove")
         
-        exportMethod$ = #getLatestExportMethodAsString()
+        exportConfigDR! = #getLatestExportMethodConfig()
+        config$ = exportConfigDR!.getFieldAsString("CONFIG")
+        dr! = DataRowJsonMapper.fromJson(config$)
+        exportMethod$ = dr!.getFieldAsString("latestExport", err=*next)
+        path$ = dr!.getFieldAsString("latestPath", err=*next)
+        
         #fileChooser!.setActiveFileFilter(exportMethod$, err=*next)
+        
+        if cvs(path$, 3) <> "" then
+            #fileChooser!.setCurrentDirectory(path$, err=*next)
+        endif 
     methodend
     
     method public void onFileChooserFilter(BBjFileChooserFilterEvent ev!)
@@ -232,6 +278,7 @@ class public ExportDialog
         #cwPdf! = #mainWindow!.addChildWindow(7010, x, y, width, height, "", $00000800$, #sysGui!.getAvailableContext())
         #cwCurrentlyVisible! = #cwPdf!
         #cwCurrentlyVisible!.setVisible(Boolean.TRUE)
+        #childWindowList!.addItem(#cwPdf!)
 
         c! = #cwPdf!.addStaticText(2010, 16, 25, 150, 23, "Page options")
         #lbPageFittingOptions! = #cwPdf!.addListButton(3010, 175, 25, 190, 200, "")
@@ -259,41 +306,56 @@ class public ExportDialog
         #lbPageLayout!.addItem("landscape")
         #lbPageLayout!.selectIndex(0)
         
+        #cwPdf!.addStaticText(2040, 16, 100, 150, 23, "Display column labels instead of column names")
+        #cbPdfLabel! = #cwPdf!.addCheckBox(3040, 175, 100, 23, 23, "")
+        
         if info(3,6) <> "5" then
-            #cwPdf!.addGroupBox(2005, 10, 2, width-20, height-4, "Options")
-            #cwPdf!.addStaticText(2040, 16, 100, 150, 23, "Open file after export")
-            #cbPdfOpen! = #cwPdf!.addCheckBox(3040, 175, 100, 23, 23, "")
+            #gbPdf! = #cwPdf!.addGroupBox(2005, 10, 2, width-20, height-4, "Options")
+            #groupBoxList!.addItem(#gbPdf!)
+            #cwPdf!.addStaticText(2050, 16, 125, 150, 23, "Open file after export")
+            #cbPdfOpen! = #cwPdf!.addCheckBox(3050, 175, 125, 23, 23, "")
         endif
     methodend
     
     method private void addXlsxLayout(BBjNumber x, BBjNumber y, BBjNumber width, BBjNumber height)
         #cwXlsx! = #mainWindow!.addChildWindow(7020, x, y, width, height, "", $00000800$,#sysGui!.getAvailableContext())
         #cwXlsx!.setVisible(Boolean.FALSE)
+        #childWindowList!.addItem(#cwXlsx!)
         
         #cwXlsx!.addStaticText(2010, 16, 25, 150, 23, "Write header")
         #cbWriteHeader! = #cwXlsx!.addCheckBox(3010, 175, 25, 23, 23, "")
         
+        #cwXlsx!.addStaticText(2020, 16, 50, 150, 23, "Display column labels instead of column names")
+        #cbXlsxLabel! = #cwXlsx!.addCheckBox(3020, 175, 50, 23, 23, "")
+        
         if info(3,6) <> "5" then
-            #cwXlsx!.addGroupBox(2005, 10, 2, width-20, height-4, "Options")
-            #cwXlsx!.addStaticText(2020, 16, 50, 150, 23, "Open file after export")
-            #cbXlsxOpen! = #cwXlsx!.addCheckBox(3020, 175, 50, 23, 23, "")
+            #gbXlsx! = #cwXlsx!.addGroupBox(2005, 10, 2, width-20, height-4, "Options")
+            #groupBoxList!.addItem(#gbXlsx!)
+            #cwXlsx!.addStaticText(2030, 16, 75, 150, 23, "Open file after export")
+            #cbXlsxOpen! = #cwXlsx!.addCheckBox(3030, 175, 75, 23, 23, "")
         endif
     methodend
     
     method private void addHtmlLayout(BBjNumber x, BBjNumber y, BBjNumber width, BBjNumber height)
         #cwHtml! = #mainWindow!.addChildWindow(7030, x, y, width, height, "", $00000800$,#sysGui!.getAvailableContext())
         #cwHtml!.setVisible(Boolean.FALSE)
+        #childWindowList!.addItem(#cwHtml!)
+        
+        #cwHtml!.addStaticText(2010, 16, 25, 150, 23, "Display column labels instead of column names")
+        #cbHtmlLabel! = #cwHtml!.addCheckBox(3010, 175, 25, 23, 23, "")
         
         if info(3,6) <> "5" then
-            #cwHtml!.addGroupBox(2005, 10, 2, width-20, height-4, "Options")
-            #cwHtml!.addStaticText(2010, 16, 25, 150, 23, "Open file after export")
-            #cbHtmlOpen! = #cwHtml!.addCheckBox(3010, 175, 25, 23, 23, "")
+            #gbHtml! = #cwHtml!.addGroupBox(2005, 10, 2, width-20, height-4, "Options")
+            #groupBoxList!.addItem(#gbHtml!)
+            #cwHtml!.addStaticText(2020, 16, 50, 150, 23, "Open file after export")
+            #cbHtmlOpen! = #cwHtml!.addCheckBox(3020, 175, 50, 23, 23, "")
         endif
     methodend
     
     method private void addXmlLayout(BBjNumber x, BBjNumber y, BBjNumber width, BBjNumber height)
         #cwXml! = #mainWindow!.addChildWindow(7040, x, y, width, height, "", $00000800$,#sysGui!.getAvailableContext())
         #cwXml!.setVisible(Boolean.FALSE)
+        #childWindowList!.addItem(#cwXml!)
         
         #cwXml!.addStaticText(2010, 16, 25, 150, 23, "Root tag name")
         #ieRootTagName! = #cwXml!.addInputE(3010, 175, 25, 90, 23)
@@ -301,43 +363,62 @@ class public ExportDialog
         #cwXml!.addStaticText(2020, 16, 50, 150, 23, "Entity name")
         #ieEntityName! = #cwXml!.addInputE(3020, 175, 50, 90, 23)
         
+        #cwXml!.addStaticText(2030, 16, 75, 150, 23, "Display column labels instead of column names")
+        #cbXmlLabel! = #cwXml!.addCheckBox(3030, 175, 75, 23, 23, "")
+        
         if info(3,6) <> "5" then
-            #cwXml!.addGroupBox(2005, 10, 2, width-20, height-4, "Options")
-            #cwXml!.addStaticText(2030, 16, 75, 150, 23, "Open file after export")
-            #cbXmlOpen! = #cwXml!.addCheckBox(3030, 175, 75, 23, 23, "")
+            #gbXml! = #cwXml!.addGroupBox(2005, 10, 2, width-20, height-4, "Options")
+            #groupBoxList!.addItem(#gbXml!)
+            #cwXml!.addStaticText(2040, 16, 100, 150, 23, "Open file after export")
+            #cbXmlOpen! = #cwXml!.addCheckBox(3040, 175, 100, 23, 23, "")
         endif
     methodend
     
     method private void addTxtLayout(BBjNumber x, BBjNumber y, BBjNumber width, BBjNumber height)
         #cwTxt! = #mainWindow!.addChildWindow(7050, x, y, width, height, "", $00000800$,#sysGui!.getAvailableContext())
         #cwTxt!.setVisible(Boolean.FALSE)
+        #childWindowList!.addItem(#cwTxt!)
+        
+        #cwTxt!.addStaticText(2010, 16, 25, 150, 23, "Display column labels instead of column names")
+        #cbTxtLabel! = #cwTxt!.addCheckBox(3010, 175, 25, 23, 23, "")
         
         if info(3,6) <> "5" then
-            #cwTxt!.addGroupBox(2005, 10, 2, width-20, height-4, "Options")
-            #cwTxt!.addStaticText(2010, 16, 25, 150, 23, "Open file after export")
-            #cbTxtOpen! = #cwTxt!.addCheckBox(3010, 175, 25, 23, 23, "")
+            #gbTxt! = #cwTxt!.addGroupBox(2005, 10, 2, width-20, height-4, "Options")
+            #groupBoxList!.addItem(#gbTxt!)
+            #cwTxt!.addStaticText(2020, 16, 50, 150, 23, "Open file after export")
+            #cbTxtOpen! = #cwTxt!.addCheckBox(3020, 175, 50, 23, 23, "")
         endif
     methodend
     
     method private void addCsvLayout(BBjNumber x, BBjNumber y, BBjNumber width, BBjNumber height)
         #cwCsv! = #mainWindow!.addChildWindow(7060, x, y, width, height, "", $00000800$,#sysGui!.getAvailableContext())
         #cwCsv!.setVisible(Boolean.FALSE)
+        #childWindowList!.addItem(#cwCsv!)
+        
+        #cwCsv!.addStaticText(2010, 16, 25, 150, 23, "Display column labels instead of column names")
+        #cbCsvLabel! = #cwCsv!.addCheckBox(3010, 175, 25, 23, 23, "")
         
         if info(3,6) <> "5" then
-            #cwCsv!.addGroupBox(2005, 10, 2, width-20, height-4, "Options")
-            #cwCsv!.addStaticText(2010, 16, 25, 150, 23, "Open file after export")
-            #cbCsvOpen! = #cwCsv!.addCheckBox(3010, 175, 25, 23, 23, "")
+            #gbCsv! = #cwCsv!.addGroupBox(2005, 10, 2, width-20, height-4, "Options")
+            #groupBoxList!.addItem(#gbCsv!)
+            #cwCsv!.addStaticText(2020, 16, 50, 150, 23, "Open file after export")
+            #cbCsvOpen! = #cwCsv!.addCheckBox(3020, 175, 50, 23, 23, "")
         endif
     methodend
     
     method private void addCustomPdfLayout(BBjNumber x, BBjNumber y, BBjNumber width, BBjNumber height)
         #cwCustomPdf! = #mainWindow!.addChildWindow(7070, x, y, width, height, "", $00000800$,#sysGui!.getAvailableContext())
         #cwCustomPdf!.setVisible(Boolean.FALSE)
+        #childWindowList!.addItem(#cwCustomPdf!)
+        
+        #cwCustomPdf!.addStaticText(2010, 16, 25, 150, 23, "Display column labels instead of column names")
+        #cbCustomPdfLabel! = #cwCustomPdf!.addCheckBox(3010, 175, 25, 23, 23, "")
         
         if info(3,6) <> "5" then
-            #cwCustomPdf!.addGroupBox(2005, 10, 2, width-20, height-4, "Options")
-            #cwCustomPdf!.addStaticText(2010, 16, 25, 150, 23, "Open file after export")
-            #cbCustomPdfOpen! = #cwCustomPdf!.addCheckBox(3010, 175, 25, 23, 23, "")
+            #gbCustomPdf! = #cwCustomPdf!.addGroupBox(2005, 10, 2, width-20, height-4, "Options")
+            #groupBoxList!.addItem(#gbCustomPdf!)
+            #cwCustomPdf!.addStaticText(2020, 16, 50, 150, 23, "Open file after export")
+            #cbCustomPdfOpen! = #cwCustomPdf!.addCheckBox(3020, 175, 50, 23, 23, "")
         endif
     methodend
     
@@ -473,13 +554,23 @@ class public ExportDialog
         rem creating SheetConfiguration
         declare SheetConfiguration sheetConfiguration!
         sheetConfiguration! = new SheetConfiguration()
-
-        visibleRowsVec! = #getgrid().getGrid().getState().getVisibleColumns()
-        for i = visibleRowsVec!.size() - 1 to 0 step - 1
-            fieldName$ = visibleRowsVec!.get(i)
-            header! = dr!.getDataField(fieldName$).getAttribute("LABEL", err=*next)
-            if header! = null() then header! = fieldName$
-            width = 1000
+        
+        ar! = #grid!.getBinder().getAttributesRecord()
+        useLabel! = #cbXlsxLabel!.isSelected()
+        
+        if useLabel! then
+            crs! = #createLabeledRS()
+        else
+            crs! = rs!
+        endif
+        
+        fieldWidths! = ColumnWidthCalculator.calculateColumnWidths(crs!, num(cvs(#lbFontSize!.getItemAt(#lbFontSize!.getSelectedIndex()),3)), useLabel!)
+        
+        visibleColumnsVec! = #getgrid().getGrid().getState().getVisibleColumns()
+        for i = visibleColumnsVec!.size() - 1 to 0 step - 1
+            fieldName$ = visibleColumnsVec!.get(i)
+            header! = fieldName$
+            width = fieldWidths!.getFieldAsNumber(fieldName$, err=*next) * 40
             sheetConfiguration!.insertColumn(header!, width, fieldName$, k)
         next i
         
@@ -492,9 +583,12 @@ class public ExportDialog
             outputFile! = new File(outputFilePath$)
         endif
         
-        writeHeader! = #cbWriteHeader!.isSelected()
         
-        ResultSetExporter.writeXLSX(rs!, outputFile!, writeHeader!, sheetConfiguration!)
+        writeHeader! = #cbWriteHeader!.isSelected()
+        os! = new FileOutputStream(outputFile!)
+        ResultSetExporter.writeXLSX(rs!, os!, writeHeader!, useLabel!, "Sheet", ar!, sheetConfiguration!)
+        os!.flush()
+        os!.close()
         
         if info(3,6) = "5" then
             fs! = bbjapi().getThinClient().getClientFileSystem() 
@@ -521,6 +615,9 @@ class public ExportDialog
         declare File outputFile!
         outputFile! = new File(outputFilePath$)
         
+        useLabel! = #cbHtmlLabel!.isSelected()
+        baseDR! = #getBaseDR(useLabel!)
+        
         if info(3,6) = "5" then
             tempFile! = java.io.File.createTempFile("tempFile", ".html")
             tempFile!.createNewFile()
@@ -529,7 +626,7 @@ class public ExportDialog
             writer! = new FileWriter(outputFile!)
         endif
         
-        ResultSetExporter.writeHTML(rs!, writer!)
+        ResultSetExporter.writeHTML(rs!, writer!, baseDR!, useLabel!)
         writer!.flush()
         writer!.close()
         
@@ -562,6 +659,9 @@ class public ExportDialog
         declare File outputFile!
         outputFile! = new File(outputFilePath$)
         
+        useLabel! = #cbXmlLabel!.isSelected()
+        baseDR! = #getBaseDR(useLabel!)
+        
         if info(3,6) = "5" then
             tempFile! = java.io.File.createTempFile("tempFile", ".xml")
             tempFile!.createNewFile()
@@ -570,7 +670,7 @@ class public ExportDialog
             writer! = new FileWriter(outputFile!)
         endif
         
-        ResultSetExporter.writeXML(rs!, rootTagName!, entityName!, writer!)
+        ResultSetExporter.writeXML(rs!, rootTagName!, entityName!, writer!, baseDR!, useLabel!)
         writer!.flush()
         writer!.close()
         
@@ -599,6 +699,9 @@ class public ExportDialog
         declare File outputFile!
         outputFile! = new File(outputFilePath$)
         
+        useLabel! = #cbTxtLabel!.isSelected()
+        baseDR! = #getBaseDR(useLabel!)
+        
         if info(3,6) = "5" then
             tempFile! = java.io.File.createTempFile("tempFile", ".txt")
             tempFile!.createNewFile()
@@ -607,7 +710,7 @@ class public ExportDialog
             writer! = new FileWriter(outputFile!)
         endif
         
-        ResultSetExporter.writeTXT(rs!, writer!)
+        ResultSetExporter.writeTXT(rs!, writer!, baseDR!, useLabel!)
         writer!.flush()
         writer!.close()
         
@@ -635,6 +738,9 @@ class public ExportDialog
         rem exporting
         declare File outputFile!     
         
+        useLabel! = #cbCsvLabel!.isSelected()
+        baseDR! = #getBaseDR(useLabel!)
+        
         if info(3,6) = "5" then
             outputFile! = java.io.File.createTempFile("tempFile", ".csv")
             outputFile!.createNewFile()
@@ -643,7 +749,7 @@ class public ExportDialog
             outputFile! = new File(outputFilePath$)
         endif
         
-        ResultSetExporter.exportToCSV(outputFile!, rs!)
+        ResultSetExporter.exportToCSV(outputFile!, rs!, baseDR!, useLabel!)
         
         if info(3,6) = "5" then
             fs! = bbjapi().getThinClient().getClientFileSystem() 
@@ -676,14 +782,26 @@ class public ExportDialog
         sheetConfiguration! = new SheetConfiguration()
         
         ar! = #grid!.getBinder().getAttributesRecord()
-        rem TODO: calculate the column width with labels instead of culumn names
-        fieldWidths! = ColumnWidthCalculator.calculateColumnWidths(rs!, num(cvs(#lbFontSize!.getItemAt(#lbFontSize!.getSelectedIndex()),3)))
+        useLabel! = #cbPdfLabel!.isSelected()
+        
+        if useLabel! then
+            crs! = #createLabeledRS()
+        else
+            crs! = rs!
+        endif
+        
+        fieldWidths! = ColumnWidthCalculator.calculateColumnWidths(crs!, num(cvs(#lbFontSize!.getItemAt(#lbFontSize!.getSelectedIndex()),3)), useLabel!)
 
-        visibleRowsVec! = #grid!.getGrid().getState().getVisibleColumns()
-        for i = visibleRowsVec!.size() - 1 to 0 step - 1
-            fieldName$ = visibleRowsVec!.get(i)
-            header! = ar!.getDataField(fieldName$).getAttribute("LABEL", err=*next)
-            if header! = null() then header! = fieldName$
+        visibleColumnsVec! = #grid!.getGrid().getState().getVisibleColumns()
+        for i = visibleColumnsVec!.size() - 1 to 0 step - 1
+            fieldName$ = visibleColumnsVec!.get(i)
+            header! = null()
+            if useLabel! then
+                header! = ar!.getDataField(fieldName$).getAttribute("LABEL", err=*next)
+                if header! = null() then header! = fieldName$
+            else
+                header! = fieldName$
+            endif
             width = 80
             width = fieldWidths!.getFieldAsNumber(fieldName$, err=*next)
             sheetConfiguration!.insertColumn(header!, width, fieldName$, k)
@@ -732,13 +850,13 @@ class public ExportDialog
 
         allFieldsAvailable! = Boolean.TRUE
         additionalFieldsDR! = new DataRow()
-        visibleRowsVec! = #grid!.getGrid().getState().getVisibleColumns()
+        visibleColumnsVec! = #grid!.getGrid().getState().getVisibleColumns()
         
         for i = 0 to fields!.length - 1
             field! = fields![i]
             fieldName$ = field!.getName()
             ?"-"+fieldName$+"-"
-            if !visibleRowsVec!.contains(fieldName$) then
+            if !visibleColumnsVec!.contains(fieldName$) then
                 allFieldsAvailable! = Boolean.FALSE
                 additionalFieldsDR!.setFieldValue(fieldName$, "")
             endif
@@ -760,10 +878,6 @@ REM         fieldSelection! = fieldSelection!.mergeRecord(originalFieldSelection
         
         rem resettint fieldSelection
 REM         bc!.setFieldSelection(originalFieldSelection!)
-        
-        
-        ?rs!.get(0)
-        escape
         
         outputFile! = ResultSetExporter.exportToPDFByCustomReport(outputFile!, customReportFile!, rs!)
 
@@ -800,6 +914,7 @@ REM         bc!.setFieldSelection(originalFieldSelection!)
                 o!.addProperty("fitting", #lbPageFittingOptions!.getSelectedIndex())
                 o!.addProperty("fontSize", #lbFontSize!.getSelectedIndex())
                 o!.addProperty("pageLayout", #lbPageLayout!.getSelectedIndex())
+                o!.addProperty("displayLabels", #cbPdfLabel!.isSelected())
                 if #cbPdfOpen! <> null() then
                     o!.addProperty("openFileIndicator", #cbPdfOpen!.isSelected())
                 endif
@@ -809,6 +924,7 @@ REM         bc!.setFieldSelection(originalFieldSelection!)
                 json!.add(#TXT_XLSX$, new JsonObject())
                 o! = json!.getAsJsonObject(#TXT_XLSX$)
                 o!.addProperty("writeHeader", #cbWriteHeader!.isSelected())
+                o!.addProperty("displayLabels", #cbXlsxLabel!.isSelected())
                 if #cbXlsxOpen! <> null() then
                     o!.addProperty("openFileIndicator", #cbXlsxOpen!.isSelected())
                 endif
@@ -817,6 +933,7 @@ REM         bc!.setFieldSelection(originalFieldSelection!)
                 key$ = #TXT_HTML$
                 json!.add(#TXT_HTML$, new JsonObject())
                 o! = json!.getAsJsonObject(#TXT_HTML$)
+                o!.addProperty("displayLabels", #cbHtmlLabel!.isSelected())
                 if #cbHtmlOpen! <> null() then
                     o!.addProperty("openFileIndicator", #cbHtmlOpen!.isSelected())
                 endif
@@ -827,6 +944,7 @@ REM         bc!.setFieldSelection(originalFieldSelection!)
                 o! = json!.getAsJsonObject(#TXT_XML$)
                 o!.addProperty("rootTagName", #ieRootTagName!.getText().trim())
                 o!.addProperty("entityName", #ieEntityName!.getText().trim())
+                o!.addProperty("displayLabels", #cbXmlLabel!.isSelected())
                 if #cbXmlOpen! <> null() then
                     o!.addProperty("openFileIndicator", #cbXmlOpen!.isSelected())
                 endif
@@ -835,6 +953,7 @@ REM         bc!.setFieldSelection(originalFieldSelection!)
                 key$ = #TXT_TXT$
                 json!.add(#TXT_TXT$, new JsonObject())
                 o! = json!.getAsJsonObject(#TXT_TXT$)
+                o!.addProperty("displayLabels", #cbTxtLabel!.isSelected())
                 if #cbTxtOpen! <> null() then
                     o!.addProperty("openFileIndicator", #cbTxtOpen!.isSelected())
                 endif
@@ -843,6 +962,7 @@ REM         bc!.setFieldSelection(originalFieldSelection!)
                 key$ = #TXT_CSV$
                 json!.add(#TXT_CSV$, new JsonObject())
                 o! = json!.getAsJsonObject(#TXT_CSV$)
+                o!.addProperty("displayLabels", #cbCsvLabel!.isSelected())
                 if #cbCsvOpen! <> null() then
                     o!.addProperty("openFileIndicator", #cbCsvOpen!.isSelected())
                 endif
@@ -851,6 +971,7 @@ REM         bc!.setFieldSelection(originalFieldSelection!)
                 key$ = #TXT_CUSTOM_PDF$
                 json!.add(#TXT_CUSTOM_PDF$, new JsonObject())
                 o! = json!.getAsJsonObject(#TXT_CUSTOM_PDF$)
+                o!.addProperty("displayLabels", #cbCustomPdfLabel!.isSelected())
                 if #cbCustomPdfOpen! <> null() then
                     o!.addProperty("openFileIndicator", #cbCustomPdfOpen!.isSelected())
                 endif
@@ -869,10 +990,15 @@ REM         bc!.setFieldSelection(originalFieldSelection!)
 
         rem latest export
         config! = new DataRow()
+        json! = new JsonObject()
+        
+        json!.addProperty("latestExport", key$)
+        json!.addProperty("latestPath", #fileChooser!.getCurrentDirectory())
+        
         config!.setFieldValue(#cfgBC!.getFieldNameKeyx(), "latestExport")
         config!.setFieldValue(#cfgBC!.getFieldNameRealm(), "exp")
         config!.setFieldValue(#cfgBC!.getFieldNameSetting(), "lst")
-        config!.setFieldValue(#cfgBC!.getFieldNameConfig(), key$)
+        config!.setFieldValue(#cfgBC!.getFieldNameConfig(), json!)
         config!.setFieldValue(#cfgBC!.getFieldNameUserid(), #cfgBC!.getUserName())
         #cfgBC!.write(config!)
     methodend
@@ -888,50 +1014,57 @@ REM         bc!.setFieldSelection(originalFieldSelection!)
             switch config!.getFieldAsString("KEYX").trim()
                 case #TXT_PDF$
                     dr! = cast(DataRow, dr!.getField(#TXT_PDF$).getValue())
-                    #lbPageFittingOptions!.selectIndex(dr!.getFieldAsNumber("fitting").intValue())
-                    #lbFontSize!.selectIndex(dr!.getFieldAsNumber("fontSize").intValue())
-                    #lbPageLayout!.selectIndex(dr!.getFieldAsNumber("pageLayout").intValue())
+                    #lbPageFittingOptions!.selectIndex(dr!.getFieldAsNumber("fitting", err=*next).intValue())
+                    #lbFontSize!.selectIndex(dr!.getFieldAsNumber("fontSize", err=*next).intValue())
+                    #lbPageLayout!.selectIndex(dr!.getFieldAsNumber("pageLayout", err=*next).intValue())
+                    #cbPdfLabel!.setSelected(dr!.getFieldAsNumber("displayLabels", err=*next).intValue())
                     if #cbPdfOpen! <> null() then
-                        #cbPdfOpen!.setSelected(dr!.getFieldAsNumber("openFileIndicator").intValue())
+                        #cbPdfOpen!.setSelected(dr!.getFieldAsNumber("openFileIndicator", err=*next).intValue())
                     endif
                     break
                 case #TXT_XLSX$
                     dr! = cast(DataRow, dr!.getField(#TXT_XLSX$).getValue())
-                    #cbWriteHeader!.setSelected(dr!.getFieldAsNumber("writeHeader").intValue())
+                    #cbWriteHeader!.setSelected(dr!.getFieldAsNumber("writeHeader", err=*next).intValue())
+                    #cbXlsxLabel!.setSelected(dr!.getFieldAsNumber("displayLabels", err=*next).intValue())
                     if #cbXlsxOpen! <> null() then
-                        #cbXlsxOpen!.setSelected(dr!.getFieldAsNumber("openFileIndicator").intValue())
+                        #cbXlsxOpen!.setSelected(dr!.getFieldAsNumber("openFileIndicator", err=*next).intValue())
                     endif
                     break
                 case #TXT_HTML$
                     dr! = cast(DataRow, dr!.getField(#TXT_HTML$).getValue())
+                    #cbHtmlLabel!.setSelected(dr!.getFieldAsNumber("displayLabels", err=*next).intValue())
                     if #cbHtmlOpen! <> null() then
-                        #cbHtmlOpen!.setSelected(dr!.getFieldAsNumber("openFileIndicator").intValue())
+                        #cbHtmlOpen!.setSelected(dr!.getFieldAsNumber("openFileIndicator", err=*next).intValue())
                     endif
                     break
                 case #TXT_XML$
                     dr! = cast(DataRow, dr!.getField(#TXT_XML$).getValue())
-                    #ieRootTagName!.setText(dr!.getFieldAsString("rootTagName"))
-                    #ieEntityName!.setText(dr!.getFieldAsString("entityName"))
+                    #ieRootTagName!.setText(dr!.getFieldAsString("rootTagName", err=*next))
+                    #ieEntityName!.setText(dr!.getFieldAsString("entityName", err=*next))
+                    #cbXmlLabel!.setSelected(dr!.getFieldAsNumber("displayLabels", err=*next).intValue())
                     if #cbXmlOpen! <> null() then
-                        #cbXmlOpen!.setSelected(dr!.getFieldAsNumber("openFileIndicator").intValue())
+                        #cbXmlOpen!.setSelected(dr!.getFieldAsNumber("openFileIndicator", err=*next).intValue())
                     endif
                     break
                 case #TXT_TXT$
                     dr! = cast(DataRow, dr!.getField(#TXT_TXT$).getValue())
+                    #cbTxtLabel!.setSelected(dr!.getFieldAsNumber("displayLabels", err=*next).intValue())
                     if #cbTxtOpen! <> null() then
-                        #cbTxtOpen!.setSelected(dr!.getFieldAsNumber("openFileIndicator").intValue())
+                        #cbTxtOpen!.setSelected(dr!.getFieldAsNumber("openFileIndicator", err=*next).intValue())
                     endif
                     break
                 case #TXT_CSV$
                     dr! = cast(DataRow, dr!.getField(#TXT_CSV$).getValue())
+                    #cbCsvLabel!.setSelected(dr!.getFieldAsNumber("displayLabels", err=*next).intValue())
                     if #cbCsvOpen! <> null() then
-                        #cbCsvOpen!.setSelected(dr!.getFieldAsNumber("openFileIndicator").intValue())
+                        #cbCsvOpen!.setSelected(dr!.getFieldAsNumber("openFileIndicator", err=*next).intValue())
                     endif
                     break
                 case #TXT_CUSTOM_PDF$
                     dr! = cast(DataRow, dr!.getField(#TXT_CUSTOM_PDF$).getValue())
+                    #cbCustomPdfLabel!.setSelected(dr!.getFieldAsNumber("displayLabels", err=*next).intValue())
                     if #cbCustomPdfOpen! <> null() then
-                        #cbCustomPdfOpen!.setSelected(dr!.getFieldAsNumber("openFileIndicator").intValue())
+                        #cbCustomPdfOpen!.setSelected(dr!.getFieldAsNumber("openFileIndicator", err=*next).intValue())
                     endif
                     break
                 case default
@@ -943,38 +1076,89 @@ REM         bc!.setFieldSelection(originalFieldSelection!)
     
     method private ResultSet getConfigurations()
         filter! = new DataRow()
-        filter!.setFieldValue("USERID", #cfgBC!.getUserName())
-        filter!.setFieldValue("REALM", "exp")
-        filter!.setFieldValue("SETTING", "std")
+        filter!.setFieldValue(#cfgBC!.getFieldNameUserid(), #cfgBC!.getUserName())
+        filter!.setFieldValue(#cfgBC!.getFieldNameRealm(), "exp")
+        filter!.setFieldValue(#cfgBC!.getFieldNameSetting(), "std")
         #cfgBC!.setFilter(filter!)
         rs! = #cfgBC!.retrieve()
         
         methodret rs!
     methodend
     
-    method private BBjString getLatestExportMethodAsString()
+    method private DataRow getLatestExportMethodConfig()
         filter! = new DataRow()
-        filter!.setFieldValue("KEYX", "latestExport")
-        filter!.setFieldValue("USERID", #cfgBC!.getUserName())
-        filter!.setFieldValue("REALM", "exp")
-        filter!.setFieldValue("SETTING", "lst")
+        filter!.setFieldValue(#cfgBC!.getFieldNameKeyx(), "latestExport")
+        filter!.setFieldValue(#cfgBC!.getFieldNameUserid(), #cfgBC!.getUserName())
+        filter!.setFieldValue(#cfgBC!.getFieldNameRealm(), "exp")
+        filter!.setFieldValue(#cfgBC!.getFieldNameSetting(), "lst")
         #cfgBC!.setFilter(filter!)
         rs! = #cfgBC!.retrieve()
         
         if !rs!.isEmpty() then
-            dr! = rs!.get(0)
-            exportMethod$ = dr!.getFieldAsString("CONFIG")
-            methodret exportMethod$
+            methodret rs!.get(0)
         endif
         
-        methodret ""
+        methodret new DataRow()
+    methodend
+    
+    method private DataRow getBaseDR(Boolean useLabel!)
+        if useLabel! then
+            baseDR! = #createLabeledDR()
+        else
+            baseDR! = #createSequencedDR()
+        endif
+    
+        methodret baseDR!
+    methodend
+    
+    method private DataRow createSequencedDR()
+        sequencedDR! = new DataRow()
+        visibleColumnsVec! = #grid!.getGrid().getState().getVisibleColumns()
+        
+        for i = 0 to visibleColumnsVec!.size() - 1
+            fieldName$ = visibleColumnsVec!.get(i)
+            sequencedDR!.setFieldValue(fieldName$, "")
+        next i
+        
+        methodret sequencedDR!
+    methodend
+    
+    method private DataRow createLabeledDR()
+        labeledDR! = #createSequencedDR()
+        ar! = #grid!.getBinder().getAttributesRecord()
+        fieldNames! = labeledDR!.getFieldNames()
+        
+        for i = 0 to fieldNames!.size() - 1
+            fieldName$ = fieldNames!.get(i)
+            labeledDR!.setFieldAttribute(fieldName$, "LABEL", ar!.getFieldAttribute(fieldName$, "LABEL"))
+        next i
+    
+        methodret labeledDR!
+    methodend
+    
+    method private ResultSet createLabeledRS()
+        rs! = #grid!.getGrid().getRS()
+        ar! = #grid!.getBinder().getAttributesRecord()
+        ar!.removeField("_ENTITY")
+        ar!.removeField("_ENTITIES")
+        
+        crs! = new ResultSet()
+        crs!.add(ar!)
+        if rs!.size() > 0 then
+            for i = 0 to rs!.size() - 1
+                dr! = rs!.get(i)
+                crs!.add(dr!)
+            next i
+        endif
+
+        methodret crs!
     methodend
     
     method public void onClose(BBjEvent ev!)
         #mainWindow!.destroy()
     methodend
     
-    method public void setShowsBaristaHeader(Boolean b!)
+    method public void setBaristaHeaderVisible(Boolean b!)
         #showsBaristaHeader! = b!
     methodend
     
