@@ -100,6 +100,7 @@ class public BusinessGrid extends AbstractBCBoundWidget implements IPersistentSt
             #grid! = new BBjGridExWidget(#getCanvas(), 100, 0, 30, #getWidth(), #getHeight()-30)
             #grid!.getOptions().setNavigationBehavior(#grid!.GRID_NAVIGATION_BEHAVIOUR_NEXT_ROW())
             #grid!.setCallback(#grid!.ON_GRID_ROW_SELECT(), #this!, "onGridSelection")
+REM             #cfgbc! = new CustomConfigurationsBC("test")
             #cfgbc! = new CustomConfigurationsBC(info(3,2))
 
             options! = #grid!.getOptions()
@@ -177,14 +178,6 @@ class public BusinessGrid extends AbstractBCBoundWidget implements IPersistentSt
         #autoSizeColumnsButton!.setBackColor(#theme!.getBBjBackgroundColor())
         
         #grid!.setLocation(#grid!.getX(), #widgetHeight + 10)
-REM         if #cfgbutton! <> null() then 
-REM             xPos = xPos + #widgetHeight
-REM             #cfgbutton!.setLocation(xPos, yPos)
-REM         endif
-REM         if #cfgwidget! <> null() then 
-REM             xPos = xPos + #widgetHeight
-REM             #cfgwidget!.setMinPaddingLeft(xPos)
-REM         endif
         primary! = #theme!.getPrimaryColorPalette().getHexColor("300")
         textColor! = #theme!.getPrimaryColorPalette().getForeColor()
         
@@ -499,7 +492,7 @@ REM               endif
     method public void applyState(String state!)
 REM         #grid!.setState(new GxState(state!))
         #state! = state!
-        BBjAPI().createTimer("applyStateDelay", 2, #this!, "applyStateDelay");rem timer because async gridexwidget state must be applied after grid has loaded
+        BBjAPI().createTimer("applyStateDelay", .2, #this!, "applyStateDelay");rem timer because async gridexwidget state must be applied after grid has loaded
     methodend
     
     rem /**

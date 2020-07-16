@@ -1,0 +1,468 @@
+use ::BBjWidget/BBjWidget.bbj::BBjWidget
+use ::BusinessUIComponents/AbstractBCBoundWidget.bbj::AbstractBCBoundWidget
+use ::BusinessUIComponents/BusinessGrid.bbj::BusinessGrid
+use ::BusinessUIComponents/bound/BCErrorHandler.bbj::BCErrorHandler
+use ::BusinessUIComponents/bound/WindowHandler.bbj::WindowHandler
+use ::BusinessUIComponents/configurations/ConfigurationStateHandler.bbj::ConfigurationStateHandler
+
+use ::BBjSettingsWidget/BBjSettingsWidget.bbj::BBjSettingsWidget
+use ::BBjSettingsWidget/SwModels.bbj::SwModelsItem
+use ::BBjSettingsWidget/SwModels.bbj::SwModelsGroup
+use ::BBjSettingsWidget/SwEvents.bbj::SwEventsGroupSelected
+use ::BBjSettingsWidget/SwEvents.bbj::SwEventsItemChanged
+use ::BBjSettingsWidget/SwEvents.bbj::SwEventsItemAdded
+use ::BBjSettingsWidget/SwEvents.bbj::SwEventsItemRemoved
+use ::BBjSettingsWidget/SwEvents.bbj::SwEventsItemSelected
+
+use com.basiscomponents.bc.IConfigurationsBC
+use com.basiscomponents.bc.BCBinder
+use com.basiscomponents.bc.BusinessComponent
+use com.basiscomponents.db.DataRow
+use com.basiscomponents.db.ResultSet
+use java.util.HashMap
+
+use com.basiscomponents.ui.theming.Theme
+use com.basiscomponents.i18n.Props
+
+
+class public ConfigurationSettingsDialog
+
+    field protected BBjTopLevelWindow wnd!
+    field protected BBjChildWindow settingsWindow!
+    field protected BBjSysGui sysgui!
+    field protected BBjNumber height = 10
+    
+    field protected BBjMenuButton buttonBackground!
+    
+    field protected WindowHandler windowHandler!
+    field protected BBjSettingsWidget settingsWidget!
+    field protected IConfigurationsBC configBC!
+    field protected ConfigurationStateHandler stateHandler!
+    field protected static Boolean allowFactoryDefaults! = Boolean.FALSE
+    
+    field protected SwModelsGroup groupMySettings!
+    field protected SwModelsGroup groupFactoryDefaults!
+    field protected SwModelsGroup groupShared!
+    
+    field protected SwModelsItem currentlySelectedItem!
+    field protected SwModelsGroup currentlySelectedGroup!
+    
+    field protected HashMap mapItemToConfig!
+    
+    
+    field protected String title! = "Settings"
+    
+    field protected String key! = ""
+    field protected String realm! = ""
+    field protected String userid! = ""
+    
+    field protected Theme theme! = Theme.getInstance()
+    field protected Props props! = Props.getInstance()
+    
+    field protected Boolean suppressSelectionEvent! = Boolean.FALSE
+
+    method public ConfigurationSettingsDialog(IConfigurationsBC configBC!, ConfigurationStateHandler stateHandler!, String key!, String realm!, String userid!, Boolean allowFactoryDefaults!)
+        ? 'HIDE'
+        #sysgui! = BBjAPI().openSysGui("X0")
+REM         #sysgui!.setRepaintEnabled(0)
+        title! = #props!.getText("SETTINGS_TITLE")
+        if info(3,6)="5" then
+            #wnd! = #sysgui!.addWindow(#sysgui!.getAvailableContext(), 100,100,354,396,title!,$41001010$)
+        else
+            #wnd! = #sysgui!.addWindow(#sysgui!.getAvailableContext(), 100,100,354,396,title!,$40000093$)
+        endif
+        
+        #buttonBackground! = #wnd!.addMenuButton(3,-2,0,800,20,"")
+        #buttonBackground!.setTabTraversable(0)
+        #buttonBackground!.setFocusable(0)
+        #buttonBackground!.setBorderPainted(1)
+        bgColor! = #theme!.getPrimaryColorPalette().getBBjColor()
+        #buttonBackground!.setForeColor(bgColor!)
+        #buttonBackground!.setBackColor(bgColor!)
+        
+        #wnd!.setBackColor(#theme!.getBBjBackgroundColor())
+        #windowHandler! = new WindowHandler(#wnd!)
+        #windowHandler!.setProgramName(#title!)
+        #windowHandler!.setCloseMode(#windowHandler!.CLOSE_MODE_OFF())
+        #windowHandler!.applyWindowConfig()
+        #wnd!.setCallback(BBjAPI.ON_CLOSE,"onClose")
+        #stateHandler! = stateHandler!
+        #wnd!.setCallback(BBjAPI.ON_RESIZE, #this!,"resize")
+        #key! = key!
+        #realm! = realm!
+        #userid! = userid!
+        #configBC! = configBC!
+        #configBC!.setUserName(#userid!)
+        #allowFactoryDefaults! = allowFactoryDefaults!
+        #settingsWindow! = #wnd!.addChildWindow(105, 2, 22, 350, 350, "", $02000800$, #sysgui!.getAvailableContext())
+        #settingsWidget! = new BBjSettingsWidget(#settingsWindow!)
+        #settingsWidget!.setCallback(#settingsWidget!.ON_GROUP_SELECT(), #this!, "onGroupSelect")
+        #settingsWidget!.setCallback(#settingsWidget!.ON_ITEM_CHANGED(), #this!, "onItemChanged")
+        #settingsWidget!.setCallback(#settingsWidget!.ON_ITEM_ADDED(), #this!, "onItemAdded")
+        #settingsWidget!.setCallback(#settingsWidget!.ON_ITEM_REMOVED(), #this!, "onItemRemoved")
+        #settingsWidget!.setCallback(#settingsWidget!.ON_ITEM_SELECTED(), #this!, "onItemSelected")
+        #settingsWidget!.setBackColor(bgColor!)
+        
+        #fetchAndFillWidget()
+    methodend
+    
+    method protected void fetchAndFillWidget()
+        #mapItemToConfig! = new HashMap()
+        if #groupMySettings! = null() then
+            #groupMySettings! = cast(SwModelsGroup, #settingsWidget!.addGroup("1000",#props!.getText("SETTINGS_USER")))
+            #currentlySelectedGroup! = #groupMySettings!
+        else
+            #groupMySettings!.clear()
+        endif
+        oldFilter! = #configBC!.getFilter()
+        oldFieldSel! = #configBC!.getFieldSelection()
+        currentFilter! = #getFilter()
+        #configBC!.setFilter(currentFilter!)
+        #configBC!.setFieldSelection(#getFieldSelection())
+        rs! = #configBC!.retrieve()
+        it! = rs!.iterator()
+        while it!.hasNext()
+            dr! = cast(DataRow, it!.next())
+            item! = #settingsWidget!.addItem(#groupMySettings!, dr!.getFieldAsString(#configBC!.getFieldNameSetting()))
+            #mapItemToConfig!.put(item!, dr!)
+            shared! = dr!.getFieldAsString(#configBC!.getFieldNameShared())
+REM             item!.setDirty(1)
+            if !shared!.trim().equals("") then
+                item!.setShared(1)
+            endif
+        wend
+        currentFilter!.setFieldValue(#configBC!.getFieldNameUserid(), #configBC!.getFactoryDefaultUser())
+        #configBC!.setFilter(currentFilter!)
+        rs! = #configBC!.retrieve()
+        if #allowFactoryDefaults! or rs!.size() then
+            if #groupFactoryDefaults! = null() then
+                #groupFactoryDefaults! = cast(SwModelsGroup, #settingsWidget!.addGroup("1001",#props!.getText("SETTINGS_FACTORY")))
+            else
+                #groupFactoryDefaults!.clear()
+            endif
+            #groupFactoryDefaults!.setAllowNewItems(   #allowFactoryDefaults!)
+            #groupFactoryDefaults!.setEditable(        #allowFactoryDefaults!)
+            #groupFactoryDefaults!.setDeletable(       #allowFactoryDefaults!)
+            #groupFactoryDefaults!.setShareable(       0)
+            it! = rs!.iterator()
+            while it!.hasNext()
+                dr! = cast(DataRow, it!.next())
+                item! = #settingsWidget!.addItem(#groupFactoryDefaults!, dr!.getFieldAsString(#configBC!.getFieldNameSetting()))
+                #mapItemToConfig!.put(item!, dr!)
+                shared! = dr!.getFieldAsString(#configBC!.getFieldNameShared())
+                if !shared!.trim().equals("") then
+                    item!.setShared(1)
+                endif
+            wend
+        endif
+        if #groupShared! = null() then
+            #groupShared! = cast(SwModelsGroup, #settingsWidget!.addGroup("1002",#props!.getText("SETTINGS_SHARED")))
+        else
+            #groupShared!.clear()
+        endif
+        #groupShared!.setAllowNewItems(   0)
+        #groupShared!.setEditable(        0)
+        #groupShared!.setDeletable(       0)
+        #groupShared!.setShareable(       0)
+        currentFilter!.setFieldValue(#configBC!.getFieldNameUserid(), #userid!)
+        #configBC!.setFilter(currentFilter!)
+        rs! = #configBC!.getSharedConfigs()
+        it! = rs!.iterator()
+        while it!.hasNext()
+            dr! = cast(DataRow, it!.next())
+            item! = #settingsWidget!.addItem(#groupShared!,"@" + dr!.getFieldAsString(#configBC!.getFieldNameUserid()) + ": " + dr!.getFieldAsString(#configBC!.getFieldNameSetting()))
+            #mapItemToConfig!.put(item!, dr!)
+            item!.setShared(1)
+        wend
+        #configBC!.setFilter(oldFilter!)
+        #configBC!.setFieldSelection(oldFieldSel!)
+        
+    methodend
+    
+    method protected DataRow getFilter()
+        dr! = new DataRow()
+REM         dr!.setFieldValue(#configBC!.getFieldNameShared(), )
+        dr!.setFieldValue(#configBC!.getFieldNameKeyx(), #key!)
+        dr!.setFieldValue(#configBC!.getFieldNameRealm(), #realm!)
+        dr!.setFieldValue(#configBC!.getFieldNameUserid(), #userid!)
+        methodret dr!
+    methodend
+    
+    method protected DataRow getFieldSelection()
+        dr! = new DataRow()
+        dr!.setFieldValue(#configBC!.getFieldNameKeyx(), "")
+        dr!.setFieldValue(#configBC!.getFieldNameRealm(), "")
+        dr!.setFieldValue(#configBC!.getFieldNameUserid(), "")
+        dr!.setFieldValue(#configBC!.getFieldNameSetting(), "")
+        dr!.setFieldValue(#configBC!.getFieldNameConfig(), "")
+        dr!.setFieldValue(#configBC!.getFieldNameShared(), "")
+        methodret dr!
+    methodend
+    
+    
+    method public void stateChange()
+        if #currentlySelectedItem! = null() then methodret
+        dr! = #mapItemToConfig!.get(#currentlySelectedItem!)
+        userid! = dr!.getFieldAsString(#configBC!.getFieldNameUserid()).trim()
+        if userid!.equals(#configBC!.getFactoryDefaultUser()) and !#allowFactoryDefaults! then methodret
+        if !userid!.equals(#configBC!.getFactoryDefaultUser()) and !userid!.equals(#userid!.trim()) then methodret
+        #currentlySelectedItem!.setDirty(1)
+    methodend
+    
+    method public void selectItem(DataRow dr!)
+        if #currentlySelectedItem! <> null() then
+            #currentlySelectedItem!.setDirty(0)
+        endif
+        #clearAllSelections()
+        it! = #mapItemToConfig!.entrySet().iterator()
+        userid! = dr!.getFieldAsString(#configBC!.getFieldNameUserid()).trim()
+        setting! = dr!.getFieldAsString(#configBC!.getFieldNameSetting()).trim()
+        while it!.hasNext()
+            entry! = it!.next()
+            value! = cast(DataRow, entry!.getValue())
+            currentUserid! = value!.getFieldAsString(#configBC!.getFieldNameUserid()).trim()
+            currentSetting! = value!.getFieldAsString(#configBC!.getFieldNameSetting()).trim()
+            if userid!.equals(currentUserid!) and setting!.equals(currentSetting!) then
+                item! = entry!.getKey()
+                id! = item!.getId()
+                foundId! = #groupMySettings!.getItem(id!,err=*next)
+                if foundId! <> null() then
+                    #suppressSelectionEvent! = Boolean.TRUE
+                    #groupMySettings!.setSelectedItem(item!)
+                    #currentlySelectedItem! = cast(SwModelsItem, item!)
+                    methodret
+                endif
+                foundId! = #groupFactoryDefaults!.getItem(id!,err=*next)
+                if foundId! <> null() then
+                    #suppressSelectionEvent! = Boolean.TRUE
+                    #groupFactoryDefaults!.setSelectedItem(item!)
+                    #currentlySelectedItem! = cast(SwModelsItem, item!)
+                    methodret
+                endif
+                foundId! = #groupShared!.getItem(id!,err=*next)
+                if foundId! <> null() then
+                    #suppressSelectionEvent! = Boolean.TRUE
+                    #groupShared!.setSelectedItem(item!)
+                    #currentlySelectedItem! = cast(SwModelsItem, item!)
+                    methodret
+                endif
+            endif
+        wend
+REM         #groupMySettings!.get
+REM         #groupFactoryDefaults!
+    methodend
+    
+    method public void saveAutoConfig()
+        #windowHandler!.saveWindowConfig()
+    methodend
+    
+    method public void doModal()
+        #delayed_resize(null())
+        if #allowFactoryDefaults! and #settingsWidget!.getCurrentGroup() = #groupFactoryDefaults! then
+            userName! = #configBC!.getFactoryDefaultUser()
+            #configBC!.setUserName(#configBC!.getFactoryDefaultUser())
+        endif
+        #sysgui!.setRepaintEnabled(1)
+        #wnd!.setVisible(1)
+        
+        process_events
+        onOK:
+            BBjAPI().removeTimer("onOK",err=*next)
+            #onOK()
+        onClose:
+            #configBC!.setUserName(#userid!)
+            #wnd!.setVisible(0)
+            methodret
+    methodend
+    
+    rem ############## Events ######################
+    
+    method public void resize(BBjEvent ev!)
+        BBjAPI().removeTimer("resize",err=*next)
+        BBjAPI().createTimer("resize", .4, #this!, "delayed_resize")
+    methodend
+    
+    method public void delayed_resize(BBjEvent ev!)
+        BBjAPI().removeTimer("resize",err=*next)
+        w = #wnd!.getWidth()
+        h = #wnd!.getHeight()
+        #settingsWindow!.setSize(w - 4, h - 2 - #settingsWindow!.getY())
+        #settingsWidget!.setSize(#settingsWindow!.getWidth() - 2, #settingsWindow!.getHeight() - 2)
+        #buttonBackground!.setSize(w + 4, #buttonBackground!.getHeight())
+REM         #bgrid!.setSize(w-4 ,h-70)
+    methodend
+    
+    method public void onItemSelected(BBjCustomEvent e!)
+        if #suppressSelectionEvent! then
+            #suppressSelectionEvent! = Boolean.FALSE
+            methodret
+        endif
+        declare auto SwEventsItemSelected payload!
+        declare auto SwModelsGroup group!
+        declare auto SwModelsItem item!
+    
+        payload! = e!.getObject()
+        group!   = payload!.getGroup()
+        item!    = payload!.getItem()
+        #clearAllSelections()
+        #currentlySelectedItem! = item!
+        #suppressSelectionEvent! = Boolean.TRUE
+        group!.setSelectedItem(#currentlySelectedItem!)
+        #suppressSelectionEvent! = Boolean.FALSE
+        if item! = null() then methodret
+REM         if #allowFactoryDefaults! or #settingsWidget!.getCurrentGroup() <> #groupFactoryDefaults! then
+REM             item!.setDirty(1)
+REM         endif
+        
+        BBjAPI().createTimer("onOK", .2, "onOK")
+      methodend
+      
+      method public void clearAllSelections()
+        #suppressSelectionEvent! = Boolean.TRUE
+        #groupMySettings!.setSelectedItem(null())
+        #suppressSelectionEvent! = Boolean.TRUE
+        #groupFactoryDefaults!.setSelectedItem(null())
+        #suppressSelectionEvent! = Boolean.TRUE
+        #groupShared!.setSelectedItem(null())
+        #suppressSelectionEvent! = Boolean.FALSE
+        #currentlySelectedItem! = null()
+      methodend
+      
+      method public void onOK()
+          if #currentlySelectedItem! = null() then methodret
+          #currentlySelectedItem!.setDirty(0)
+          dr! = #mapItemToConfig!.get(#currentlySelectedItem!, err=*next)
+          if dr! = null() then methodret
+          config! = dr!.getFieldAsString(#configBC!.getFieldNameConfig())
+          #stateHandler!.configurationChange(config!)
+      methodend
+      
+      method public void onItemChanged(BBjCustomEvent e!)
+          declare auto SwEventsItemChanged payload!
+          declare auto SwModelsGroup group!
+          declare auto SwModelsItem item!
+      
+          payload! = e!.getObject()
+          group!   = payload!.getGroup()
+          item!    = payload!.getItem()
+          property! = payload!.getProperty()
+          if item! = null() then methodret
+          rem dirty
+          if property!.equals("dirty") then
+              shared! = item!.getShared()
+              if shared! then
+                  sharedString! = "*"
+              else
+                  sharedString! = ""
+              endif
+  REM             item!.getUserData()
+              switch group!
+                  case #groupMySettings!
+                      userName! = #userid!
+                      break
+                  case #groupFactoryDefaults!
+                      userName! = #configBC!.getFactoryDefaultUser()
+                      sharedString! = "*"
+REM                       #configBC!.setUserName(userName!)
+                      break
+                  case default
+                      methodret
+                      break
+              swend
+              dr! = #getFilter()
+              dr!.setFieldValue(#configBC!.getFieldNameUserid(), userName!)
+              dr!.setFieldValue(#configBC!.getFieldNameSetting(), item!.getTitle())
+              dr!.setFieldValue(#configBC!.getFieldNameConfig(), #stateHandler!.getState())
+              dr!.setFieldValue(#configBC!.getFieldNameShared(), sharedString!)
+              newDr! = #configBC!.write(dr!)
+              #mapItemToConfig!.put(item!, newDr!)
+REM               #configBC!.setUserName(#userid!)
+              methodret
+          endif
+          rem shared
+          if property!.equals("shared") then
+              shared! = item!.getShared()
+              if shared! then
+                  sharedString! = "*"
+              else
+                  sharedString! = ""
+              endif
+              dr! = #mapItemToConfig!.get(item!)
+              dr!.setFieldValue(#configBC!.getFieldNameShared(), sharedString!)
+              newDr! = #configBC!.write(dr!)
+              #mapItemToConfig!.put(item!, newDr!)
+              methodret
+          endif
+          if property!.equals("title") then
+              title! = item!.getTitle()
+              dr! = #mapItemToConfig!.get(item!,err=*next)
+              if dr! = null() then methodret
+              #configBC!.remove(dr!)
+              dr!.setFieldValue(#configBC!.getFieldNameSetting(), title!)
+              newDr! = #configBC!.write(dr!)
+              #mapItemToConfig!.put(item!, newDr!)
+              methodret
+          endif
+    methodend
+      
+    method public void onItemAdded(BBjCustomEvent e!)
+        declare auto SwEventsItemAdded payload!
+        declare auto SwModelsGroup group!
+        declare auto SwModelsItem item!
+    
+        payload! = e!.getObject()
+        group!   = payload!.getGroup()
+        item!    = payload!.getItem()
+        if item! = null() then methodret
+        item!.setDirty(1)
+    methodend
+      
+    method public void onItemRemoved(BBjCustomEvent e!)
+        declare auto SwEventsItemRemoved payload!
+        declare auto SwModelsGroup group!
+        declare auto SwModelsItem item!
+    
+        payload! = e!.getObject()
+        group!   = payload!.getGroup()
+        item!    = payload!.getItem()
+        
+        dr! = #mapItemToConfig!.get(item!,err=*next)
+        if dr! = null() then methodret
+        #configBC!.remove(dr!)
+    methodend
+        
+    method public void onGroupSelect(BBjCustomEvent e!)
+REM         if #suppressSelectionEvent! then methodret
+        declare auto SwEventsGroupSelected payload!
+        declare auto SwModelsGroup group!
+    
+        payload! = e!.getObject()
+        group! = payload!.getGroup()
+        switch group!
+            case #groupMySettings!
+                #configBC!.setUserName(#userid!)
+                break
+            case #groupFactoryDefaults!
+                if #allowFactoryDefaults! then
+                    userName! = #configBC!.getFactoryDefaultUser()
+                    #configBC!.setUserName(userName!)
+                endif
+                break
+            case default
+                break
+        swend
+        if group!.getSelectedItem() <> null() then
+            #suppressSelectionEvent! = Boolean.TRUE
+        endif
+    methodend
+    
+
+    method public BBjWindow getWindow()
+        methodret #wnd!
+    methodend
+    
+    method public void applyWindowConfig()
+        #windowHandler!.applyWindowConfig()
+    methodend
+
+classend

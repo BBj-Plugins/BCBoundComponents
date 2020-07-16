@@ -8,7 +8,10 @@ use ::BBjWidget/BBjWidget.bbj::BBjWidget
 use ::BBjGridExWidget/BBjGridExWidgetState.bbj::BBjGridExWidgetState
 use ::BusinessUIComponents/configurations/CustomConfigurationsBC.bbj::CustomConfigurationsBC
 use ::BusinessUIComponents/configurations/ConfigurationStateHandler.bbj::ConfigurationStateHandler
+use ::BusinessUIComponents/configurations/ConfigurationSettingsDialog.bbj::ConfigurationSettingsDialog
 use ::BusinessUIComponents/configurations/IPersistentState.bbj::IPersistentState
+use ::BBjSettingsWidget/BBjSettingsWidget.bbj::BBjSettingsWidget
+
 use com.basiscomponents.bc.IConfigurationsBC
 use com.basiscomponents.db.DataRow
 use com.basiscomponents.db.ResultSet
@@ -29,9 +32,11 @@ class public ConfigurationButton extends BBjWidget
     field protected Props props! = Props.getInstance()
     field protected BBjMenuButton popupButton!
     field protected BBjPopupMenu popupMenu!
-    field protected ResultSet availableConfigs!
+    field protected ResultSet userConfigs!
+    field protected ResultSet factoryConfigs!
     field protected ConfigurationStateHandler stateHandler!
     field protected DataRow currentConfiguration!
+    field protected ConfigurationSettingsDialog settingsDialog!
     
     rem /**
     rem  * default constructor disabled
@@ -59,6 +64,7 @@ class public ConfigurationButton extends BBjWidget
             #userName! = ""
         endif
         #stateHandler! = new ConfigurationStateHandler(statePersistable!, #this!)
+        #settingsDialog! = new ConfigurationSettingsDialog(#bc!, #stateHandler!, #keyx!, #realm!, #userName!, #allowFactoryDefaults!)
         #create(container!,id,x,y,160,20)
     methodend
     
@@ -86,7 +92,15 @@ class public ConfigurationButton extends BBjWidget
         dr!.setFieldValue(#bc!.getFieldNameKeyx(), #keyx!)
         dr!.setFieldValue(#bc!.getFieldNameUserid(), #userName!)
         #bc!.setFilter(dr!)
-        #availableConfigs! = #bc!.retrieve()
+        orderby! = #bc!.getFieldNameSetting() + " ASC"
+        #userConfigs! = #bc!.retrieve().orderBy(orderby!)
+REM         for i=0 to #userConfigs!.size() - 1
+REM             ?#userConfigs!.get(i).getFieldAsString(#bc!.getFieldNameSetting())
+REM         next i
+REM         escape
+        dr!.setFieldValue(#bc!.getFieldNameUserid(), #bc!.getFactoryDefaultUser())
+        #bc!.setFilter(dr!)
+        #factoryConfigs! = #bc!.retrieve().orderBy(orderby!)
         #fillPopup()
     methodend
     
@@ -96,24 +110,42 @@ class public ConfigurationButton extends BBjWidget
     method protected void fillPopup()
         #popupButton!.removeDropdownMenu()
         #popupMenu! = #popupButton!.addDropdownMenu()
-        if #availableConfigs! = null() OR #availableConfigs!.isEmpty() then
-            settingsToolMenuItem! = #popupMenu!.addMenuItem(200, "More...")
-            cast(BBjMenuItem, settingsToolMenuItem!).setCallback(BBjPopupMenu.ON_POPUP_ITEM_SELECT, #this!, "settingsTool")
-            methodret
+        currentIndex = 0
+        if #userConfigs! <> null() and !#userConfigs!.isEmpty() then
+            declare BBjMenuItem menuItem!
+            for i=0 to #userConfigs!.size() - 1
+                currentConfig! = #userConfigs!.get(i)
+                userSettingName! = currentConfig!.getFieldAsString(#bc!.getFieldNameSetting())
+                description! = userSettingName!.trim()
+                if description!.equals("") then
+                    description! = "(" + #props!.getText("SETTINGS_DEFAULT_DESCRIPTION") + ")"
+                endif
+                menuItem! = #popupMenu!.insertMenuItem(currentIndex, 200 + currentIndex, description!)
+                menuItem!.setUserData(currentConfig!)
+                cast(BBjMenuItem, menuItem!).setCallback(BBjPopupMenu.ON_POPUP_ITEM_SELECT, #this!, "settingSelect")
+                currentIndex = currentIndex + 1
+            next i
+            #popupMenu!.addSeparator()
+            currentIndex = currentIndex + 1
         endif
-
-        declare BBjMenuItem menuItem!
-        for i=0 to #availableConfigs!.size() - 1
-            currentConfig! = #availableConfigs!.get(i)
-            userSettingName! = currentConfig!.getFieldAsString(#bc!.getFieldNameSetting())
-            description! = ""
-            description! = userSettingName!.trim()
-            menuItem! = #popupMenu!.insertMenuItem(i, 200 + i, description!)
-            menuItem!.setUserData(currentConfig!)
-            cast(BBjMenuItem, menuItem!).setCallback(BBjPopupMenu.ON_POPUP_ITEM_SELECT, #this!, "settingSelect")
-        next i
-        #popupMenu!.addSeparator()
-        settingsToolMenuItem! = #popupMenu!.addMenuItem(200 + i, "More...")
+        if #factoryConfigs! <> null() and !#factoryConfigs!.isEmpty() then
+            declare BBjMenuItem menuItem!
+            for i=0 to #factoryConfigs!.size() - 1
+                currentConfig! = #factoryConfigs!.get(i)
+                userSettingName! = currentConfig!.getFieldAsString(#bc!.getFieldNameSetting())
+                description! = userSettingName!.trim()
+                if description!.equals("") then
+                    description! = "(" + #props!.getText("SETTINGS_FACTORY_DEFAULT_DESCRIPTION") + ")"
+                endif
+                menuItem! = #popupMenu!.insertMenuItem(currentIndex, 200 + currentIndex, description!)
+                menuItem!.setUserData(currentConfig!)
+                cast(BBjMenuItem, menuItem!).setCallback(BBjPopupMenu.ON_POPUP_ITEM_SELECT, #this!, "settingSelect")
+                currentIndex = currentIndex + 1
+            next i
+            #popupMenu!.addSeparator()
+            currentIndex = currentIndex + 1
+        endif
+        settingsToolMenuItem! = #popupMenu!.addMenuItem(200 + currentIndex, "More...")
         cast(BBjMenuItem, settingsToolMenuItem!).setCallback(BBjPopupMenu.ON_POPUP_ITEM_SELECT, #this!, "settingsTool")
     methodend
     
@@ -124,7 +156,8 @@ class public ConfigurationButton extends BBjWidget
     methodend
     
     method public void stateChange()
-        
+        if #settingsDialog! = null() then methodret
+        #settingsDialog!.stateChange()
     methodend
     
     rem /**
@@ -155,6 +188,7 @@ class public ConfigurationButton extends BBjWidget
         #bc!.setFilter(selectedConfig!)
         #bc!.write(selectedConfig!)
         #bc!.setFilter(oldFilter!)
+        #settingsDialog!.saveAutoConfig()
     methodend
     
     
@@ -212,13 +246,15 @@ class public ConfigurationButton extends BBjWidget
         menuItem! = ev!.getMenuItem()
         ud! = menuItem!.getUserData()
         if ud! <> null() then
+            #settingsDialog!.selectItem(ud!)
             #applyConfiguration(ud!)
             methodret
         endif
     methodend
     
     method public void settingsTool(BBjEvent ev!)
-        rem TODO on 'more...' open dialog
+        #settingsDialog!.doModal()
+        #fetchAndUpdatePopup()
     methodend
    
 

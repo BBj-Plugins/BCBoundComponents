@@ -30,7 +30,7 @@ class public CustomConfigurationsBC implements BusinessComponent,IConfigurations
             path! = dsk("") + dir("") + "configurationWidgetConfigs"
         endif
 REM         path! = "C:\Users\FOO\Documents\00tempConfigscanbedeleted"
-        template! = "REALM:C(3*=10):DESCRIPTION=Realm:,KEYX:C(40*=10):DESCRIPTION=Key:,USERID:C(64*=10):DESCRIPTION=UserID:,SETTING:C(40*=10):DESCRIPTION=Setting:,CR_MONT:C(10*=10):DESCRIPTION=createduser:,CR_TS_LD:C(14*=10):DESCRIPTION=createdtimestamp:,MOD_MONT:C(10*=10):DESCRIPTION=modificationuser:,MOD_TS_LD:C(14*=10):DESCRIPTION=modificationtimestamp:,CONFIG:C(1*=10):DESCRIPTION=Configurationpayload:"
+        template! = "REALM:C(3*=10):DESCRIPTION=Realm:,KEYX:C(40*=10):DESCRIPTION=Key:,USERID:C(64*=10):DESCRIPTION=UserID:,SETTING:C(40*=10):DESCRIPTION=Setting:,CR_MONT:C(10*=10):DESCRIPTION=createduser:,CR_TS_LD:C(14*=10):DESCRIPTION=createdtimestamp:,MOD_MONT:C(10*=10):DESCRIPTION=modificationuser:,MOD_TS_LD:C(14*=10):DESCRIPTION=modificationtimestamp:,CONFIG:C(1*=10):DESCRIPTION=Configurationpayload:,SHARED:C(1*=10):DESCRIPTION=sharedwith:"
         #createDataFile(path!,template!, 4)
         #configurationsBC! = new ConfigurationsBC(path!, userName!)
     methodend
@@ -43,7 +43,7 @@ REM         path! = "C:\Users\FOO\Documents\00tempConfigscanbedeleted"
         else
             path! = dsk("") + dir("") + "configurationWidgetConfigs"
         endif
-        template! = "REALM:C(3*=10):DESCRIPTION=Realm:,KEYX:C(40*=10):DESCRIPTION=Key:,USERID:C(64*=10):DESCRIPTION=UserID:,SETTING:C(40*=10):DESCRIPTION=Setting:,CR_MONT:C(10*=10):DESCRIPTION=createduser:,CR_TS_LD:C(14*=10):DESCRIPTION=createdtimestamp:,MOD_MONT:C(10*=10):DESCRIPTION=modificationuser:,MOD_TS_LD:C(14*=10):DESCRIPTION=modificationtimestamp:,CONFIG:C(1*=10):DESCRIPTION=Configurationpayload:"
+        template! = "REALM:C(3*=10):DESCRIPTION=Realm:,KEYX:C(40*=10):DESCRIPTION=Key:,USERID:C(64*=10):DESCRIPTION=UserID:,SETTING:C(40*=10):DESCRIPTION=Setting:,CR_MONT:C(10*=10):DESCRIPTION=createduser:,CR_TS_LD:C(14*=10):DESCRIPTION=createdtimestamp:,MOD_MONT:C(10*=10):DESCRIPTION=modificationuser:,MOD_TS_LD:C(14*=10):DESCRIPTION=modificationtimestamp:,CONFIG:C(1*=10):DESCRIPTION=Configurationpayload:,SHARED:C(1*=10):DESCRIPTION=sharedwith:"
         #createDataFile(path!,template!, 4)
         #configurationsBC! = new ConfigurationsBC(path!, userName!)
     methodend
@@ -172,6 +172,9 @@ REM     methodend
     method public ResultSet getAvailableConfigurations()
         methodret #configurationsBC!.getAvailableConfigurations()
     methodend
+    method public ResultSet getSharedConfigs()
+        methodret #configurationsBC!.getSharedConfigs()
+    methodend
     
     method public DataRow getScope()
         methodret #configurationsBC!.getScope()
@@ -219,6 +222,10 @@ REM     methodend
     
     method public String getFieldNameConfig()
         methodret #configurationsBC!.getFieldNameConfig()
+    methodend
+    
+    method public String getFieldNameShared()
+        methodret #configurationsBC!.getFieldNameShared()
     methodend
 
     rem @Override
