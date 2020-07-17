@@ -135,6 +135,9 @@ class public ExportDialog
     methodend
     
     method public BBjWindow createDialogWindow(BBjString windowTitle$)
+        #childWindowList!.clear()
+        #groupBoxList!.clear()
+    
         sysGui! = BBjAPI().getSysGui()
         declare BBjTopLevelWindow wnd!
         if info(3,6) = "5" then
