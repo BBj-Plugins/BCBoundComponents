@@ -1,0 +1,184 @@
+rem /**
+rem  * This file is part of the BBjSettingsWidget plugin.
+rem  * (c) Basis Europe <eu@basis.com>
+rem  *
+rem  * For the full copyright and license information, please view the LICENSE
+rem  * file that was distributed with this source code.
+rem  */
+use ::BusinessUIComponents/widgets/BBjSettingsWidget/BBjSettingsWidget.bbj::BBjSettingsWidget
+use ::BusinessUIComponents/widgets/BBjSettingsWidget/SwModels.bbj::SwModelsItem
+use ::BusinessUIComponents/widgets/BBjSettingsWidget/SwModels.bbj::SwModelsGroup
+rem /**
+rem  * @author Hyyan Abo Fakher
+rem  */
+class public SwEventsGroupSelected
+
+  field protected SwModelsGroup Group! = null()
+  field protected BBjSettingsWidget Widget! = null()
+  rem /**
+  rem  * Disable the default constructor
+  rem  */
+  method private SwEventsGroupSelected()
+  methodend
+  rem /**
+  rem  * Construct new SwEventsGroupSelected
+  rem  *
+  rem  * @param BBjSettingsWidget widget! The widget instance
+  rem  * @param SwModelsGroup group! The group instance
+  rem  */
+  method public SwEventsGroupSelected(BBjSettingsWidget widget!, SwModelsGroup group!)
+    #Widget! = widget!
+    #Group!  = group!
+  methodend
+  rem /**
+  rem  * Get the widget instance
+  rem  *
+  rem  * @return BBjSettingsWidget
+  rem  */
+  method public BBjSettingsWidget getWidget()
+    methodret #Widget!
+  methodend
+  rem /**
+  rem  * Get the group instance
+  rem  *
+  rem  * @return SwModelsGroup
+  rem  */
+  method public SwModelsGroup getGroup()
+    methodret #Group!
+  methodend
+
+classend
+rem /**
+rem  * @author Hyyan Abo Fakher
+rem  */
+class private SwEventsItemEvent extends SwEventsGroupSelected
+
+  field protected SwModelsItem Item! = null()
+  rem /**
+  rem  * Disable the default constructor
+  rem  */
+  method private SwEventsItemEvent()
+  methodend
+  rem /**
+  rem  * Construct new SwEventsItemEvent
+  rem  *
+  rem  * @param BBjSettingsWidget widget! The widget instance
+  rem  * @param SwModelsGroup group! The group instance
+  rem  * @param SwModelsItem item! The item instance
+  rem  */
+  method public SwEventsItemEvent(BBjSettingsWidget widget!, SwModelsGroup group!, SwModelsItem item!)
+    #super!(widget!, group!)
+    #Item! = item!
+  methodend
+  rem /**
+  rem  * Get the item instance
+  rem  *
+  rem  * @return SwModelsItem
+  rem  */
+  method public SwModelsItem getItem()
+    methodret #Item!
+  methodend
+
+classend
+rem /**
+rem  * @author Hyyan Abo Fakher
+rem  */
+class public SwEventsItemSelected extends SwEventsItemEvent
+  rem /**
+  rem  * Disable the default constructor
+  rem  */
+  method private SwEventsItemSelected()
+  methodend
+  rem /**
+  rem  * Construct new SwEventsItemSelect
+  rem  *
+  rem  * @param BBjSettingsWidget widget! The widget instance
+  rem  * @param SwModelsGroup group! The group instance
+  rem  * @param SwModelsItem item! The item instance
+  rem  */
+  method public SwEventsItemSelected(BBjSettingsWidget widget!, SwModelsGroup group!, SwModelsItem item!)
+    #super!(widget!, group!, item!)
+  methodend
+
+classend
+rem /**
+rem  * @author Hyyan Abo Fakher
+rem  */
+class public SwEventsItemAdded extends SwEventsItemEvent
+  rem /**
+  rem  * Disable the default constructor
+  rem  */
+  method private SwEventsItemAdded()
+  methodend
+  rem /**
+  rem  * Construct new SwEventsItemAdded
+  rem  *
+  rem  * @param BBjSettingsWidget widget! The widget instance
+  rem  * @param SwModelsGroup group! The group instance
+  rem  * @param SwModelsItem item! The item instance
+  rem  */
+  method public SwEventsItemAdded(BBjSettingsWidget widget!, SwModelsGroup group!, SwModelsItem item!)
+    #super!(widget!, group!, item!)
+  methodend
+  rem /**
+  rem  * Start cell editing on the new add item
+  rem  */
+  method public void startEditing()
+    #getWidget().getGrid().setStartCellEditing(#getItem().getId(), "TITLE")
+  methodend
+
+classend
+rem /**
+rem  * @author Hyyan Abo Fakher
+rem  */
+class public SwEventsItemRemoved extends SwEventsItemEvent
+  rem /**
+  rem  * Disable the default constructor
+  rem  */
+  method private SwEventsItemRemoved()
+  methodend
+  rem /**
+  rem  * Construct new SwEventsItemRemoved
+  rem  *
+  rem  * @param BBjSettingsWidget widget! The widget instance
+  rem  * @param SwModelsGroup group! The group instance
+  rem  * @param SwModelsItem item! The item instance
+  rem  */
+  method public SwEventsItemRemoved(BBjSettingsWidget widget!, SwModelsGroup group!, SwModelsItem item!)
+    #super!(widget!, group!, item!)
+  methodend
+
+classend
+rem /**
+rem  * @author Hyyan Abo Fakher
+rem  */
+class public SwEventsItemChanged extends SwEventsItemEvent
+
+  field protected BBjString Property! = ""
+  rem /**
+  rem  * Disable the default constructor
+  rem  */
+  method private SwEventsItemChanged()
+  methodend
+  rem /**
+  rem  * Construct new SwEventsItemChanged
+  rem  *
+  rem  * @param BBjSettingsWidget widget! The widget instance
+  rem  * @param SwModelsGroup group! The group instance
+  rem  * @param SwModelsItem item! The item instance
+  rem  * @param BBjString property! The name of changed property
+  rem  */
+  method public SwEventsItemChanged(BBjSettingsWidget widget!, SwModelsGroup group!, SwModelsItem item!, BBjString property!)
+    #super!(widget!, group!, item!)
+    #Property! = property!
+  methodend
+  rem /**
+  rem  * Get The name of the changed property in the item instance
+  rem  *
+  rem  * @return BBjString
+  rem  */
+  method public BBjString getProperty()
+    methodret #Property!
+  methodend
+
+classend
