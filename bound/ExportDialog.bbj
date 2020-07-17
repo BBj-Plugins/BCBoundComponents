@@ -155,8 +155,8 @@ class public ExportDialog
         if info(3,6) <> "5" then 
             for i = 0 to #childWindowList!.size() -1
                 #fileChooser!.setSize(w, h - #cwPdf!.getHeight())
-                cw!.setSize(w, cw!.getHeight())
                 cw! = #childWindowList!.getItem(i)
+                cw!.setSize(w, cw!.getHeight())
                 cw!.setLocation(0, h-cw!.getHeight())
                 gb! = #groupBoxList!.getItem(i)
                 gb!.setSize(w - 20, gb!.getHeight())
