@@ -1,0 +1,417 @@
+rem /**
+rem  * This file is part of the BBjSettingsWidget plugin.
+rem  * (c) Basis Europe <eu@basis.com>
+rem  *
+rem  * For the full copyright and license information, please view the LICENSE
+rem  * file that was distributed with this source code.
+rem  */
+use ::BusinessUIComponents/widgets/BBjSettingsWidget/BBjSettingsWidget.bbj::BBjSettingsWidget
+use com.basiscomponents.db.ResultSet
+use com.basiscomponents.db.DataRow
+use com.google.gson.JsonObject
+use com.google.gson.JsonArray
+use com.google.gson.JsonParser
+use java.util.LinkedHashMap
+rem /**
+rem  * @author Hyyan Abo Fakher
+rem  */
+class public SwModelsItem
+  rem /**
+  rem  * The group title
+  rem  */
+  field public BBjString Title!
+  rem /**
+  rem  * When true , the item is shared with another group, false otherwise
+  rem  */
+  field public BBjNumber Shared! = 0
+  rem /**
+  rem  * When true , the item's attached "custom state" is dirty
+  rem  */
+  field public BBjNumber Dirty! = 0
+  rem /**
+  rem  * The widget instance
+  rem  */
+  field public BBjSettingsWidget Widget!
+  rem /**
+  rem  * The group id
+  rem  */
+  field protected BBjString Id!
+  rem /**
+  rem  * Disable deafult constructor
+  rem  */
+  method private SwModelsItem()
+  methodend
+  rem /**
+  rem  * Construct new item
+  rem  *
+  rem  * @param BBjString id! The item id
+  rem  * @param BBjString title! The item title
+  rem  */
+  method public SwModelsItem(BBjString id! , BBjString title!)
+    #setId(id!)
+    #setTitle(title!)
+  methodend
+  rem /**
+  rem  * Set the item's title
+  rem  *
+  rem  * @param BBjString The item's title
+  rem  */
+  method public void setTitle(BBjString title!)
+    #Title! = title!
+    #getWidget().updateGrid(err=*next)
+  methodend
+  rem /**
+  rem  * Toggle item shared state
+  rem  *
+  rem  * @param BBjNumber shared!
+  rem  */
+  method public void setShared(BBjNumber shared!)
+    #Shared! = shared!
+    #getWidget().updateGrid(err=*next)
+  methodend
+  rem /**
+  rem  * Toggle item isDirty state
+  rem  *
+  rem  * @param BBjNumber dirty!
+  rem  */
+  method public void setDirty(BBjNumber dirty!)
+    #Dirty! = dirty!
+    #getWidget().updateGrid(err=*next)
+  methodend
+  rem /**
+  rem  * Get the item's id
+  rem  *
+  rem  * @return BBjString The item's id
+  rem  */
+  method public BBjString getId()
+    methodret #Id!
+  methodend
+  rem /**
+  rem  * Get the item as a DataRow
+  rem  *
+  rem  * @return com.basiscomponents.db.DataRow the data row
+  rem  */
+  method public DataRow getAsDataRow()
+    declare auto DataRow row!
+
+    row! = new DataRow()
+    row!.setFieldValue("ID"       , #getId())
+    row!.setFieldValue("TITLE"    , #getTitle())
+    row!.setFieldValue("DIRTY"    , #getDirty())
+    row!.setFieldValue("SHARED"   , #getShared())
+    methodret row!
+  methodend
+  rem /**
+  rem  * Update the current item from the passed DataRow
+  rem  *
+  rem  * @param com.basiscomponents.db.DataRow row! The DataRow Instance
+  rem  *
+  rem  * @return SwModelsItem
+  rem  */
+  method public SwModelsItem updateFromDataRow(DataRow row!)
+    #setId(row!.getFieldAsString("ID"))
+    #setTitle(row!.getFieldAsString("TITLE"))
+    #setShared(row!.getFieldAsNumber("SHARED"))
+    #setDirty(row!.getFieldAsNumber("DIRTY"))
+    methodret #this!
+  methodend
+  rem /**
+  rem  * Construct a SwModelsItem form a DataRow
+  rem  *
+  rem  * @param com.basiscomponents.db.DataRow row! The DataRow Instance
+  rem  *
+  rem  * @return SwModelsItem
+  rem  */
+  method public static SwModelsItem fromDataRow(DataRow row!)
+    declare auto SwModelsItem item!
+
+    item! = new SwModelsItem(row!.getFieldAsString("ID"), row!.getFieldAsString("TITLE"))
+    item!.setShared(row!.getFieldAsNumber("SHARED"))
+    item!.setDirty(row!.getFieldAsNumber("DIRTY"))
+    methodret item!
+  methodend
+
+classend
+rem /**
+rem  * @author Hyyan Abo Fakher
+rem  */
+class public SwModelsGroup
+  rem /**
+  rem  * When true , The UI will allow adding new items
+  rem  * to the group.
+  rem  */
+  field public BBjNumber AllowNewItems! = 1
+  rem /**
+  rem  * When true , The UI will editing the items in the gorup
+  rem  */
+  field public BBjNumber Editable! = 1
+  rem /**
+  rem  * When true , The UI will allow deleting items in the group
+  rem  */
+  field public BBjNumber Deletable! = 1
+  rem /**
+  rem  * When true , The UI will allow sharing items in the group
+  rem  */
+  field public BBjNumber Shareable! = 1
+  rem /**
+  rem  * The widget instance
+  rem  */
+  field public BBjSettingsWidget Widget!
+  rem /**
+  rem  * The selected item in this gorup
+  rem  */
+  field public SwModelsItem SelectedItem! = null()
+  rem /**
+  rem  * The group id
+  rem  */
+  field protected BBjString Id!
+  rem /**
+  rem  * The group title
+  rem  */
+  field protected BBjString Title!
+  rem /**
+  rem  * The collection of the items
+  rem  */
+  field protected LinkedHashMap Collection! = new LinkedHashMap()
+  rem /**
+  rem  * Disable deafult constructor
+  rem  */
+  method private SwModelsGroup()
+  methodend
+  rem /**
+  rem  * Construct new Group
+  rem  *
+  rem  * @param BBjString id! The group's id
+  rem  * @param BBjString title! The group's title
+  rem  */
+  method public SwModelsGroup(BBjString id! , BBjString title!)
+    #setId(id!)
+    #setTitle(title!)
+  methodend
+  rem /**
+  rem  * When true , The UI will allow adding new items
+  rem  * to the group.
+  rem  *
+  rem  * Note this will not disallow from adding items to
+  rem  * group using the API.
+  rem  *
+  rem  * @param BBjNumber allowNewItems!
+  rem  */
+  method public void setAllowNewItems(BBjNumber allowNewItems!)
+    #AllowNewItems! = allowNewItems!
+    #getWidget().updateGrid(err=*next)
+  methodend
+  rem /**
+  rem  * Enable / disable group editing
+  rem  *
+  rem  * @param BBjNumber editable!
+  rem  */
+  method public void setEditable(BBjNumber editable!)
+    #Editable! = editable!
+    #getWidget().updateGrid(err=*next)
+  methodend
+  rem /**
+  rem  * Enable / disable group deleting
+  rem  *
+  rem  * @param BBjNumber deletable!
+  rem  */
+  method public void setDeletable(BBjNumber deletable!)
+    #Deletable! = deletable!
+    #getWidget().updateGrid(err=*next)
+  methodend
+  rem /**
+  rem  * Enable / disable group sharing
+  rem  *
+  rem  * @param BBjNumber sharable!
+  rem  */
+  method public void setShareable(BBjNumber sharable!)
+    #Shareable! = sharable!
+    #getWidget().updateGrid(err=*next)
+  methodend
+
+  method public void setSelectedItem(SwModelsItem item!)
+    #SelectedItem! = item!
+    #getWidget().updateGrid(err=*next)
+  methodend
+  rem /**
+  rem  * Get the group's id
+  rem  *
+  rem  * @return BBjString The group's id
+  rem  */
+  method public BBjString getId()
+    methodret #Id!
+  methodend
+  rem /**
+  rem  * Get the group's title
+  rem  *
+  rem  * @return BBjString The group's title
+  rem  */
+  method public BBjString getTitle()
+    methodret #Title!
+  methodend
+  rem /**
+  rem  * Add new item to the group
+  rem  *
+  rem  * @param SwModelsItem item! The item instnace
+  rem  *
+  rem  * @return SwModelsGroup
+  rem  */
+  method public SwModelsGroup addItem(SwModelsItem item!)
+    exists! = #getItem(item!.getId())
+
+    if(exists! = null())
+      item!.setWidget(#getWidget())
+      #getCollection().put(item!.getId(), item!)
+      #getWidget().updateGrid(err=*next)
+    FI
+
+    methodret #this!
+  methodend
+  rem /**
+  rem  * Add new item to the group
+  rem  *
+  rem  * @param BBjString id! The item id
+  rem  * @param BBjString title! The item title
+  rem  *
+  rem  * @return SwModelsGroup
+  rem  */
+  method public SwModelsGroup addItem(BBjString id!, BBjString title!)
+    methodret #addItem(new SwModelsItem(id!, title!))
+  methodend
+  rem /**
+  rem  * Get item by id
+  rem  *
+  rem  * @param BBjString id! The item's id
+  rem  *
+  rem  * @return SwModelsItem|null()
+  rem  */
+  method public SwModelsItem getItem(BBjString id!)
+    if(!#getCollection().containsKey(id!))
+      methodret null()
+    FI
+
+    item! = #getCollection().get(id!)
+    methodret item!
+  methodend
+  rem /**
+  rem  * remove an item from the group
+  rem  *
+  rem  * @param SwModelsItem item! The item instnace
+  rem  *
+  rem  * @return SwModelsGroup
+  rem  */
+  method public SwModelsGroup removeItem(SwModelsItem item!)
+    exists! = #getItem(item!.getId())
+
+    if(exists! <> null())
+      #getCollection().remove(item!.getId())
+      #getWidget().updateGrid(err=*next)
+    FI
+
+    methodret #this!
+  methodend
+  rem /**
+  rem  * Get the size of the group
+  rem  *
+  rem  * @return BBjNumber The number of items in this group
+  rem  */
+  method public BBjNumber size()
+    methodret #getCollection().size()
+  methodend
+  rem /**
+  rem  * Reset the group
+  rem  *
+  rem  * Remove all items in this group
+  rem  */
+  method public void clear()
+    #getCollection().clear()
+  methodend
+  rem /**
+  rem  * Convert the group to a JsonObject
+  rem  *
+  rem  * @return JsonObject
+  rem  */
+  method public JsonObject getAsJsonObject()
+    declare auto JsonObject json!
+
+    json! = new JsonObject()
+    json!.addProperty("ID",#getId())
+    json!.addProperty("TITLE",#getTitle())
+    json!.addProperty("ALLOW_NEW_ITEMS",str(#getAllowNewItems()))
+    json!.addProperty("EDITABLE",str(#getEditable()))
+    json!.addProperty("DELETABLE",str(#getDeletable()))
+    json!.addProperty("SHAREABLE",str(#getShareable()))
+    json!.add("RS", cast(JsonArray, #getAsResultSet().toJsonElement()))
+    selectedItem! = #getSelectedItem()
+
+    if(selectedItem! <> null())
+      json!.addProperty("SELECTED",str(#getSelectedItem().getId()))
+    FI
+
+    methodret json!
+  methodend
+
+  method public void updateFromResultSet(ResultSet rs!)
+    it! = rs!.iterator()
+    while(it!.hasNext())
+      row! = it!.next()
+      item! = #getItem(row!.getFieldAsString("ID"))
+
+      if(item! <> null())
+        item!.updateFromDataRow(row!)
+      else
+        #addItem(SwModelsItem.fromDataRow(row!))
+      FI
+    wend
+  methodend
+
+  method public ResultSet getAsResultSet()
+    rs! = new ResultSet()
+    it! = #getCollection().entrySet().iterator()
+    while(it!.hasNext())
+      next! = it!.next().getValue()
+      rs!.add(next!.getAsDataRow())
+    wend
+
+    methodret rs!
+  methodend
+  rem /**
+  rem  * Construct a new SwModelsGroup from the passed Json string
+  rem  *
+  rem  * @param BBjString json! A json string which continas all group's metadata
+  rem  *
+  rem  * @return SwModelsGroup a new SwModelsGroup instnace
+  rem  */
+  method public static SwModelsGroup fromJsonString(BBjString json!)
+    declare auto SwModelsGroup group!
+    declare auto JsonParser parser!
+
+    parser!        = new JsonParser()
+    state!         = parser!.parse(json!).getAsJsonObject()
+    id!            = state!.get("ID").getAsString()
+    title!         = state!.get("TITLE").getAsString()
+    allowNewItems! = state!.get("ALLOW_NEW_ITEMS").getAsInt()
+    editable!      = state!.get("EDITABLE").getAsInt()
+    deletable!     = state!.get("DELETABLE").getAsInt()
+    shareable!     = state!.get("SHAREABLE").getAsInt()
+    rs!            = state!.get("RS").getAsJsonArray()
+    group!         = new SwModelsGroup(id!,title!)
+    group!.setAllowNewItems(allowNewItems!)
+    group!.setEditable(editable!)
+    group!.setDeletable(deletable!)
+    group!.setShareable(shareable!)
+
+    if (rs!.size() > 0)
+      group!.updateFromResultSet(ResultSet.fromJson(rs!.toString()))
+    FI
+
+    selected! = state!.get("SELECTED").getAsString(err=*next)
+
+    if(selected! <> null())
+      group!.setSelectedItem(group!.getItem(selected!))
+    FI
+
+    methodret group!
+  methodend
+
+classend

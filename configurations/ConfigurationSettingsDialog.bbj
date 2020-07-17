@@ -5,14 +5,14 @@ use ::BusinessUIComponents/bound/BCErrorHandler.bbj::BCErrorHandler
 use ::BusinessUIComponents/bound/WindowHandler.bbj::WindowHandler
 use ::BusinessUIComponents/configurations/ConfigurationStateHandler.bbj::ConfigurationStateHandler
 
-use ::BBjSettingsWidget/BBjSettingsWidget.bbj::BBjSettingsWidget
-use ::BBjSettingsWidget/SwModels.bbj::SwModelsItem
-use ::BBjSettingsWidget/SwModels.bbj::SwModelsGroup
-use ::BBjSettingsWidget/SwEvents.bbj::SwEventsGroupSelected
-use ::BBjSettingsWidget/SwEvents.bbj::SwEventsItemChanged
-use ::BBjSettingsWidget/SwEvents.bbj::SwEventsItemAdded
-use ::BBjSettingsWidget/SwEvents.bbj::SwEventsItemRemoved
-use ::BBjSettingsWidget/SwEvents.bbj::SwEventsItemSelected
+use ::BusinessUIComponents/widgets/BBjSettingsWidget/BBjSettingsWidget.bbj::BBjSettingsWidget
+use ::BusinessUIComponents/widgets/BBjSettingsWidget/SwModels.bbj::SwModelsItem
+use ::BusinessUIComponents/widgets/BBjSettingsWidget/SwModels.bbj::SwModelsGroup
+use ::BusinessUIComponents/widgets/BBjSettingsWidget/SwEvents.bbj::SwEventsGroupSelected
+use ::BusinessUIComponents/widgets/BBjSettingsWidget/SwEvents.bbj::SwEventsItemChanged
+use ::BusinessUIComponents/widgets/BBjSettingsWidget/SwEvents.bbj::SwEventsItemAdded
+use ::BusinessUIComponents/widgets/BBjSettingsWidget/SwEvents.bbj::SwEventsItemRemoved
+use ::BusinessUIComponents/widgets/BBjSettingsWidget/SwEvents.bbj::SwEventsItemSelected
 
 use com.basiscomponents.bc.IConfigurationsBC
 use com.basiscomponents.bc.BCBinder

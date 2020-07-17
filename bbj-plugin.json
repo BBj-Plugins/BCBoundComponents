@@ -1,7 +1,23 @@
 {
-	"name":"BusinessUIComponents",
-	"description":"contains multiple databound UI components that work with BusinessComponents (BCs).",
-	"version":"0.0.4",
-	"author":"Basis",
-	"bbj_dependency"     : "20.01"
-}
+	"name": "BusinessUIComponents",
+	"description": "contains multiple databound UI components that work with BusinessComponents (BCs).",
+	"version": "0.0.0",
+	"author": "BASIS Europe Distribution GmbH",
+	"licence": "MIT",
+	"bbj_dependency": "20.12",
+	"plugin_dependencies": [
+	  {
+		"plugin_name": "BBjGridExWidget",
+		"plugin_version": "1.0.0",
+		"project_url": "https://github.com/BBj-Plugins/BBjGridExWidget"
+	  }
+	],
+	"plugin_development_dependencies": [
+	  {
+		"plugin_name": "BBjUnitTest",
+		"plugin_version": "master",
+		"project_url": "https://github.com/BBj-Plugins/BBjUnitTest"
+	  }
+	]
+  }
+  

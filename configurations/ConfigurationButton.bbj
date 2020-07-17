@@ -10,7 +10,7 @@ use ::BusinessUIComponents/configurations/CustomConfigurationsBC.bbj::CustomConf
 use ::BusinessUIComponents/configurations/ConfigurationStateHandler.bbj::ConfigurationStateHandler
 use ::BusinessUIComponents/configurations/ConfigurationSettingsDialog.bbj::ConfigurationSettingsDialog
 use ::BusinessUIComponents/configurations/IPersistentState.bbj::IPersistentState
-use ::BBjSettingsWidget/BBjSettingsWidget.bbj::BBjSettingsWidget
+use ::BusinessUIComponents/widgets/BBjSettingsWidget/BBjSettingsWidget.bbj::BBjSettingsWidget
 
 use com.basiscomponents.bc.IConfigurationsBC
 use com.basiscomponents.db.DataRow

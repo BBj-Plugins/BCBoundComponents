@@ -1,0 +1,218 @@
+rem /**
+rem  * This file is part of the BBjSettingsWidget plugin.
+rem  * (c) Basis Europe <eu@basis.com>
+rem  *
+rem  * For the full copyright and license information, please view the LICENSE
+rem  * file that was distributed with this source code.
+rem  */
+? 'HIDE'
+
+use ::bbwindowutils.bbj::BBWindowUtils
+use ::BusinessUIComponents/widgets/BBjSettingsWidget/BBjSettingsWidget.bbj::BBjSettingsWidget
+use ::BusinessUIComponents/widgets/BBjSettingsWidget/SwModels.bbj::SwModelsItem
+use ::BusinessUIComponents/widgets/BBjSettingsWidget/SwModels.bbj::SwModelsGroup
+use ::BusinessUIComponents/widgets/BBjSettingsWidget/SwEvents.bbj::SwEventsGroupSelected
+use ::BusinessUIComponents/widgets/BBjSettingsWidget/SwEvents.bbj::SwEventsItemChanged
+use ::BusinessUIComponents/widgets/BBjSettingsWidget/SwEvents.bbj::SwEventsItemAdded
+use ::BusinessUIComponents/widgets/BBjSettingsWidget/SwEvents.bbj::SwEventsItemRemoved
+use ::BusinessUIComponents/widgets/BBjSettingsWidget/SwEvents.bbj::SwEventsItemSelected
+rem /**
+rem  * @author Hyyan Abo Fakher
+rem  */
+class public BBjSettingsDemo
+
+  field protected BBjSysGui SysGui!
+  field protected BBjTopLevelWindow Window!
+  field protected BBjButton ToggleButton!
+  field protected BBjCEdit DetailsArea!
+  field protected BBjChildWindow Popup!
+  field protected BBjCheckBox PersistCheckbox!
+  field protected boolean PopupState! = BBjAPI.FALSE
+  field protected BBjString LastSavedState!
+  field protected BBjSettingsWidget Widget!
+
+  method public void run(BBjSysGui sysGui!)
+    #setSysGui(sysGui!)
+    rem create the top level window
+    wnd! = sysGui!.addWindow(0, 0, 650, 450, "BBj Settings Widget")
+    wnd!.setCallback(BBjAPI.ON_CLOSE, #this!, "onClose")
+    #setWindow(wnd!)
+    BBWindowUtils.centerWindow(wnd!)
+    rem create the toggle button
+    settingBtn! = wnd!.addButton(101,5, 10, 100, 25, "Open Settings")
+    settingBtn!.setCallback(BBjAPI.ON_BUTTON_PUSH, #this!, "onSettingsBtnClick")
+    #setToggleButton(settingBtn!)
+    rem create persist state checkbox
+    cb! = wnd!.addCheckBox(102, 271, 10, 100, 25, "Persist State",$0000$)
+    #setPersistCheckbox(cb!)
+    rem create log section title
+    title! = wnd!.addStaticText(103,370,10,200,25,"Events Log" , $0000$)
+    title!.setFont(sysGui!.makeFont("arial",13,BBjFont.FONT_BOLD))
+    details! = wnd!.addCEdit(104, 370, 40, 400, 400, "", $0100$)
+    rem create deatils area to log events
+    details!.setOpaque(0)
+    details!.setEditable(0)
+    details!.setFocusable(0)
+    #setDetailsArea(details!)
+    #togglePopup(BBjAPI.TRUE)
+  methodend
+
+  method protected void togglePopup(boolean toggle!)
+    #setPopupState(toggle!)
+
+    if(toggle! = BBjAPI.TRUE)
+      #getToggleButton().setText("Close Settings")
+      popup! = #getWindow().addChildWindow(105, 5, 38, 350, 350, "", $02000000$, #getSysGui().getAvailableContext())
+      #setPopup(popup!)
+
+      declare auto  BBjSettingsWidget widget!
+
+      rem init widget
+      widget! = new BBjSettingsWidget(popup!)
+      #setWidget(widget!)
+      rem attach listeners for all supported events
+      widget!.setCallback(widget!.ON_GROUP_SELECT(), #this!, "onGroupSelect")
+      widget!.setCallback(widget!.ON_ITEM_CHANGED(), #this!, "onItemChanged")
+      widget!.setCallback(widget!.ON_ITEM_ADDED(), #this!, "onItemAdded")
+      widget!.setCallback(widget!.ON_ITEM_REMOVED(), #this!, "onItemRemoved")
+      widget!.setCallback(widget!.ON_ITEM_SELECTED(), #this!, "onItemSelected")
+      persistCheckBox! = #getPersistCheckbox()
+      persistCheckBox!.setEnabled(1)
+      state! = #getLastSavedState()
+
+      if(persistCheckBox!.isSelected() AND state! <> null())
+        widget!.fromJsonString(state!)
+      else
+        rem create "My Settings" group
+        mySettings! = widget!.addGroup("1000","My Settings")
+        widget!.addItem(mySettings!, "My Settings #1")
+        widget!.addItem(mySettings!,"My Monday Morning Settings")
+        item! = widget!.addItem(mySettings!, "My Tuesday Morning Settings")
+        item!.setShared(1)
+        item!.setDirty(1)
+        rem create "Factory Settings" group
+        factorySettings! = widget!.addGroup("1001","Factory Settings")
+        factorySettings!.setAllowNewItems(0)
+        factorySettings!.setEditable(0)
+        factorySettings!.setDeletable(0)
+        widget!.addItem(factorySettings!, "Default Settings #1")
+        widget!.addItem(factorySettings!, "Default Settings #2")
+        rem create "Shared Settings" group
+        SharedSettings! = widget!.addGroup("1002","Shared Settings")
+        SharedSettings!.setAllowNewItems(0)
+        SharedSettings!.setEditable(0)
+        SharedSettings!.setDeletable(0)
+        SharedSettings!.setShareable(0)
+        widget!.addItem(SharedSettings!, "Hyyan's Settings")
+        widget!.addItem(SharedSettings!, "Stephan's Settings")
+      fi
+    else
+      persistCheckBox! = #getPersistCheckbox()
+      persistCheckBox!.setEnabled(0)
+
+      if (persistCheckBox!.isSelected())
+        #setLastSavedState(#getWidget().getAsJsonObject().toString())
+      else
+        #setLastSavedState(null())
+      fi
+
+      #getToggleButton().setText("Open Settings")
+      #getPopup().destroy()
+      #getDetailsArea().removeAll()
+    FI
+  methodend
+
+  method public void onSettingsBtnClick(BBjButtonPushEvent e!)
+    #togglePopup(!#getPopupState())
+  methodend
+
+  method public void onGroupSelect(BBjCustomEvent e!)
+    declare auto SwEventsGroupSelected payload!
+    declare auto SwModelsGroup group!
+
+    payload! = e!.getObject()
+    group! = payload!.getGroup()
+    details! = #getDetailsArea()
+    details!.addParagraph(0,"Event -> ON_GROUP_SELECT"                      + $0a$ +
+:                         "Group Id -> "              + group!.getId()      + $0a$ +
+:                         "Group Titles -> "          + group!.getTitle()   + $0a$ +
+:                         "Group Size -> "            + str(group!.size())  + $0a$ +
+:                         "----------------------------------------------"  + $0a$
+:                        )
+  methodend
+
+  method public void onItemChanged(BBjCustomEvent e!)
+    declare auto SwEventsItemChanged payload!
+    declare auto SwModelsGroup group!
+    declare auto SwModelsItem item!
+
+    payload! = e!.getObject()
+    group!   = payload!.getGroup()
+    item!    = payload!.getItem()
+    details! = #getDetailsArea()
+    details!.addParagraph(0,"Event  -> ON_ITEM_CHANGED"                         + $0a$ +
+:                         "Group Id -> "              + group!.getId()          + $0a$ +
+:                         "Item     -> "              + item!.getTitle()        + $0a$ +
+:                         "Changed Property -> "       + payload!.getProperty() + $0a$ +
+:                         "----------------------------------------------"      + $0a$
+:                        )    
+  methodend
+
+  method public void onItemAdded(BBjCustomEvent e!)
+    declare auto SwEventsItemAdded payload!
+    declare auto SwModelsGroup group!
+    declare auto SwModelsItem item!
+
+    payload! = e!.getObject()
+    group!   = payload!.getGroup()
+    item!    = payload!.getItem()
+    details! = #getDetailsArea()
+    details!.addParagraph(0,"Event  -> ON_ITEM_ADDED"                            + $0a$ +
+:                         "Group Id -> "              + group!.getId()          + $0a$ +
+:                         "Item Id  -> "              + item!.getId()           + $0a$ +
+:                         "----------------------------------------------"      + $0a$
+:                        )    
+  methodend
+
+  method public void onItemRemoved(BBjCustomEvent e!)
+    declare auto SwEventsItemRemoved payload!
+    declare auto SwModelsGroup group!
+    declare auto SwModelsItem item!
+
+    payload! = e!.getObject()
+    group!   = payload!.getGroup()
+    item!    = payload!.getItem()
+    details! = #getDetailsArea()
+    details!.addParagraph(0,"Event  -> ON_ITEM_REMOVED"                         + $0a$ +
+:                         "Group Id -> "              + group!.getId()          + $0a$ +
+:                         "Item Id  -> "              + item!.getId()           + $0a$ +
+:                         "----------------------------------------------"      + $0a$
+:                        )    
+  methodend
+
+  method public void onItemSelected(BBjCustomEvent e!)
+    declare auto SwEventsItemSelected payload!
+    declare auto SwModelsGroup group!
+    declare auto SwModelsItem item!
+
+    payload! = e!.getObject()
+    group!   = payload!.getGroup()
+    item!    = payload!.getItem()
+    details! = #getDetailsArea()
+    details!.addParagraph(0,"Event  -> ON_ITEM_SELECTED"                        + $0a$ +
+:                         "Group Id -> "              + group!.getId()          + $0a$ +
+:                         "Item  -> "                 + item!.getTitle()        + $0a$ +
+:                         "----------------------------------------------"      + $0a$
+:                        )    
+  methodend
+
+  method public void onClose(BBjCloseEvent event!)
+    #getWindow().destroy()
+    release
+  methodend
+
+classend
+
+demo! = new BBjSettingsDemo()
+demo!.run(BBjAPI().openSysGui("X0"))
+process_events

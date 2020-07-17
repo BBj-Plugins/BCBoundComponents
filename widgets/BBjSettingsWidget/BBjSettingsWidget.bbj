@@ -1,0 +1,920 @@
+rem /**
+rem  * This file is part of the BBjSettingsWidget plugin.
+rem  * (c) Basis Europe <eu@basis.com>
+rem  *
+rem  * For the full copyright and license information, please view the LICENSE
+rem  * file that was distributed with this source code.
+rem  */
+use ::BBjWidget/BBjWidget.bbj::BBjWidget
+use ::BBjGridExWidget/BBjGridExWidget.bbj::BBjGridExWidget
+use ::BBjGridExWidget/GxClientEvents.bbj::GxClientEventsCell
+use ::BBjGridExWidget/GxClientEvents.bbj::GxClientEventsRowSelection
+use ::BBjGridExWidget/GxClientModels.bbj::GxClientCellModel
+use ::BBjGridExWidget/GxClientModels.bbj::GxClientRowModel
+use ::BBjGridExWidget/GxClientModels.bbj::GxClientTransactionModel
+use ::BBjGridExWidget/GxRenderers.bbj::GxRendererCustomHTML
+use ::BBjGridExWidget/GxLanguageManager.bbj::GxLanguageManager
+use ::BusinessUIComponents/widgets/BBjSettingsWidget/SwModels.bbj::SwModelsItem
+use ::BusinessUIComponents/widgets/BBjSettingsWidget/SwModels.bbj::SwModelsGroup
+use ::BusinessUIComponents/widgets/BBjSettingsWidget/SwEvents.bbj::SwEventsGroupSelected
+use ::BusinessUIComponents/widgets/BBjSettingsWidget/SwEvents.bbj::SwEventsItemChanged
+use ::BusinessUIComponents/widgets/BBjSettingsWidget/SwEvents.bbj::SwEventsItemAdded
+use ::BusinessUIComponents/widgets/BBjSettingsWidget/SwEvents.bbj::SwEventsItemRemoved
+use ::BusinessUIComponents/widgets/BBjSettingsWidget/SwEvents.bbj::SwEventsItemSelected
+use java.util.LinkedHashMap
+use java.util.HashMap
+use java.util.ArrayList
+use java.util.UUID
+use com.basiscomponents.db.ResultSet
+use com.basiscomponents.db.DataRow
+use com.google.gson.JsonObject
+use com.google.gson.JsonArray
+use com.google.gson.JsonParser
+rem /**
+rem  * @author Hyyan Abo Fakher
+rem  */
+class public BBjSettingsWidget extends BBjWidget
+  rem /**
+  rem  * The selected group id
+  rem  */
+  field public BBjString SelectedGroup! = null()
+  field public BBjString TranslationFile! = null()
+  field protected JsonObject Translations! = new JsonObject()
+  field protected BBjNumber TabControlHeight! = 24
+  field protected BBjChildWindow Fcw!
+  field protected BBjChildWindow Scw!
+  field protected BBjTabCtrl TabControl!
+  field protected BBjChildWindow TabArea!
+  field protected BBjGridExWidget Grid!
+  field protected LinkedHashMap Collection! =  new LinkedHashMap()
+  field protected BBjNumber BlockUpdates! = 0
+  field protected BBjNumber LastSelectedTab!
+  field protected BBjString LastSelectedItem!
+  rem /**
+  rem  * Disable the default constructor
+  rem  */
+  method private BBjSettingsWidget()
+  methodend
+  rem /**
+  rem  * Construct a BBjSettingsWidget on a BBjWindow
+  rem  *
+  rem  * @param BBjNumber wnd! parent window
+  rem  * @param BBjNumber id! the control ID
+  rem  * @param BBjNumber x x-location
+  rem  * @param BBjNumber y y-location
+  rem  * @param BBjNumber w width
+  rem  * @param BBjNumber h height
+  rem  */
+  method public BBjSettingsWidget(BBjWindow wnd!, BBjNumber id!, BBjNumber x!, BBjNumber y!, BBjNumber w!, BBjNumber h!)
+    #super!.create(wnd!,id!,x!,y!,w!,h!)
+    #init()
+  methodend
+  rem /**
+  rem  * Construct a BBjSettingsWidget on a BBjChildWindow
+  rem  *
+  rem  * @param BBjChildWindow wnd! The child window instnace
+  rem  */
+  method public BBjSettingsWidget(BBjChildWindow wnd!)
+    #super!.setCanvas(wnd!)
+    #super!.setX(wnd!.getX())
+    #super!.setY(wnd!.getY())
+    #super!.setW(wnd!.getWidth())
+    #super!.setH(wnd!.getHeight())
+    #init()
+  methodend
+  rem /**
+  rem  * Constant value to define group select event
+  rem  *
+  rem  * @return BBjNumber
+  rem  */
+  method public static BBjNumber ON_GROUP_SELECT()
+    methodret 6000
+  methodend
+  rem /**
+  rem  * Constant value to define item update event
+  rem  *
+  rem  * @return BBjNumber
+  rem  */
+  method public static BBjNumber ON_ITEM_CHANGED()
+    methodret 6001
+  methodend
+  rem /**
+  rem  * Constant value to define item add event
+  rem  *
+  rem  * @return BBjNumber
+  rem  */
+  method public static BBjNumber ON_ITEM_ADDED()
+    methodret 6002
+  methodend
+  rem /**
+  rem  * Constant value to define item removed event
+  rem  *
+  rem  * @return BBjNumber
+  rem  */
+  method public static BBjNumber ON_ITEM_REMOVED()
+    methodret 6003
+  methodend
+  rem /**
+  rem  * Constant value to define item select event
+  rem  *
+  rem  * @return BBjNumber
+  rem  */
+  method public static BBjNumber ON_ITEM_SELECTED()
+    methodret 6004
+  methodend
+  rem /**
+  rem  * Get the instance of the language manager
+  rem  */
+  method public GxLanguageManager getLanguageManager()
+    methodret #getGrid().getLanguageManager()
+  methodend
+  rem /**
+  rem  * Get the translations as JsonObject
+  rem  *
+  rem  * @return JsonObject
+  rem  */
+  method public JsonObject getTranslations()
+    methodret #Translations!
+  methodend
+  rem /**
+  rem  * Set the selected group using the passed group id
+  rem  *
+  rem  * This method will not throw an error in case the group
+  rem  * is not managed by the widget. It will simplly fallback
+  rem  * and select the first group or nothing if no groups are
+  rem  * added yet.
+  rem  *
+  rem  * @param BBjString groupId! The Group's id
+  rem  */
+  method public void setSelectedGroup(BBjString groupId!)
+    #SelectedGroup! = groupId!
+    #redraw(0)
+  methodend
+  rem /**
+  rem  * Get the create tab controll from the widget
+  rem  *
+  rem  * @return BBjTabCtrl The tab controll instance
+  rem  */
+  method public BBjTabCtrl getTabControl()
+    methodret #TabControl!
+  methodend
+  rem /**
+  rem  * Get the created gx controll from the widget
+  rem  *
+  rem  * @return BBjGridExWidget The grid instance
+  rem  */
+  method public BBjGridExWidget getGrid()
+    methodret #Grid!
+  methodend
+  REM /**
+  REM  * Get the unique control type
+  REM  *
+  REM  * @returns int controlType = 65002
+  REM  */
+  method public int getControlType()
+    methodret 65002
+  methodend
+  rem /**
+  rem  * Get the instance of the current group
+  rem  *
+  rem  * @return SwModelsGroup
+  rem  */
+  method public SwModelsGroup getCurrentGroup()
+    methodret #getGroup(#getSelectedGroup())
+  methodend
+  rem /**
+  rem  * Get an already added group
+  rem  *
+  rem  * @param BBjString groupId! The group id
+  rem  *
+  rem  * @return SwModelsGroup
+  rem  */
+  method public SwModelsGroup getGroup(BBjString groupId!)
+    if(#getCollection().containsKey(groupId!))
+      group! = #getCollection().get(groupId!)
+      methodret group!
+    FI
+
+    methodret null()
+  methodend
+  rem /**
+  rem  * Add new group to the widget
+  rem  *
+  rem  * @param SwModelsGroup group! The group instnace
+  rem  *
+  rem  * @return SwModelsGroup The instance of the added group
+  rem  */
+  method public SwModelsGroup addGroup(SwModelsGroup group!)
+    result! = #getGroup(group!.getId())
+
+    if(result! = null())
+      group!.setWidget(#this!)
+      #getCollection().put(group!.getId() , group!)
+      result! = group!
+      sysGui! = BBjAPI().getSysGui()
+      size! = #getCollection().size()
+      #getTabControl().addTab(group!.getTitle(), #getTabArea())
+    FI
+
+    #redraw(0)
+    methodret result!
+  methodend
+  rem /**
+  rem  * Remove group from the widget
+  rem  *
+  rem  * @param SwModelsGroup group! The group instance
+  rem  */
+  method public void removeGroup(SwModelsGroup group!)
+    tabId!  = group!.getId()
+    exist! = #getGroup(group!.getId())
+
+    if(exist! <> null())
+      tabIndex! = #groupIdToIndex(tabId!)
+
+      if(tabIndex! <> -1)
+        #getTabControl().removeTab(tabIndex!)
+        #getCollection().remove(tabId!)
+      FI
+    FI
+
+    #redraw(0)
+  methodend
+  rem /**
+  rem  * Remove group from the widget
+  rem  *
+  rem  * @param SwModelsGroup groupId! The group id
+  rem  */
+  method public void removeGroup(BBjString groupId!)
+    #removeGroup(#getGroup(groupId!))
+  methodend
+  rem /**
+  rem  * Add new group to the widget
+  rem  *
+  rem  * @param BBjString id! The group's id
+  rem  * @param BBjString title! The group's title
+  rem  *
+  rem  * @return SwModelsGroup The instance of the added group
+  rem  */
+  method public SwModelsGroup addGroup(BBjString id!, BBjString title!)
+    methodret #addGroup(new SwModelsGroup(id!, title!))
+  methodend
+  rem /**
+  rem  * Add new group to the widget
+  rem  *
+  rem  * @param BBjString title! The group's title
+  rem  *
+  rem  * @return SwModelsGroup The instance of the added group
+  rem  */
+  method public SwModelsGroup addGroup(BBjString title!)
+    methodret #addGroup(new SwModelsGroup(UUID.randomUUID().toString(), title!))
+  methodend
+  rem /**
+  rem  * Add new item to the passed group
+  rem  *
+  rem  * @param SwModelsGroup group! The group's instance
+  rem  * @param SwModelsItem  item! The item's instance
+  rem  *
+  rem  * @return SwModelsItem The instance of the added item
+  rem  */
+  method public SwModelsItem addItem(SwModelsGroup group!, SwModelsItem item!)
+    result! = #getGroup(group!.getId())
+
+    if(result! = null())
+      result! = #addGroup(group!)
+    FI
+
+    item!.setWidget(#this!)
+    result!.addItem(item!)
+    #updateGrid()
+    methodret item!
+  methodend
+  rem /**
+  rem  * Add new item to the passed group
+  rem  *
+  rem  * @param SwModelsGroup group! The group's instance
+  rem  * @param BBjString id! The item's id
+  rem  * @param BBjString title! The item's title
+  rem  *
+  rem  * @return SwModelsItem The instance of the added item
+  rem  */
+  method public SwModelsItem addItem(SwModelsGroup group!, BBjString id!, BBjString title!)
+    methodret #addItem(group!, new SwModelsItem(id!, title!))
+  methodend
+  rem /**
+  rem  * Add new item to the passed group
+  rem  *
+  rem  * @param BBjString groupId! The group's id
+  rem  * @param BBjString id! The item's id
+  rem  * @param BBjString title! The item's title
+  rem  *
+  rem  * @return SwModelsItem The instance of the added item
+  rem  */
+  method public SwModelsItem addItem(BBjString groupId!, BBjString id!, BBjString title!)
+    methodret #addItem(#getGroup(groupId!), new SwModelsItem(id!, title!))
+  methodend
+  rem /**
+  rem  * Add new item to the passed group
+  rem  *
+  rem  * @param SwModelsGroup group! The group's instance
+  rem  * @param BBjString title! The item's title
+  rem  *
+  rem  * @return SwModelsItem The instance of the added item
+  rem  */
+  method public SwModelsItem addItem(SwModelsGroup group!, BBjString title!)
+    methodret #addItem(group!, new SwModelsItem(UUID.randomUUID().toString(), title!))
+  methodend
+  rem /**
+  rem  * Add new item to the passed group
+  rem  *
+  rem  * @param BBjString groupId! The group's id
+  rem  * @param BBjString id! The item's id
+  rem  * @param BBjString title! The item's title
+  rem  *
+  rem  * @return SwModelsItem The instance of the added item
+  rem  */
+  method public SwModelsItem addItem(BBjString groupId!, BBjString title!)
+    methodret #addItem(#getGroup(groupId!), title!)
+  methodend
+  rem /**
+  rem  * Get an item from the passed group
+  rem  *
+  rem  * @param SwModelsGroup group! The group's instance
+  rem  * @param BBjString id! The item's it
+  rem  *
+  rem  * @return SwModelsItem The item instnace
+  rem  */
+  method public SwModelsItem getItem(SwModelsGroup group! , BBjString id!)
+    methodret #getGroup(group!.getId()).getItem(id!)
+  methodend
+  rem /**
+  rem  * Get an item from the passed group
+  rem  *
+  rem  * @param BBjString groupId! The group's id
+  rem  * @param BBjString itemId! The item's it
+  rem  *
+  rem  * @return SwModelsItem The item instnace
+  rem  */
+  method public SwModelsItem getItem(BBjString groupId! , BBjString itemId!)
+    methodret #getGroup(groupId!).getItem(itemId!)
+  methodend
+  rem /**
+  rem  * Remove an item from the given group
+  rem  *
+  rem  * @param SwModelsGroup group! The group's instance
+  rem  * @param SwModelsItem item! The item's instance
+  rem  */
+  method public void removeItem(SwModelsGroup group!, SwModelsItem item!)
+    group!.removeItem(item!)
+  methodend
+  rem /**
+  rem  * Remove an item from the given group
+  rem  *
+  rem  * @param BBjString groupId! The group's id
+  rem  * @param SwModelsItem item! The item's instance
+  rem  */
+  method public void removeItem(BBjString groupId!, SwModelsItem item!)
+    #removeItem(#getGroup(groupId!),item!)
+  methodend
+  rem /**
+  rem  * Remove an item from the given group
+  rem  *
+  rem  * @param BBjString groupId! The group's id
+  rem  * @param BBjString itemId! The item's id
+  rem  */
+  method public void removeItem(BBjString groupId!, BBjString itemId!)
+    #removeItem(groupId!, #getItem(groupId!,itemId!))
+  methodend
+  rem /**
+  rem  * Remove an item from the given group
+  rem  *
+  rem  * @param SwModelsGroup group! The group's instance
+  rem  * @param BBjString itemId! The item's id
+  rem  */
+  method public void removeItem(SwModelsGroup group!, BBjString itemId!)
+    #removeItem(group!.getId(), itemId!)
+  methodend
+  rem /**
+  rem  * Update the widget size
+  rem  *
+  rem  * @param BBjNumber w! The windget's width
+  rem  * @param BBjNumber h! The windget's height
+  rem  */
+  method public void setSize(BBjNumber w!, BBjNumber h!)
+    #super!.setSize(w!,h!)
+    th!     = #getTabControlHeight()
+
+    if(#getFcw() <> null())
+      #getFcw().setSize(w!, th!)
+    FI
+
+    if(#getScw() <> null())
+      #getScw().setSize(w!, h! - th!)
+      grid! = #getGrid()
+      grid!.setSize(w!, h! - th!)
+      grid!.setFitToGrid()
+    FI
+  methodend
+  rem /**
+  rem  * force the widget redraw whenever the widget needs to be rendered
+  rem  *
+  rem  * @param Boolean init! if TRUE the control is rendered for the first time
+  rem  *                      so this method has to perform initial rendering
+  rem  *
+  rem  * @Override
+  rem  */
+  method public void redraw(Boolean init!)
+    if(#getBlockUpdates() = 1)
+      methodret
+    FI
+
+    if(#getScw() <> null())
+      grid! = #getGrid()
+      grid!.setVisible(1)
+    FI
+
+    if(#getTabControl() <> null() AND #getTabControl().getNumTabs() > 0)
+      tabCtrl! = #getTabControl()
+      tabCtrl!.setVisible(1)
+
+      if(#getSelectedGroup() <> null())
+        groupIndex! = #groupIdToIndex(#getSelectedGroup())
+
+        if(groupIndex! <> -1)
+          tabCtrl!.setSelectedIndex(groupIndex!)
+        FI
+      FI
+    FI
+  methodend
+  rem /**
+  rem  * Reforce the grid update for the current selected group
+  rem  *
+  rem  * The method will send again to the client all required
+  rem  * data form the group like new items and new settings
+  rem  */
+  method public void updateGrid()
+    if(#getBlockUpdates() = 1)
+      methodret
+    FI
+
+    groupObject!    = #getCurrentGroup()
+
+    if(groupObject! = null() )
+      methodret
+    FI
+
+    declare auto BBjGridExWidget grid!
+
+    grid!           = #getGrid()
+    rem /**
+    rem  * Not clearning the executor queue might casues rendering
+    rem  * issues (ex: changing the selected group) in BUI where
+    rem  * debouncing is enabled. To get around this we clear the
+    rem  * queue before every update to throw out any previous grid
+    rem  * updates.
+    rem  */
+    grid!.getExecutor().getQueue().clear()
+    ctx!            = grid!.getClientContext()
+    isAllowNewItem! = groupObject!.getAllowNewItems().booleanValue()
+    isEditable!     = groupObject!.getEditable().booleanValue()
+    isDeletable!    = groupObject!.getDeletable().booleanValue()
+    isShareable!    = groupObject!.getDeletable().booleanValue()
+    rem update the grid context
+    ctx!.addProperty("group_allow_new_items", isAllowNewItem!)
+    ctx!.addProperty("group_editable", isEditable!)
+    ctx!.addProperty("group_deletable", isDeletable!)
+    ctx!.addProperty("group_shareable",isShareable!)
+    grid!.updateContext()
+    rem update the grid columns
+    grid!.setColumnVisible("DELETABLE", groupObject!.getDeletable(), err=*next)
+    grid!.setColumnVisible("SHARED", groupObject!.getShareable(), err=*next)
+    grid!.setColumnVisible("DIRTY", groupObject!.getEditable(), err=*next)
+    rem update the grid with the group items
+    items! = groupObject!.getAsResultSet()
+
+    if(items!.count() = 0)
+      grid!.clearData()
+    else
+      grid!.updateData(items!)
+      rem try to resoter selected item
+      selectedItem! = groupObject!.getSelectedItem()
+
+      if(selectedItem! <> null())
+        grid!.clearCallback(BBjGridExWidget.ON_GRID_ROW_SELECT())
+        grid!.setSelectedRow(selectedItem!.getId())
+        grid!.setCallback(BBjGridExWidget.ON_GRID_ROW_SELECT(), #this!, "onItemSelected")
+      FI
+    FI
+
+    grid!.redrawRows()
+    grid!.setFitToGrid()
+  methodend
+  rem /**
+  rem  * Destory the widget
+  rem  *
+  rem  * @override
+  rem  */
+  method public void destroy()
+    #super!.destroy()
+    #setFcw(null())
+    #setScw(null())
+    #setGrid(null())
+    #setTabControl(null())
+    #getCollection().clear()
+  methodend
+  rem /**
+  rem  * Serialize the widget as JsonObject
+  rem  *
+  rem  * @return JsonObject
+  rem  */
+  method public JsonObject getAsJsonObject()
+    declare auto JsonObject json!
+    declare auto JsonArray groups!
+    declare auto SwModelsGroup group!
+
+    json! = new JsonObject()
+    json!.addProperty("SELECTED_GROUP", #getSelectedGroup())
+    groups! = new JsonArray()
+    it! = #getCollection().entrySet().iterator()
+    while(it!.hasNext())
+      group! = it!.next().getValue()
+      groups!.add(group!.getAsJsonObject())
+    wend
+
+    json!.add("GROUPS", groups!)
+    methodret json!
+  methodend
+  rem /**
+  rem  * Update the the widget from a Json String
+  rem  *
+  rem  * @param BBjString json! A jsong string which is built with
+  rem  *                        The `BBjSettingsWidget.getAsJsonObject`
+  rem  *                        method.
+  rem  *
+  rem  * @retun BBjSettingsWidget The widget instance
+  rem  */
+  method public BBjSettingsWidget fromJsonString(BBjString json!)
+    declare auto JsonParser parser!
+    declare auto JsonArray groups!
+
+    #setBlockUpdates(1)
+    numberOfTabs! = #getTabControl().getNumTabs() - 1
+
+    if(numberOfTabs! <> -1)
+      for x! = 0 to numberOfTabs!
+        #removeGroup(#groupIndexToId(#getCollection().size() - 1))
+      NEXT
+    FI
+
+    parser!   = new JsonParser()
+    state!    = parser!.parse(json!).getAsJsonObject()
+    #setSelectedGroup(state!.get("SELECTED_GROUP").getAsString())
+    groups! = state!.get("GROUPS").getAsJsonArray()
+    it! = groups!.iterator()
+    while(it!.hasNext())
+      #addGroup(SwModelsGroup.fromJsonString(it!.next().toString()))
+    wend
+
+    #setBlockUpdates(0)
+    #redraw(0)
+    methodret #this!
+  methodend
+  rem /**
+  rem  * Update the grid with the group items
+  rem  *
+  rem  * Update the grid with the group items and fire back an
+  rem  * `::BBjSettingsWidget/SwEvents.bbj::SwEventsGroupSelected` event
+  rem  * with the instance of the current selected group.
+  rem  *
+  rem  * @param BBjTabSelectedEvent e! event instance
+  rem  */
+  method public void onTabSelected(BBjTabSelectedEvent e!)
+    lastSelectedTab! = #getLastSelectedTab()
+    tabIndex! = e!.getIndex()
+    rem update the select group index
+    #SelectedGroup! = #groupIndexToId(tabIndex!)
+    #setLastSelectedTab(tabIndex!)
+
+    if(lastSelectedTab! <> tabIndex!)
+      rem /**
+      rem  * Fire the event before updating the grid in order
+      rem  * to give the developer the option to apply any update
+      rem  * if required
+      rem  */
+      payload! = new SwEventsGroupSelected(#this!, #getCurrentGroup())
+      #fireEvent(#ON_GROUP_SELECT(), payload!)
+    FI
+
+    #updateGrid()
+  methodend
+  rem /**
+  rem  * Update the grid with the selected item
+  rem  *
+  rem  * Update the grid with the selected item and fire back an
+  rem  * `::BBjSettingsWidget/SwEvents.bbj::SwEventsItemSelected` event
+  rem  * with the instance of the current selected item & group.
+  rem  *
+  rem  * @param BBjCustomEvent e! event instance
+  rem  */
+  method public void onItemSelected(BBjCustomEvent e!)
+    declare auto GxClientEventsRowSelection object!
+
+    #setBlockUpdates(1)
+    object!          = e!.getObject()
+    rows!            = object!.getSelectedRows()
+    currentGroup!    = #getCurrentGroup()
+    lastSelecedItem! = #getLastSelectedItem()
+    item! = null()
+    row! = null()
+
+    if(rows! <> null() And rows!.size())
+      row! = rows!.get(0).asDataRow().getFieldAsString("ID")
+      item! = #getItem(currentGroup!, row!)
+      currentGroup!.setSelectedItem(item!)
+    else
+      currentGroup!.setSelectedItem(null())
+    FI
+
+    #setLastSelectedItem(row!)
+    #setBlockUpdates(0)
+
+    if(row! <> lastSelecedItem!)
+      payload! = new SwEventsItemSelected(#this!, currentGroup!, item!)
+      #fireEvent(#ON_ITEM_SELECTED(), payload!)
+    FI
+  methodend
+  rem /**
+  rem  * Update the selected item
+  rem  *
+  rem  * Update the item's title and fire back an
+  rem  * `::BBjSettingsWidget/SwEvents.bbj::SwEventsItemChanged`
+  rem  * event with the instance of the selected group and
+  rem  * the selcted item.
+  rem  *
+  rem  * @param BBjCustomEvent e! The event instance
+  rem  */
+  method public void onItemTitleChanged(BBjCustomEvent e!)
+    declare auto GxClientEventsCell cellEvent!
+    declare auto GxClientRowModel rowModel!
+    declare auto DataRow dataRow!
+    declare auto SwModelsItem item!
+
+    cellEvent!   = e!.getObject()
+    rowModel!    = cellEvent!.getCell().getRow()
+    rem sync data from the client to the ResultSet
+    dataRow!     = rowModel!.updateFromClientRow()
+    item!        = #getItem(#getCurrentGroup(), dataRow!.getFieldAsString("ID"))
+    item!.setTitle(dataRow!.getFieldAsString("TITLE"))
+    payload! = new SwEventsItemChanged(#this!, #getCurrentGroup(), item!, "title")
+    #fireEvent(#ON_ITEM_CHANGED(), payload!)
+  methodend
+  rem /**
+  rem  * A generic event listener for the grid cell clicks
+  rem  *
+  rem  * The listener will redirect events to other methods
+  rem  * according to the current selected column in the grid.
+  rem  *
+  rem  * @param BBjCustomEvent e! The event instance
+  rem  */
+  method public void onCellClicked(BBjCustomEvent e!)
+    declare auto GxClientEventsCell cellEvent!
+
+    cellEvent! = e!.getObject()
+    floating! = cellEvent!.getRow().getFloating()
+    currentColumn! = cellEvent!.getColumn().getName()
+    switch (currentColumn!)
+      case "DELETABLE"
+        if(floating! = BBjGridExWidget.GRID_FLOATING_NONE())
+          #onDeleteItem(cellEvent!)
+        FI
+
+        break
+      case "SHARED"
+      case "DIRTY"
+        if(floating! = BBjGridExWidget.GRID_FLOATING_NONE())
+          #onItemFlagChanged(cellEvent!, currentColumn!)
+        FI
+
+        break
+      case "TITLE"
+        if(floating! = BBjGridExWidget.GRID_FLOATING_BOTTOM())
+          #onAddNewItem(cellEvent!)
+        FI
+
+        break
+      case DEFAULT
+        break
+    SWEND
+  methodend
+  rem /**
+  rem  * An event listener to the item(s) shared/dirty property
+  rem  *
+  rem  * The listener will auto update the UI and fire back an
+  rem  * `::BBjSettingsWidget/SwEvents.bbj::SwEventsItemChanged`
+  rem  * event with the instance of the selected group and
+  rem  * the selcted item.
+  rem  *
+  rem  * @param GxClientEventsCell e! Event cell instance
+  rem  * @param BBjString flag! The item flag/property (SHARED,DIRTY) name
+  rem  */
+  method protected void onItemFlagChanged(GxClientEventsCell e!, BBjString flag!)
+    declare auto SwModelsGroup groupObject!
+    declare auto SwModelsItem item!
+    declare auto DataRow dataRow!
+
+    dataRow!     = e!.getCell().getRow().asDataRow(err=*next)
+    item!        = #getItem(#getCurrentGroup(), dataRow!.getFieldAsString("ID"))
+
+    if((flag! = "DIRTY" and item!.getDirty() = 1) OR flag! = "SHARED")
+      if (flag! = "SHARED")
+        dataRow!.setFieldValue("SHARED", iff(item!.getShared() = 0 , 1, 0))
+      else
+        dataRow!.setFieldValue("DIRTY", iff(item!.getDirty() = 0 , 1, 0))
+      FI
+
+      item! = item!.updateFromDataRow(dataRow!)
+      payload! = new SwEventsItemChanged(#this!, #getCurrentGroup(), item!, cvs(flag!, 8))
+      #fireEvent(#ON_ITEM_CHANGED(), payload!)
+    FI
+    rem /**
+    rem  * According to my calculation, calling this method should not
+    rem  * be required. For some reason it becomes required after a state
+    rem  * is applied using `BBjSettingsWidget.fromJsonString()`
+    rem  *
+    rem  * TODO ivsitigate if a call to `updateGrid` is required.
+    rem  */
+    #updateGrid()
+  methodend
+  rem /**
+  rem  * An event listener to "addNew" button in the grid
+  rem  *
+  rem  * The listener will add a new item to the current group
+  rem  * and start cell editing on the added new item.
+  rem  */
+  method protected void onAddNewItem(GxClientEventsCell e!)
+    if(#getCurrentGroup().getAllowNewItems() = 0)
+      methodret
+    FI
+
+    item! = #addItem(#getCurrentGroup(),"New Item")
+    payload! = new SwEventsItemAdded(#this!, #getCurrentGroup(), item!)
+    #fireEvent(#ON_ITEM_ADDED(), payload!)
+    #getGrid().setStartCellEditing(item!.getId(), "TITLE")
+  methodend
+  rem /**
+  rem  * An Event listener to delete an item from the group
+  rem  *
+  rem  * @param GxClientEventsCell e! The event instance
+  rem  */
+  method protected void onDeleteItem(GxClientEventsCell e!)
+    row! = e!.getCell().getRow().asDataRow()
+    message! = "Are you sure you want to remove "" " + str(row!.getFieldValue("TITLE")) + """ ?"
+    answer! = msgbox(message! , 1 , "Delete Permanently")
+
+    if(answer! = 1)
+      currentGroup! = #getCurrentGroup()
+      item! = #getItem(currentGroup!, row!.getFieldValue("ID"))
+      #removeItem(currentGroup!, item!)
+      payload! = new SwEventsItemRemoved(#this!, currentGroup!, item!)
+      #fireEvent(#ON_ITEM_REMOVED(), payload!)
+    FI
+  methodend
+  rem /**
+  rem  * Init the widget
+  rem  *
+  rem  * Prepare the widget controls and layout them on the widget's
+  rem  * child window.
+  rem  */
+  method protected void init()
+    sysGui! = BBjAPI().getSysGui()
+    canvas! = #getCanvas()
+    cw!     = canvas!.getWidth()
+    ch!     = canvas!.getHeight()
+    th!     = #getTabControlHeight()
+    rem /**
+    rem  * Create the top child window and attach the tab control
+    rem  */
+    #Fcw! = cast(BBjChildWindow, canvas!.addChildWindow(101, 0, 0, cw!, th!, "", $00000800$, sysGui!.getAvailableContext()))
+    #TabControl! = cast(BBjTabCtrl, #Fcw!.addTabCtrl(101, 0, 0, cw!, th!))
+    #TabControl!.setVisible(0)
+    #TabControl!.setCallback(#TabControl!.ON_TAB_SELECT, #this!, "onTabSelected")
+    #TabArea! = cast(BBjChildWindow, #Fcw!.addChildWindow(102, 50, 50, 1, 1, "",sysGui!.getAvailableContext()))
+    rem /**
+    rem  * Create the second child window and attach the grid
+    rem  */
+    #Scw! = cast(BBjChildWindow, canvas!.addChildWindow(103, 0, th!, cw!, ch! - th!, "", $00000800$,  sysGui!.getAvailableContext()))
+    rem BBjGridExWidget.setDebug(1)
+    #Grid! = new BBjGridExWidget(#Scw!, #readAssetsAsString("grid.tpl"))
+    #Grid!.setRowNodeId("ID")
+    #Grid!.setForceCommunityBuild(1)
+    #Grid!.setTheme(#Grid!.GRID_THEME_BALHAM())
+    #Grid!.setVisible(0)
+    #Grid!.includeClientRowDataInRowModels(1)
+    gridOptions! = #Grid!.getOptions()
+    gridOptions!.setSuppressDragLeaveHidesColumns(1)
+    gridOptions!.setStopEditingWhenGridLosesFocus(1)
+    gridOptions!.setSuppressRowClickSelection(1)
+    gridOptions!.setRowDeselection(1)
+    gridOptions!.setSuppressHorizontalScroll(1)
+    gridOptions!.setNavigationBehavior(BBjGridExWidget.GRID_NAVIGATION_BEHAVIOUR_NEXT_CELL())
+    rem /**
+    rem  * Pin an empty ResultSet to the bottom of
+    rem  * the grid.
+    rem  */
+    group! = new SwModelsGroup("-1000" , "")
+    group!.addItem("-1000" , "")
+    #Grid!.setPinnedBottomRows(group!.getAsResultSet())
+    rem disable cell outline for bottom pinned rows
+    #Grid!.addStyle(".ag-floating-bottom-container .ag-cell-focus","{""border-color"": ""transparent !important""}")
+    #Grid!.setCallback(BBjGridExWidget.ON_GRID_CELL_VALUE_CHANGED(), #this!, "onItemTitleChanged")
+    #Grid!.setCallback(BBjGridExWidget.ON_GRID_CELL_CLICK()        , #this!, "onCellClicked")
+    #Grid!.setCallback(BBjGridExWidget.ON_GRID_ROW_SELECT()        , #this!, "onItemSelected")
+    rem /**
+    rem  * Configure the grid columns
+    rem  */
+    titleColumn!     = #Grid!.addColumn("TITLE","Title")
+    sharedColumn!    = #Grid!.addColumn("SHARED")
+    dirtyColumn!     = #Grid!.addColumn("DIRTY")
+    deletableColumn! = #Grid!.addColumn("DELETABLE")
+    rem /**
+    rem  * Configure the title column
+    rem  */
+    titleColumn!.setResizable(0)
+    titleTemplate! = #readAssetsAsString("add.tpl")
+    titleColumn!.setPinnedRowCellRenderer(new GxRendererCustomHTML(titleTemplate!))
+    titleColumn!.setEditableExpression("ctx.group_editable && !node.rowPinned")
+    titleColumn!.setCheckboxSelection(1)
+    rem /**
+    rem  * Configure the deleteable column
+    rem  */
+    deletableColumn!.setLabel("")
+    deletableTemplate! = #readAssetsAsString("deletable.tpl")
+    deletableColumn!.setCellRenderer(new GxRendererCustomHTML(deletableTemplate!))
+    deletableColumn!.setWidth(50)
+    deletableColumn!.setSuppressSizeToFit(1)
+    deletableColumn!.setResizable(0)
+    deletableColumn!.setSortable(0)
+    deletableColumn!.setSuppressNavigable(1)
+    rem /**
+    rem  * Configure the shared column
+    rem  */
+    sharedColumn!.setLabel("")
+    sharedTemplate! = #readAssetsAsString("shared.tpl")
+    sharedColumn!.setCellRenderer(new GxRendererCustomHTML(sharedTemplate!))
+    sharedColumn!.setWidth(50)
+    sharedColumn!.setSuppressSizeToFit(1)
+    sharedColumn!.setResizable(0)
+    sharedColumn!.setSortable(0)
+    sharedColumn!.setSuppressNavigable(1)
+    rem /**
+    rem  * Configure the editable column
+    rem  */
+    dirtyColumn!.setLabel("")
+    dirtyTemplate! = #readAssetsAsString("dirty.tpl")
+    dirtyColumn!.setCellRenderer(new GxRendererCustomHTML(dirtyTemplate!))
+    dirtyColumn!.setWidth(50)
+    dirtyColumn!.setSuppressSizeToFit(1)
+    dirtyColumn!.setResizable(0)
+    dirtyColumn!.setSortable(0)
+    dirtyColumn!.setSuppressNavigable(1)
+  methodend
+  rem /**
+  rem  * Get the group id based on the passed group index
+  rem  *
+  rem  * @param BBjNumber index! The group index
+  rem  *
+  rem  * @return BBjString The group Id
+  rem  */
+  method protected BBjString groupIndexToId(BBjNumber index!)
+    listKeys! = new ArrayList(#getCollection().keySet())
+    groupId! = listKeys!.get(index!)
+    methodret str(groupId!)
+  methodend
+  rem /**
+  rem  * Get the group index based on the passed group id
+  rem  *
+  rem  * @param BBjString groupId! The group id
+  rem  *
+  rem  * @return BBjNumber The group index in the TabCtrl
+  rem  */
+  method protected BBjNumber groupIdToIndex(BBjString groupId!)
+    listKeys! = new ArrayList(#getCollection().keySet())
+    groupIndex! = listKeys!.indexOf(groupId!)
+    methodret groupIndex!
+  methodend
+  rem /**
+  rem  * Read the given file name form the assets folder as a string
+  rem  *
+  rem  * @param BBjString file$ the asset file
+  rem  *
+  rem  * @return BBjString The content of the file as a string
+  rem  */
+  method protected static BBjString readAssetsAsString(BBjString file$)
+    template$ = ""
+    ch=unt
+    open (ch)"BBjSettingsWidget/assets/" + file$
+    read record (ch,siz=5512000)template$
+    close (ch)
+    methodret template$
+  methodend
+
+classend
