@@ -27,6 +27,7 @@ class public SelectionBC implements BusinessComponent
     
 REM     field private static String FIELDNAME_SELECTION_ID! = "SELECTION_ID"
     field private static String FIELDNAME_SELECTION_DESC! = "SELECTION_DESC"
+    field private static String FIELDNAME_SELECTION_USER! = "SELECTION_USER"
     
     method public SelectionBC(BusinessComponent selectedBC!)
         #selectedBC! = selectedBC!
@@ -84,6 +85,10 @@ REM         selectedAR!.setFieldAttribute(#FIELDNAME_SELECTION_ID!,  "EDITABLE",
     
     method public static String FIELDNAME_SELECTION_DESC()
         methodret #FIELDNAME_SELECTION_DESC!
+    methodend
+    
+    method public static String FIELDNAME_SELECTION_USER()
+        methodret #FIELDNAME_SELECTION_USER!
     methodend
     
     method public IConfigurationsBC getConfigurationsBC()
@@ -327,14 +332,16 @@ REM             errormsg$ = errormsg$(1,len(errormsg$)-1)
         
 REM         id! = dr!.getFieldAsString(#FIELDNAME_SELECTION_ID!)
         setting! = dr!.getFieldAsString(#FIELDNAME_SELECTION_DESC!)
+        user! = dr!.getFieldAsString(#FIELDNAME_SELECTION_USER!)
         writeDR!.setFieldValue(#configurationsBC!.getFieldNameKeyx(), #keyx!)
         writeDR!.setFieldValue(#configurationsBC!.getFieldNameSetting(), setting!)
         writeDR!.setFieldValue(#configurationsBC!.getFieldNameRealm(), #realm!)
-        writeDR!.setFieldValue(#configurationsBC!.getFieldNameUserid(), #configurationsBC!.getUserName())
+        writeDR!.setFieldValue(#configurationsBC!.getFieldNameUserid(), user!)
 REM         dr!.removeField(#FIELDNAME_SELECTION_ID!, err=*next)
         dr!.removeField(#FIELDNAME_SELECTION_DESC!)
+        dr!.removeField(#FIELDNAME_SELECTION_USER!)
         writeDR!.setFieldValue(#configurationsBC!.getFieldNameConfig(), dr!.toJson())
-        #configurationsBC!.write(writeDR!)
+        #configurationsBC!.write(writeDR!,err=*next)
         methodret dr!
 
     methodend

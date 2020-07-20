@@ -8,6 +8,7 @@ use ::BusinessUIComponents/configurations/ConfigurationButton.bbj::Configuration
 REM use ::BusinessUIComponents/configurations/ConfigurationWidget.bbj::ConfigurationWidget
 use com.basiscomponents.bc.BCBound
 use com.basiscomponents.bc.BCBinder
+use com.basiscomponents.bc.IConfigurationsBC
 use com.basiscomponents.bc.BusinessComponent
 use com.basiscomponents.db.ResultSet
 use com.basiscomponents.db.DataRow
@@ -101,6 +102,7 @@ REM         endif
         filter! = #getBinder().getRS().get(0)
         #mainBinder!.getBC().setFilter(filter!)
         #mainBinder!.retrieve()
+        #configButton!.fetchAndUpdatePopup()
     methodend
 
     method public void onSetData()
@@ -116,8 +118,16 @@ REM         endif
             sel!.remove(0,err=*next)
         wend
 
-        fields! = #super!.getFieldsForWrite()
-        fields!.setFieldValue(SelectionBC.FIELDNAME_SELECTION_DESC(), "")
+        fields! = #super!.getFieldsForWrite(Boolean.TRUE)
+        configButtonSelectedDr! = #configButton!.getCurrentlySelectedDataRow()
+        if configButtonSelectedDr! <> null() then
+            settingsName! = configButtonSelectedDr!.getFieldAsString(#selectionBC!.getConfigurationsBC().getFieldNameSetting(), err=*next)
+            settingsUser! = configButtonSelectedDr!.getFieldAsString(#selectionBC!.getConfigurationsBC().getFieldNameUserid(), err=*next)
+        endif
+        if settingsName! = null() then settingsName! = ""
+        if settingsUser! = null() then settingsUser! = #selectionBC!.getConfigurationsBC().getUserName()
+        fields!.setFieldValue(SelectionBC.FIELDNAME_SELECTION_DESC(), settingsName!)
+        fields!.setFieldValue(SelectionBC.FIELDNAME_SELECTION_USER(), settingsUser!)
         methodret fields!
     methodend
     rem /**

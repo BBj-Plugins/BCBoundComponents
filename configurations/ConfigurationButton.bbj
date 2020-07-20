@@ -83,10 +83,14 @@ class public ConfigurationButton extends BBjWidget
         endif
     methodend
     
+    method public DataRow getCurrentlySelectedDataRow()
+        methodret #settingsDialog!.getCurrentlySelectedDataRow()
+    methodend
+    
     rem /**
     rem  * fetches the available configs from the bc and updates popup menu
     rem  */
-    method protected void fetchAndUpdatePopup()
+    method public void fetchAndUpdatePopup()
         dr! = new DataRow()
         dr!.setFieldValue(#bc!.getFieldNameRealm(), #realm!)
         dr!.setFieldValue(#bc!.getFieldNameKeyx(), #keyx!)

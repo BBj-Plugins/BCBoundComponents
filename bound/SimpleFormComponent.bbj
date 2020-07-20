@@ -705,10 +705,15 @@ class public SimpleFormComponent extends AbstractBCBoundWidget implements IPersi
 
         methodret ""
     methodend
+    
+    method public DataRow getFieldsForWrite()
+        methodret #getFieldsForWrite(Boolean.FALSE)
+    methodend
+    
     rem /**
     rem  * returns the fields of the form with its values as a datarow, if the controlnames correlate to fields in the atributes record
     rem  */
-    method public DataRow getFieldsForWrite()
+    method protected DataRow getFieldsForWrite(Boolean includeReadOnly!)
         rem if not enabled: do not return any fields
         if !#cw!.isEnabled() then
             methodret new DataRow()
@@ -732,10 +737,11 @@ class public SimpleFormComponent extends AbstractBCBoundWidget implements IPersi
         attributes! = #getBinder().getAttributesRecord()
         while it!.hasNext()
             field$ = it!.next()
+            if !attributes!.contains(field$) then continue
             editable! = "0"
             editable! = attributes!.getFieldAttribute(field$, "EDITABLE",err=*next)
 
-            if !editable!.equals("1") and !editable!.equals("2") then
+            if !includeReadOnly! and !editable!.equals("1") and !editable!.equals("2") then
                 continue;rem only editable fields for to be added
             endif
 
@@ -748,10 +754,11 @@ class public SimpleFormComponent extends AbstractBCBoundWidget implements IPersi
         writeDR! = new DataRow()
         for i = 0 to fieldNames!.size()-1
             fieldName! = fieldNames!.get(i)
+            if !attributes!.contains(fieldName!) then continue
             editable! = "0"
             editable! = attributes!.getFieldAttribute(fieldName!, "EDITABLE",err=*next)
 
-            if !editable!.equals("1") and !editable!.equals("2") then
+            if !includeReadOnly! and !editable!.equals("1") and !editable!.equals("2") then
                 continue
             endif
 

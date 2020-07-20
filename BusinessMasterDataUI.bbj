@@ -4,6 +4,7 @@ use ::BusinessUIComponents/BusinessGrid.bbj::BusinessGrid
 use ::BusinessUIComponents/bound/TestComponent.bbj::TestComponent
 use ::BusinessUIComponents/bound/NavigatorComponent.bbj::NavigatorComponent
 use ::BusinessUIComponents/bound/EditToolbarComponent.bbj::EditToolbarComponent
+use ::BusinessUIComponents/configurations/ConfigurationButton.bbj::ConfigurationButton
 use ::BusinessUIComponents/bound/SimpleFormComponent.bbj::SimpleFormComponent
 use ::BusinessUIComponents/bound/FilterComponent.bbj::FilterComponent
 use ::BusinessUIComponents/bound/SearchBar.bbj::SearchBar
@@ -222,6 +223,8 @@ enter form_defs!, filter!, BC$, TITLE$, PGMNAME$, controlPrefixMap!, err=*next
 theme! = com.basiscomponents.ui.theming.Theme.getInstance(BBjAPI().getFileSystem().resolvePath("BusinessUIComponents/configurations/ui.properties"),BBjAPI())
 com.basiscomponents.i18n.Props.setLocale(stbl("!LOCALE"))
 com.basiscomponents.i18n.Props.setProperyDir(BBjAPI().getFileSystem().resolvePath("BusinessUIComponents/configurations/textProperties/"))
+ConfigurationButton.setAllowAdmin(Boolean.TRUE)
+ConfigurationButton.setAllowFactoryDefaults(Boolean.TRUE)
 
 md! = new BusinessMasterDataUI(BC$, TITLE$, PGMNAME$, filter!, form_defs!, controlPrefixMap!)
 md!.doModal()

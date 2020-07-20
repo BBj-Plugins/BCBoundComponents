@@ -1,8 +1,5 @@
 use com.basiscomponents.db.DataRow
 use com.basiscomponents.db.ResultSet
-use ::BusinessUIComponents/configurations/ConfigurationButton.bbj::ConfigurationButton
-ConfigurationButton.setAllowAdmin(Boolean.TRUE)
-ConfigurationButton.setAllowFactoryDefaults(Boolean.TRUE)
 
 BBjAPI().getAdmin("guest", "").getEnvironment().reloadClasspath("uicomponents")
 

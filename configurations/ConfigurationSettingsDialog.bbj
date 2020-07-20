@@ -106,6 +106,12 @@ REM         #sysgui!.setRepaintEnabled(0)
         #fetchAndFillWidget()
     methodend
     
+    method public DataRow getCurrentlySelectedDataRow()
+        if #currentlySelectedItem! = null() then methodret null()
+        dr! = #mapItemToConfig!.get(#currentlySelectedItem!, err=*next)
+        methodret dr!;rem can be null()
+    methodend
+    
     method protected void fetchAndFillWidget()
         #mapItemToConfig! = new HashMap()
         if #groupMySettings! = null() then
@@ -430,7 +436,7 @@ REM               #configBC!.setUserName(#userid!)
         if dr! = null() then methodret
         #configBC!.remove(dr!)
     methodend
-        
+    
     method public void onGroupSelect(BBjCustomEvent e!)
 REM         if #suppressSelectionEvent! then methodret
         declare auto SwEventsGroupSelected payload!
