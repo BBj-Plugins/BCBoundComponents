@@ -218,6 +218,14 @@ REM         escape
 
         if rs!.size() then
             methodret rs!.get(0)
+REM         else
+REM             methodret null()
+        endif
+        autoFilter!.setFieldValue(#bc!.getFieldNameKeyx(), #keyx!)
+        #bc!.setFilter(autoFilter!)
+        rs! = #bc!.getEffectiveConfiguration()
+        if rs!.size() then
+            methodret rs!.get(0)
         else
             methodret null()
         endif

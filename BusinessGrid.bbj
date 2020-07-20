@@ -102,8 +102,8 @@ REM     field private ConfigurationWidget    cfgwidget!
             #grid! = new BBjGridExWidget(#getCanvas(), 100, 0, 30, #getWidth(), #getHeight()-30)
             #grid!.getOptions().setNavigationBehavior(#grid!.GRID_NAVIGATION_BEHAVIOUR_NEXT_ROW())
             #grid!.setCallback(#grid!.ON_GRID_ROW_SELECT(), #this!, "onGridSelection")
-REM             #cfgbc! = new CustomConfigurationsBC("test")
-            #cfgbc! = new CustomConfigurationsBC(info(3,2))
+            #cfgbc! = new CustomConfigurationsBC("test5")
+REM             #cfgbc! = new CustomConfigurationsBC(info(3,2))
 
             options! = #grid!.getOptions()
             menu! = new GxContextMenu()
@@ -508,7 +508,13 @@ REM               endif
     method public void applyState(String state!)
 REM         #grid!.setState(new GxState(state!))
         #state! = state!
-        BBjAPI().createTimer("applyStateDelay", .2, #this!, "applyStateDelay");rem timer because async gridexwidget state must be applied after grid has loaded
+        rem on initial retrieve the grid leads longer to load and a longer retrieve is needed for the grid to be ready when the state application happens
+        if #initialRetrieve! then
+            delay = 2
+        else
+            delay = .1
+        endif
+        BBjAPI().createTimer("applyStateDelay", delay, #this!, "applyStateDelay");rem timer because async gridexwidget state must be applied after grid has loaded
     methodend
     
     rem /**
