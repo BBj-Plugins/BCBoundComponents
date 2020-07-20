@@ -218,5 +218,10 @@ declare ResultSet form_defs!
 rem controlPrefixMap! is optional
 controlPrefixMap! = null()
 enter form_defs!, filter!, BC$, TITLE$, PGMNAME$, controlPrefixMap!, err=*next
+
+theme! = com.basiscomponents.ui.theming.Theme.getInstance(BBjAPI().getFileSystem().resolvePath("BusinessUIComponents/configurations/ui.properties"),BBjAPI())
+com.basiscomponents.i18n.Props.setLocale(stbl("!LOCALE"))
+com.basiscomponents.i18n.Props.setProperyDir(BBjAPI().getFileSystem().resolvePath("BusinessUIComponents/configurations/textProperties/"))
+
 md! = new BusinessMasterDataUI(BC$, TITLE$, PGMNAME$, filter!, form_defs!, controlPrefixMap!)
 md!.doModal()

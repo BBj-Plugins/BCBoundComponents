@@ -4,10 +4,6 @@ use ::BusinessUIComponents/configurations/ConfigurationButton.bbj::Configuration
 ConfigurationButton.setAllowAdmin(Boolean.TRUE)
 ConfigurationButton.setAllowFactoryDefaults(Boolean.TRUE)
 
-theme! = com.basiscomponents.ui.theming.Theme.getInstance(BBjAPI().getFileSystem().resolvePath("BusinessUIComponents/configurations/ui.properties"),BBjAPI())
-com.basiscomponents.i18n.Props.setLocale(stbl("!LOCALE"))
-com.basiscomponents.i18n.Props.setProperyDir(BBjAPI().getFileSystem().resolvePath("BusinessUIComponents/configurations/textProperties/"))
-
 BBjAPI().getAdmin("guest", "").getEnvironment().reloadClasspath("uicomponents")
 
 declare ResultSet forms!
