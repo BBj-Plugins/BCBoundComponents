@@ -6,6 +6,7 @@ use com.basiscomponents.db.ResultSet
 
 use ::BBjGridExWidget/GxColumns.bbj::GxColumn
 use ::BBjGridExWidget/GxColumns.bbj::GxColumnGroup
+use ::BBjGridExWidget/GxState.bbj::GxState
 use ::BBjGridExWidget/GxRenderers.bbj::GxRendererBoolean
 use ::BBjGridExWidget/BBjGridExWidget.bbj::BBjGridExWidget
 use ::BBjGridExWidget/GxCellEditors.bbj::GxCellEditorRichSelect
@@ -14,7 +15,9 @@ use ::BBjGridExWidget/GxClientEvents.bbj::GxClientEventsCell
 use ::BBjGridExWidget/GxClientModels.bbj::GxClientCellModel
 
 use ::BusinessUIComponents/BusinessGrid.bbj::BusinessGrid
-use ::BusinessUIComponents/configurations/ConfigurationWidget.bbj::ConfigurationWidget
+use ::BusinessUIComponents/configurations/ConfigurationButton.bbj::ConfigurationButton
+use ::BusinessUIComponents/configurations/CustomConfigurationsBC.bbj::CustomConfigurationsBC
+use ::BusinessUIComponents/configurations/IPersistentState.bbj::IPersistentState
 use ::BusinessUIComponents/bound/WindowHandler.bbj::WindowHandler
 
 use ::BusinessUIComponents/tools/IBCMetaDataPersistenceModel.bbj::IBCMetaDataModel
@@ -27,7 +30,7 @@ use ::DialogWizard/DialogUtils.bbj::DialogUtils
 use ::DialogWizard/DialogWizardRun.bbj::DialogWizardRun
 use ::bbwindowutils.bbj::BBWindowUtils
 
-class public BCMetaData extends BBDialog
+class public BCMetaData extends BBDialog implements IPersistentState
 
     field protected BBjAPI        API! = BBjAPI()
     field protected BBjNumber     TRUE = #API!.TRUE
@@ -36,10 +39,19 @@ class public BCMetaData extends BBDialog
     field protected BBjThinClient ThinClient! = #API!.getThinClient()
     field protected BBjString     ClientLocale$ = #ThinClient!.getClientLocale()
     field protected BBjString     PgmDirectory$ = pgm(-2)(1,max(pos("\"=pgm(-2),-1),pos("/"=pgm(-2),-1)))
+    field protected Boolean initialRetrieve! = Boolean.TRUE
 
     field protected BBjNamespace  GroupNS! = #API!.getGroupNamespace()
     field protected BBjMDI        MDI!
     field protected WindowHandler windowHandler!
+    
+    field protected String pgmname! = "BCMetaData"
+    field protected String state! = ""
+    
+    field protected String realm! = "GRD"
+    
+    field protected ConfigurationButton    cfgbutton!
+    field protected CustomConfigurationsBC cfgbc!
 
 	rem /** DLGWIZ_RES BCMetaData.arc 101 **/
 
@@ -115,6 +127,7 @@ REM 		#super!.getControlByName("BCMetaData").setCallback(BBjAPI.ON_CLOSE,#this!,
     
     method public void applyWindowHandler()
         #windowHandler! = new WindowHandler(#Wnd!)
+        #windowHandler!.setProgramName(#pgmname!)
         #windowHandler!.applyWindowConfig()
     methodend
 
@@ -160,6 +173,8 @@ REM 		#super!.getControlByName("BCMetaData").setCallback(BBjAPI.ON_CLOSE,#this!,
 
         do_cancel:
             #onExitDialog()
+            
+            #cfgbutton!.saveAutoConfig(#retrieveState())
             #Wnd!.destroy()
 
         methodret #super!.getAnswer()
@@ -308,7 +323,9 @@ REM 		#super!.getControlByName("BCMetaData").setCallback(BBjAPI.ON_CLOSE,#this!,
         wend
 
         rem grid!.updateColumns()
-
+        #cfgbc! = new CustomConfigurationsBC(info(3,2))
+        #cfgbutton! = new ConfigurationButton(#Wnd!, 201, #C_BCMetaData__LBL_CLASS!.getX(), 40, #this!, #realm!, #pgmname!, #cfgbc! )
+        #cfgbutton!.applyAutoConfig()
     methodend
 
     rem /**
@@ -376,7 +393,14 @@ REM 		#super!.getControlByName("BCMetaData").setCallback(BBjAPI.ON_CLOSE,#this!,
 		id = pEvent!.getSelectedIndex()
 		#CurrBC! = #BCList!.get(id)
 		#loadData()
-
+		bcName$ = str(#CurrBC!)
+        while pos("::"=bcName$)>0
+            bcName$ = bcName$(pos("::"=bcName$)+2)
+        wend
+        bcName$ = bcName$ + "_meta"
+REM         #cfgbutton!.destroy()
+REM         #cfgbutton! = new ConfigurationButton(#Wnd!, 201, 0, 0, #this!, #realm!, bcName$, #cfgbc! )
+REM         #cfgbutton!.applyAutoConfig()
 	methodend
 
 	method private void loadData()
@@ -633,6 +657,56 @@ REM 		#super!.getControlByName("BCMetaData").setCallback(BBjAPI.ON_CLOSE,#this!,
 	        h = ev!.getHeight()
 	        #preview_grid!.setSize(w,h)
 	    endif
+    methodend
+    
+    rem /**
+    rem  * This method will be called to apply the state to the widget.
+    rem  *
+    rem  * @param state! state string previously stored by the widget
+    rem  */
+    method public void applyState(String state!)
+REM         #grid!.setState(new GxState(state!))
+        #state! = state!
+        rem on initial retrieve the grid leads longer to load and a longer retrieve is needed for the grid to be ready when the state application happens
+        if #initialRetrieve! then
+            #initialRetrieve! = Boolean.FALSE
+            delay = 2
+        else
+            delay = .1
+        endif
+        BBjAPI().createTimer("applyStateDelay", delay, #this!, "applyStateDelay");rem timer because async gridexwidget state must be applied after grid has loaded
+    methodend
+    
+    rem /**
+    rem  * This method will be called to apply the state to the widget.
+    rem  *
+    rem  * @param state! state string previously stored by the widget
+    rem  */
+    method public void applyStateDelay(BBjEvent ev!)
+        BBjAPI().removeTimer("applyStateDelay",err=*next)
+        #grid!.setState(new GxState(#state!))
+    methodend
+
+    rem /**
+    rem  * This method will provide the widget with the current state of the component.<br>
+    rem  * The widget will store this data for later retrieval.
+    rem  *
+    rem  * @return String containing the current state of all columns
+    rem  */
+    method public String retrieveState()
+        methodret #grid!.getState().toString()
+    methodend
+
+    rem /**
+    rem  * The widget will call this method to register itself for state changes of the component.<br>
+    rem  * The method should set a callback that calls the method 'methodName' on 'callable!', whenever the state changes.<br>
+    rem  * Event should be a BBjCustomEvent.
+    rem  *
+    rem  * @param methodName!
+    rem  * @param callable!
+    rem  */
+    method public void setStateChangeCallback(String methodName!, CustomObject callable!)
+        #grid!.setCallback(#grid!.ON_GRID_COLUMN_STATE_CHANGE(), callable!, methodName!)
     methodend
 
 classend

@@ -2,8 +2,13 @@ use com.basiscomponents.db.DataRow
 use com.basiscomponents.db.ResultSet
 use ::BusinessUIComponents/tools/BCMetaData.bbj::BCMetaData
 use ::BusinessUIComponents/tools/BCMetaDataJSONModel.bbj::BCMetaDataJSONModel
-model! = new BCMetaDataJSONModel("BusinessUIComponents/ExampleBCs/meta/")
+use com.basiscomponents.ui.theming.Theme
 
+theme! = com.basiscomponents.ui.theming.Theme.getInstance(BBjAPI().getFileSystem().resolvePath("BusinessUIComponents/configurations/ui.properties"),BBjAPI())
+com.basiscomponents.i18n.Props.setLocale(stbl("!LOCALE"))
+com.basiscomponents.i18n.Props.setProperyDir(BBjAPI().getFileSystem().resolvePath("BusinessUIComponents/configurations/textProperties/"))
+
+model! = new BCMetaDataJSONModel("BusinessUIComponents/ExampleBCs/meta/")
 
 declare BCMetaData myDialog!
 myDialog! = new BCMetaData(model!)

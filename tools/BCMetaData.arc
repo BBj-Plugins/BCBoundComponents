@@ -10,6 +10,7 @@ BEGIN
     STATICTEXT 100, "Class:", 24, 15, 90, 20
     BEGIN
         NAME "LBL_CLASS"
+        NOT OPAQUE
         NOT WORDWRAP
     END
 
