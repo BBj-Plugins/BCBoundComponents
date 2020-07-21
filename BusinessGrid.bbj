@@ -102,8 +102,8 @@ REM     field private ConfigurationWidget    cfgwidget!
             #grid! = new BBjGridExWidget(#getCanvas(), 100, 0, 30, #getWidth(), #getHeight()-30)
             #grid!.getOptions().setNavigationBehavior(#grid!.GRID_NAVIGATION_BEHAVIOUR_NEXT_ROW())
             #grid!.setCallback(#grid!.ON_GRID_ROW_SELECT(), #this!, "onGridSelection")
-            #cfgbc! = new CustomConfigurationsBC("test5")
-REM             #cfgbc! = new CustomConfigurationsBC(info(3,2))
+REM             #cfgbc! = new CustomConfigurationsBC("test5")
+            #cfgbc! = new CustomConfigurationsBC(info(3,2))
 
             options! = #grid!.getOptions()
             menu! = new GxContextMenu()
