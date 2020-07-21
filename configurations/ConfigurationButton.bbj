@@ -79,6 +79,7 @@ class public ConfigurationButton extends BBjWidget
             #popupButton!.setImageSize(buttonImageSize, buttonImageSize)
             #popupButton!.setCallback(#popupButton!.ON_BUTTON_PUSH, #this!, "settingsTool")
             #popupMenu! = #popupButton!.addDropdownMenu()
+            #setOpaque(0)
             #fetchAndUpdatePopup()
         endif
     methodend
