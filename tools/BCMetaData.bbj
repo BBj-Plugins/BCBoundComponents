@@ -3,6 +3,8 @@ use com.basiscomponents.bc.BCBinder
 use com.basiscomponents.db.DataRow
 use com.basiscomponents.db.ResultSet
 
+use com.basiscomponents.ui.theming.Theme
+use com.basiscomponents.i18n.Props
 
 use ::BBjGridExWidget/GxColumns.bbj::GxColumn
 use ::BBjGridExWidget/GxColumns.bbj::GxColumnGroup
@@ -77,6 +79,8 @@ class public BCMetaData extends BBDialog implements IPersistentState
     field public BBjTopLevelWindow Wnd!
     
     field private IBCMetaDataModel meta_model!
+    
+    field private Theme theme! = Theme.getInstance()
     
     
     method private BCMetaData()
@@ -187,34 +191,34 @@ REM 		#super!.getControlByName("BCMetaData").setCallback(BBjAPI.ON_CLOSE,#this!,
     method public void onInitDialog()
 
 
-	rem /** DLGWIZ_INI_BEGIN **/
-	#C_BCMetaData! = cast(BBjTopLevelWindow,#super!.getControlByName("BCMetaData"))
-	#C_BCMetaData__LBL_CLASS! = cast(BBjStaticText,#super!.getControlByName("LBL_CLASS"))
-	#C_BCMetaData__LB_CLASS! = cast(BBjListButton,#super!.getControlByName("LB_CLASS"))
-	#C_BTN_SAVE! = cast(BBjButton,#super!.getControlByName("BTN_SAVE"))
-	#C_BTN_GRID! = cast(BBjButton,#super!.getControlByName("BTN_GRID"))
-	rem /** DLGWIZ_INI_END **/
-
-
-	v! = new BBjVector()
-	it! = #BCList!.iterator()
-	while it!.hasNext()
-	    v!.addItem(it!.next().getFieldAsString("DESC"))
-	wend
-	#C_BCMetaData__LB_CLASS!.removeAllItems()
-	#C_BCMetaData__LB_CLASS!.insertItems(0,v!)
-	#C_BCMetaData__LB_CLASS!.deselect()
-
-
-    #grid! = new BBjGridExWidget(#C_BCMetaData!,500,0,80,#C_BCMetaData!.getWidth(),#C_BCMetaData!.getHeight()-80)
-	grid! = #grid!
-    grid!.setTheme( grid!.GRID_THEME_BALHAM() )
-    grid!.getOptions().setSingleClickEdit(1)
-
-    grid!.setCallback(grid!.ON_GRID_CELL_EDITING_STOPPED(),#this!,"cellEditingStopped")
-
-    locales! = #meta_model!.getLocales()
-    isEditableExp! = "data.FIELDNAME && (data.FIELDNAME !== '_ENTITY' && data.FIELDNAME !== '_ENTITIES')"
+    	rem /** DLGWIZ_INI_BEGIN **/
+    	#C_BCMetaData! = cast(BBjTopLevelWindow,#super!.getControlByName("BCMetaData"))
+    	#C_BCMetaData__LBL_CLASS! = cast(BBjStaticText,#super!.getControlByName("LBL_CLASS"))
+    	#C_BCMetaData__LB_CLASS! = cast(BBjListButton,#super!.getControlByName("LB_CLASS"))
+    	#C_BTN_SAVE! = cast(BBjButton,#super!.getControlByName("BTN_SAVE"))
+    	#C_BTN_GRID! = cast(BBjButton,#super!.getControlByName("BTN_GRID"))
+    	rem /** DLGWIZ_INI_END **/
+    	#Wnd!.setBackColor(#theme!.getBBjBackgroundColor())
+    
+    	v! = new BBjVector()
+    	it! = #BCList!.iterator()
+    	while it!.hasNext()
+    	    v!.addItem(it!.next().getFieldAsString("DESC"))
+    	wend
+    	#C_BCMetaData__LB_CLASS!.removeAllItems()
+    	#C_BCMetaData__LB_CLASS!.insertItems(0,v!)
+    	#C_BCMetaData__LB_CLASS!.deselect()
+    
+    
+        #grid! = new BBjGridExWidget(#C_BCMetaData!,500,0,80,#C_BCMetaData!.getWidth(),#C_BCMetaData!.getHeight()-80)
+    	grid! = #grid!
+        grid!.setTheme( grid!.GRID_THEME_BALHAM() )
+        grid!.getOptions().setSingleClickEdit(1)
+    
+        grid!.setCallback(grid!.ON_GRID_CELL_EDITING_STOPPED(),#this!,"cellEditingStopped")
+    
+        locales! = #meta_model!.getLocales()
+        isEditableExp! = "data.FIELDNAME && (data.FIELDNAME !== '_ENTITY' && data.FIELDNAME !== '_ENTITIES')"
 
         filedNameColumn! = grid!.addColumn("FIELDNAME")
         filedNameColumn!.setLabel("Field Name")
