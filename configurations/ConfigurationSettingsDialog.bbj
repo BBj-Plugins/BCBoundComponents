@@ -353,14 +353,14 @@ REM         endif
           item!    = payload!.getItem()
           property! = payload!.getProperty()
           if item! = null() then methodret
+          shared! = item!.getShared()
+          if shared! then
+              sharedString! = "*"
+          else
+              sharedString! = ""
+          endif
           rem dirty
           if property!.equals("dirty") then
-              shared! = item!.getShared()
-              if shared! then
-                  sharedString! = "*"
-              else
-                  sharedString! = ""
-              endif
   REM             item!.getUserData()
               switch group!
                   case #groupMySettings!
@@ -369,7 +369,7 @@ REM         endif
                   case #groupFactoryDefaults!
                       userName! = #configBC!.getFactoryDefaultUser()
                       sharedString! = "*"
-REM                       #configBC!.setUserName(userName!)
+    REM                       #configBC!.setUserName(userName!)
                       break
                   case default
                       methodret
@@ -387,12 +387,6 @@ REM               #configBC!.setUserName(#userid!)
           endif
           rem shared
           if property!.equals("shared") then
-              shared! = item!.getShared()
-              if shared! then
-                  sharedString! = "*"
-              else
-                  sharedString! = ""
-              endif
               dr! = #mapItemToConfig!.get(item!)
               dr!.setFieldValue(#configBC!.getFieldNameShared(), sharedString!)
               newDr! = #configBC!.write(dr!)
@@ -402,8 +396,26 @@ REM               #configBC!.setUserName(#userid!)
           if property!.equals("title") then
               title! = item!.getTitle()
               dr! = #mapItemToConfig!.get(item!,err=*next)
-              if dr! = null() then methodret
-              #configBC!.remove(dr!)
+              if dr! = null() then 
+                  switch group!
+                      case #groupMySettings!
+                          userName! = #userid!
+                          break
+                      case #groupFactoryDefaults!
+                          userName! = #configBC!.getFactoryDefaultUser()
+                          sharedString! = "*"
+                          break
+                      case default
+                          methodret
+                          break
+                  swend
+                  dr! = #getFilter()
+                  dr!.setFieldValue(#configBC!.getFieldNameUserid(), userName!)
+                  dr!.setFieldValue(#configBC!.getFieldNameConfig(), #stateHandler!.getState())
+                  dr!.setFieldValue(#configBC!.getFieldNameShared(), sharedString!)
+              else
+                  #configBC!.remove(dr!)
+              endif
               dr!.setFieldValue(#configBC!.getFieldNameSetting(), title!)
               newDr! = #configBC!.write(dr!)
               #mapItemToConfig!.put(item!, newDr!)
@@ -419,8 +431,8 @@ REM               #configBC!.setUserName(#userid!)
         payload! = e!.getObject()
         group!   = payload!.getGroup()
         item!    = payload!.getItem()
-        if item! = null() then methodret
-        item!.setDirty(1)
+REM         if item! = null() then methodret
+REM         item!.setDirty(1)
     methodend
       
     method public void onItemRemoved(BBjCustomEvent e!)
