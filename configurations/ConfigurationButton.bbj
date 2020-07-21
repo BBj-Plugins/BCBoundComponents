@@ -186,6 +186,7 @@ REM         escape
     method public void saveAutoConfig(String config!)
         selectedConfig! = #getDataRowForWrite()
         key! = #keyx! + "_auto"
+REM         selectedConfig!.setFieldValue(#bc!.getFieldNameUserid(), #userName!)
         selectedConfig!.setFieldValue(#bc!.getFieldNameKeyx(), key!)
         selectedConfig!.setFieldValue(#bc!.getFieldNameSetting(), "")
         selectedConfig!.setFieldValue(#bc!.getFieldNameConfig(), config!)
@@ -216,11 +217,12 @@ REM         escape
         autoFilter! = oldFilter!.clone()
         key! = #keyx! + "_auto"
         autoFilter!.setFieldValue(#bc!.getFieldNameKeyx(), key!)
+        autoFilter!.setFieldValue(#bc!.getFieldNameUserid(), #userName!)
         autoFilter!.setFieldValue(#bc!.getFieldNameSetting(), "")
         #bc!.setFilter(autoFilter!)
         rs! = #bc!.retrieve()
         #bc!.setFilter(oldFilter!)
-
+REM         escape
         if rs!.size() then
             methodret rs!.get(0)
 REM         else
