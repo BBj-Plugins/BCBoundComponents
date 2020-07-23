@@ -64,7 +64,6 @@ class public ConfigurationButton extends BBjWidget
             #userName! = ""
         endif
         #stateHandler! = new ConfigurationStateHandler(statePersistable!, #this!)
-        #settingsDialog! = new ConfigurationSettingsDialog(#bc!, #stateHandler!, #keyx!, #realm!, #userName!, #allowFactoryDefaults!)
         #create(container!,id,x,y,160,20)
     methodend
     
@@ -85,6 +84,7 @@ class public ConfigurationButton extends BBjWidget
     methodend
     
     method public DataRow getCurrentlySelectedDataRow()
+        if #settingsDialog! = null() then methodret null()
         methodret #settingsDialog!.getCurrentlySelectedDataRow()
     methodend
     
@@ -194,7 +194,9 @@ REM         selectedConfig!.setFieldValue(#bc!.getFieldNameUserid(), #userName!)
         #bc!.setFilter(selectedConfig!)
         #bc!.write(selectedConfig!)
         #bc!.setFilter(oldFilter!)
-        #settingsDialog!.saveAutoConfig()
+        if #settingsDialog! <> null() then
+            #settingsDialog!.saveAutoConfig()
+        endif
     methodend
     
     
@@ -268,14 +270,23 @@ REM             methodret null()
         menuItem! = ev!.getMenuItem()
         ud! = menuItem!.getUserData()
         if ud! <> null() then
-            #settingsDialog!.selectItem(ud!)
             #applyConfiguration(ud!)
+            if #settingsDialog! <> null() then
+                #settingsDialog!.selectItem(ud!)
+            endif
             methodret
         endif
     methodend
     
     method public void settingsTool(BBjEvent ev!)
+        if #settingsDialog! = null() then
+            #settingsDialog! = new ConfigurationSettingsDialog(#bc!, #stateHandler!, #keyx!, #realm!, #userName!, #allowFactoryDefaults!)
+        endif
+        if #currentConfiguration! <> null() then
+            #settingsDialog!.selectItem(#currentConfiguration!)
+        endif
         #settingsDialog!.doModal()
+        #currentConfiguration! = cast(DataRow, #settingsDialog!.getCurrentlySelectedDataRow())
         #fetchAndUpdatePopup()
     methodend
    
