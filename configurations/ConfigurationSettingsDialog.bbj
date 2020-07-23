@@ -241,6 +241,7 @@ REM         dr!.setFieldValue(#configBC!.getFieldNameShared(), )
                     #suppressSelectionEvent! = Boolean.TRUE
                     #groupMySettings!.setSelectedItem(item!)
                     #currentlySelectedItem! = cast(SwModelsItem, item!)
+                    item!.setDirty(1)
                     methodret
                 endif
                 foundId! = #groupFactoryDefaults!.getItem(id!,err=*next)
@@ -248,6 +249,7 @@ REM         dr!.setFieldValue(#configBC!.getFieldNameShared(), )
                     #suppressSelectionEvent! = Boolean.TRUE
                     #groupFactoryDefaults!.setSelectedItem(item!)
                     #currentlySelectedItem! = cast(SwModelsItem, item!)
+                    item!.setDirty(1)
                     methodret
                 endif
                 foundId! = #groupShared!.getItem(id!,err=*next)
@@ -255,6 +257,7 @@ REM         dr!.setFieldValue(#configBC!.getFieldNameShared(), )
                     #suppressSelectionEvent! = Boolean.TRUE
                     #groupShared!.setSelectedItem(item!)
                     #currentlySelectedItem! = cast(SwModelsItem, item!)
+                    item!.setDirty(1)
                     methodret
                 endif
             endif
@@ -282,7 +285,7 @@ REM         #groupFactoryDefaults!
             #onOK()
         onClose:
             #configBC!.setUserName(#userid!)
-            #wnd!.setVisible(0)
+            #wnd!.destroy()
             methodret
     methodend
     
@@ -312,12 +315,13 @@ REM         #groupFactoryDefaults!
         declare auto SwEventsItemSelected payload!
         declare auto SwModelsGroup group!
         declare auto SwModelsItem item!
-    
+        if #currentlySelectedItem! <> null() then #currentlySelectedItem!.setDirty(0)
         payload! = e!.getObject()
         group!   = payload!.getGroup()
         item!    = payload!.getItem()
         #clearAllSelections()
         #currentlySelectedItem! = item!
+        if #currentlySelectedItem! <> null() then #currentlySelectedItem!.setDirty(1)
         #suppressSelectionEvent! = Boolean.TRUE
         group!.setSelectedItem(#currentlySelectedItem!)
         #suppressSelectionEvent! = Boolean.FALSE

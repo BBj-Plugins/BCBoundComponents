@@ -271,22 +271,18 @@ REM             methodret null()
         ud! = menuItem!.getUserData()
         if ud! <> null() then
             #applyConfiguration(ud!)
-            if #settingsDialog! <> null() then
-                #settingsDialog!.selectItem(ud!)
-            endif
             methodret
         endif
     methodend
     
     method public void settingsTool(BBjEvent ev!)
-        if #settingsDialog! = null() then
-            #settingsDialog! = new ConfigurationSettingsDialog(#bc!, #stateHandler!, #keyx!, #realm!, #userName!, #allowFactoryDefaults!)
-        endif
+        #settingsDialog! = new ConfigurationSettingsDialog(#bc!, #stateHandler!, #keyx!, #realm!, #userName!, #allowFactoryDefaults!)
         if #currentConfiguration! <> null() then
             #settingsDialog!.selectItem(#currentConfiguration!)
         endif
         #settingsDialog!.doModal()
         #currentConfiguration! = cast(DataRow, #settingsDialog!.getCurrentlySelectedDataRow())
+        #settingsDialog! = null()
         #fetchAndUpdatePopup()
     methodend
    
