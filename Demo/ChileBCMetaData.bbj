@@ -4,18 +4,11 @@ use ::BusinessUIComponents/tools/BCMetaData.bbj::BCMetaData
 use ::BusinessUIComponents/tools/BCMetaDataJSONModel.bbj::BCMetaDataJSONModel
 use com.basiscomponents.ui.theming.Theme
 
-theme! = com.basiscomponents.ui.theming.Theme.getInstance(BBjAPI().getFileSystem().resolvePath("BusinessUIComponents/configurations/ui.properties"),BBjAPI())
+com.basiscomponents.ui.theming.Theme.getInstance(BBjAPI().getFileSystem().resolvePath("BusinessUIComponents/configurations/ui.properties"),BBjAPI())
 com.basiscomponents.i18n.Props.setLocale(stbl("!LOCALE"))
 com.basiscomponents.i18n.Props.setProperyDir(BBjAPI().getFileSystem().resolvePath("BusinessUIComponents/configurations/textProperties/"))
 
 model! = new BCMetaDataJSONModel("BusinessUIComponents/ExampleBCs/meta/")
-
-declare BCMetaData myDialog!
-myDialog! = new BCMetaData(model!)
-myDialog!.applyWindowHandler()
-
-rem /** DLGWIZ_SET_BEGIN **/
-rem /** DLGWIZ_SET_END **/
 
 BCList! = new ResultSet()
 bc! = new DataRow()
@@ -23,16 +16,11 @@ bc!.setFieldValue("DESC","ChileCustomerBC")
 bc!.setFieldValue("CLASS","::BusinessUIComponents/ExampleBCs/ChileCustomerBC.bbj::ChileCustomerBC")
 BCList!.add(bc!)
 
+declare BCMetaData myDialog!
+myDialog! = new BCMetaData(model!)
+myDialog!.applyWindowHandler()
 myDialog!.setBCList(BCList!)
 myDialog!.setDir(BBjAPI().getFileSystem().resolvePath("BusinessUIComponents/ExampleBCs/meta"))
-
-if myDialog!.doModal() and info(3,6)<>"5" then
-    print 'show',
-    print "Passed required fields check"
-rem /** DLGWIZ_GET_BEGIN **/
-rem /** DLGWIZ_GET_END **/
-
-    input "Press ENTER to release",dummy$
-endif
+myDialog!.doModal()
 
 release
