@@ -26,6 +26,7 @@ class public QuickSearchField
     field protected Boolean useWildCard! = Boolean.TRUE
     field protected Boolean passEnter!
     field protected Boolean passTab!
+    field protected static Boolean SearchInProgress! = Boolean.FALSE
     field protected String uniqueID! = java.util.UUID.randomUUID().toString()
     field protected BCBinder binder!
     field protected BBjMenuButton searchButton!
@@ -295,6 +296,8 @@ REM         #control!.setCaretPosition(text!.length() - 1)
     methodend
     
     method public void searchButtonClick(BBjEvent ev!)
+        if QuickSearchField.getSearchInProgress() then methodret
+        QuickSearchField.setSearchInProgress(Boolean.TRUE)
         if #searchUI! = null() then
             #searchUI! = new SearchUI()
             #searchUI!.setBC(#bc!)
@@ -304,7 +307,10 @@ REM         #control!.setCaretPosition(text!.length() - 1)
         #bc!.setFilter(new DataRow())
         #searchUI!.doModal()
         selectedRecord! = #searchUI!.getSelectedRecord()
-        if selectedRecord! = null() then methodret
+        if selectedRecord! = null() then 
+            QuickSearchField.setSearchInProgress(Boolean.FALSE)
+            methodret
+        endif
         #binder!.sendSignal(BCBinder.SIGNAL_DIRTY)
         idField! = new StringBuilder()
         itIDNames! = #idFieldNames!.iterator()
@@ -321,6 +327,7 @@ REM         #control!.setCaretPosition(text!.length() - 1)
         endif
         #control!.setUserData(idField!)
         #control!.setText(desc!)
+        QuickSearchField.setSearchInProgress(Boolean.FALSE)
     methodend
     
     method public void terminateSearchUI()
