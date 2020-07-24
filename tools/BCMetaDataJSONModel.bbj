@@ -138,8 +138,3 @@ class public BCMetaDataJSONModel implements IBCMetaDataModel
 
 classend
 
-
-
-model! = new BCMetaDataJSONModel("BusinessUIComponents/ExampleBCs/meta/")
-
-dr! = model!.loadModel("ChileCustomerBC")
