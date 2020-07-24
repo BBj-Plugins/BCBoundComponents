@@ -37,6 +37,7 @@ class public ConfigurationButton extends BBjWidget
     field protected ConfigurationStateHandler stateHandler!
     field protected DataRow currentConfiguration!
     field protected ConfigurationSettingsDialog settingsDialog!
+    field protected Boolean settingsToolInProgress! = Boolean.FALSE
     
     rem /**
     rem  * default constructor disabled
@@ -276,6 +277,8 @@ REM             methodret null()
     methodend
     
     method public void settingsTool(BBjEvent ev!)
+        if #settingsToolInProgress! then methodret
+        #settingsToolInProgress! = Boolean.TRUE
         #settingsDialog! = new ConfigurationSettingsDialog(#bc!, #stateHandler!, #keyx!, #realm!, #userName!, #allowFactoryDefaults!)
         if #currentConfiguration! <> null() then
             #settingsDialog!.selectItem(#currentConfiguration!)
@@ -284,6 +287,7 @@ REM             methodret null()
         #currentConfiguration! = cast(DataRow, #settingsDialog!.getCurrentlySelectedDataRow())
         #settingsDialog! = null()
         #fetchAndUpdatePopup()
+        #settingsToolInProgress! = Boolean.FALSE
     methodend
    
 
