@@ -631,8 +631,6 @@ REM         #cfgbutton!.applyAutoConfig()
 	method public void BTN_GRID__ON_BUTTON_PUSH(BBjButtonPushEvent pEvent!)
 		if #CurrBC! <> null() THEN
 
-		    ConfigurationWidget.setAllowAdmin(1)
-
             BC$=#CurrBC!.getFieldAsString("DESC")
             CLASS$=#CurrBC!.getFieldAsString("CLASS")
 
