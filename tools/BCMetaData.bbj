@@ -198,6 +198,16 @@ REM 		#super!.getControlByName("BCMetaData").setCallback(BBjAPI.ON_CLOSE,#this!,
     	#C_BTN_SAVE! = cast(BBjButton,#super!.getControlByName("BTN_SAVE"))
     	#C_BTN_GRID! = cast(BBjButton,#super!.getControlByName("BTN_GRID"))
     	rem /** DLGWIZ_INI_END **/
+    	
+    	ico! = #theme!.getBBjImage("IC_SAVE",#theme!.PRIMARY)
+        #C_BTN_SAVE!.setImage(ico!)
+        #C_BTN_SAVE!.setImageSize(20,20)
+
+        ico! = #theme!.getBBjImage("IC_GRID",#theme!.PRIMARY)
+        #C_BTN_GRID!.setImage(ico!)
+        #C_BTN_GRID!.setImageSize(20,20)
+
+        
     	#Wnd!.setBackColor(#theme!.getBBjBackgroundColor())
     
     	v! = new BBjVector()
@@ -210,7 +220,7 @@ REM 		#super!.getControlByName("BCMetaData").setCallback(BBjAPI.ON_CLOSE,#this!,
     	#C_BCMetaData__LB_CLASS!.deselect()
     
     
-        #grid! = new BBjGridExWidget(#C_BCMetaData!,500,0,80,#C_BCMetaData!.getWidth(),#C_BCMetaData!.getHeight()-80)
+        #grid! = new BBjGridExWidget(#C_BCMetaData!,500,0,40,#C_BCMetaData!.getWidth(),#C_BCMetaData!.getHeight()-40)
     	grid! = #grid!
         grid!.setTheme( grid!.GRID_THEME_BALHAM() )
         grid!.getOptions().setSingleClickEdit(1)
@@ -328,7 +338,7 @@ REM 		#super!.getControlByName("BCMetaData").setCallback(BBjAPI.ON_CLOSE,#this!,
 
         rem grid!.updateColumns()
         #cfgbc! = new CustomConfigurationsBC(info(3,2))
-        #cfgbutton! = new ConfigurationButton(#Wnd!, 201, #C_BCMetaData__LBL_CLASS!.getX(), 40, #this!, #realm!, #pgmname!, #cfgbc! )
+        #cfgbutton! = new ConfigurationButton(#Wnd!, 201, #Wnd!.getWidth()-50, 5, #this!, #realm!, #pgmname!, #cfgbc! )
         #cfgbutton!.applyAutoConfig()
     methodend
 
@@ -385,7 +395,8 @@ REM 		#super!.getControlByName("BCMetaData").setCallback(BBjAPI.ON_CLOSE,#this!,
 	method public void BCMetaData__ON_RESIZE(BBjResizeEvent ev!)
 		  w=ev!.getWidth()
 		  h=ev!.getHeight()
-		  #grid!.setSize(w,h-80)
+		  #cfgbutton!.setLocation(w-40,5)
+		  #grid!.setSize(w,h-40)
 	methodend
 
 	rem /**
