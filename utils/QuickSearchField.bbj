@@ -184,8 +184,8 @@ REM         #popup!.focus()
             filter!.setFieldValue(#searchFieldName!, searchString!)
         endif
         #bc!.setFilter(filter!)
-        rs! = #bc!.retrieve()
-        if !rs!.size() then methodret
+        rs! = #bc!.retrieve(err=*next)
+        if rs! = null() or !rs!.size() then methodret
         if rs!.size() > #maxEntries then
             maxItems = #maxEntries
         else
@@ -211,7 +211,6 @@ REM         #popup!.focus()
             endif
             #popup!.addItem(desc!)
         NEXT i
-REM         escape
         #popup!.setSize(#popup!.getWidth(), #control!.getHeight() * #maxEntries)
         #popup!.setVisible(1)
         BBjAPI().createTimer(#uniqueID! + "openList", .05, #this!, "openList")
