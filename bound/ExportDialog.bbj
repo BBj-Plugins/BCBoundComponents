@@ -18,6 +18,8 @@ use com.basiscomponents.db.export.ReportDetails
 use com.basiscomponents.db.export.ColumnWidthCalculator
 use com.basiscomponents.bc.BCBinder
 
+use com.basiscomponents.ui.theming.Theme
+
 use net.sf.jasperreports.engine.JasperCompileManager
 use net.sf.jasperreports.engine.JasperReport
 use net.sf.jasperreports.engine.JRField
@@ -49,6 +51,8 @@ class public ExportDialog
     field private static BBjString TXT_CUSTOM_PDF$ = "Custom PDF"
 
     field private Boolean showsBaristaHeader! = Boolean.FALSE
+    
+    field private Theme theme! = Theme.getInstance()
     
     field private BBjButton btnExport!
     field private BBjButton btnCancel!
@@ -132,6 +136,7 @@ class public ExportDialog
         endif
         #fillFormWithConfigurations()
         #setCallbacks()
+        #updateProperties()
     methodend
     
     method public BBjWindow createDialogWindow(BBjString windowTitle$)
@@ -1207,6 +1212,14 @@ REM         else
     method private void handleExportError()
         errMsg$ = errmes(-1)
         a = msgbox(errMsg$, 16)
+    methodend
+    
+    method private void updateProperties()
+        windowLogo! = #theme!.getProperty("WINDOW_LOGO")
+
+        if !windowLogo!.equals("") then
+            #mainWindow!.setIcon(windowLogo!)
+        endif
     methodend
     
 classend
