@@ -271,7 +271,11 @@ class public SimpleFormComponent extends AbstractBCBoundWidget implements IPersi
 
                 if fieldAttributes!.containsKey("MASK") then
                     mask$ = fieldAttributes!.get("MASK")
-                    value! = DATE(JUL(value!, "%Yd-%Mz-%Dz"):mask$)
+                    if dr!.getFieldType(fieldName$) = java.sql.Types.NUMERIC then
+                        value! = DATE(NUM(value!):mask$)
+                    else
+                        value! = DATE(JUL(value!, "%Yd-%Mz-%Dz"):mask$)
+                    endif
                 else
                     locale! = stbl("!LOCALE")
                     switch locale!.toUpperCase()
@@ -309,6 +313,16 @@ class public SimpleFormComponent extends AbstractBCBoundWidget implements IPersi
                     if dr!.getFieldType(fieldName$) = java.sql.Types.TIMESTAMP then
                         datetime! = LocalDateTime.parse(value!, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.S"))
                         value! = datetime!.format(DateTimeFormatter.ofPattern(timestampMask$))
+                    endif
+                    
+                    if dr!.getFieldType(fieldName$) = java.sql.Types.NUMERIC then
+                        value! = date(num(value!))
+                        if value!.trim().length() = 10 then
+                            value! = value! + " 00:00:00.0"
+                        endif
+
+                        datetime! = LocalDateTime.parse(value!, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.S"))
+                        value! = datetime!.format(DateTimeFormatter.ofPattern(dateMask$))
                     endif
                 endif
 
