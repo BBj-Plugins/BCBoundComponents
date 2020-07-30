@@ -829,6 +829,17 @@ class public SimpleFormComponent extends AbstractBCBoundWidget implements IPersi
                 endif
 
                 break
+            case BBjControl.INPUTD_TYPE
+                attributes! = #getBinder().getAttributesRecord()
+                controlMap! = #getControlMap()
+                fieldName! = controlMap!.get(control!.getName())
+                if attributes!.getFieldType(fieldName!) = java.sql.Types.NUMERIC then
+                    value! = str(cast(BBjInputD, control!).getValue())
+                else
+                    value! = control!.getText()
+                endif
+                methodret value!
+                break
             case default
                 methodret control!.getText()
                 break
