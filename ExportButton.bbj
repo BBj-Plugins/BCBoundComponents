@@ -24,7 +24,7 @@ use com.basiscomponents.db.BBArrayList
 
 class public ExportButton extends BBjWidget
 
-    field private BBjMenuButton exportButton!
+    field private BBjButton exportButton!
     field private BusinessGrid grid!
     field private CustomConfigurationsBC cfgBC!
     field private BBjString pgmName$
@@ -40,8 +40,9 @@ class public ExportButton extends BBjWidget
     methodend
 
     method public ExportButton(BBjWindow wnd!, BBjNumber id, BBjNumber x, BBjNumber y, BBjNumber width, BBjNumber height)
-        #exportButton! = wnd!.addMenuButton(id, x, y, width, height, "Export")
+        #exportButton! = wnd!.addButton(id, x, y, width, height, "Export")
         #exportButton!.setCallback(BBjButton.ON_BUTTON_PUSH, #this!, "onExportButtonPush")
+        #exportButton!.addStyle("btn btn-outline-primary")
         #mainWindow! = wnd!
     methodend
     
@@ -104,7 +105,7 @@ class public ExportButton extends BBjWidget
         #customReports! = customReports!
     methodend
     
-    method public BBjMenuButton getButton()
+    method public BBjButton getButton()
     	methodret #exportButton!
     methodend
     

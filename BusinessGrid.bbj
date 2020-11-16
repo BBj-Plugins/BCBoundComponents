@@ -47,8 +47,8 @@ REM     field private ConfigurationWidget    cfgwidget!
     field private ConfigurationButton    cfgbutton!
     field private CustomConfigurationsBC cfgbc!
     field private ExportButton           exportButton!
-    field private BBjMenuButton          fitToGridButton!
-    field private BBjMenuButton          autoSizeColumnsButton!
+    field private BBjButton          fitToGridButton!
+    field private BBjButton          autoSizeColumnsButton!
     field private Boolean                barista!
 
     field private Boolean columnConfigurationSet! = Boolean.FALSE
@@ -143,17 +143,19 @@ REM     field private ConfigurationWidget    cfgwidget!
             endif
             #exportButton!.setProgramName(pgmName$)
             
-            #fitToGridButton! = cast(BBjMenuButton,cw_top!.addMenuButton(203, 25, 5, 20, 20, ""))
+            #fitToGridButton! = cast(BBjButton,cw_top!.addButton(203, 25, 5, 20, 20, "Fit"))
             #fitToGridButton!.setCallback(#fitToGridButton!.ON_BUTTON_PUSH, #this!, "fitToGrid")
             #fitToGridButton!.setTabTraversable(0)
             #fitToGridButton!.setFocusable(0)
-            #fitToGridButton!.setBorderPainted(0)
+            #fitToGridButton!.addStyle("btn btn-outline-primary")
+            rem #fitToGridButton!.setBorderPainted(0)
             
-            #autoSizeColumnsButton! = cast(BBjMenuButton,cw_top!.addMenuButton(204, 50, 5, 20, 20, ""))
+            #autoSizeColumnsButton! = cast(BBjButton,cw_top!.addButton(204, 50, 5, 20, 20, "Auto"))
             #autoSizeColumnsButton!.setCallback(#autoSizeColumnsButton!.ON_BUTTON_PUSH, #this!, "autoSizeColumns")
             #autoSizeColumnsButton!.setTabTraversable(0)
             #autoSizeColumnsButton!.setFocusable(0)
-            #autoSizeColumnsButton!.setBorderPainted(0)
+            #autoSizeColumnsButton!.addStyle("btn btn-outline-primary")
+            rem #autoSizeColumnsButton!.setBorderPainted(0)
 
             statusbar! = #grid!.getStatusbar()
             statusbar!.addComponent(new GxStatusBarTotalAndFilteredRowCountComponent("right"))
