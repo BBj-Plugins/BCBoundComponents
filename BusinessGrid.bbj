@@ -105,13 +105,11 @@ REM     field private ConfigurationWidget    cfgwidget!
             cw_top! = canvas!.addChildWindow(100,0,0,1024,40,"Row",$00100800$,BBjAPI().getSysGui().getAvailableContext())
             cw_top!.setStyle("height","50px")
             cw_top!.addPanelStyle("stretch")
-            cw_top!.setStyle("background-color","rebeccapurple")
                 
             cw_grid! = canvas!.addChildWindow(101,0,40,canvas!.getWidth(),canvas!.getHeight()-40,"Row",$00100800$,BBjAPI().getSysGui().getAvailableContext())
             cw_grid!.setStyle("height","100%")
             cw_grid!.addStyle("hundred")
             cw_grid!.addPanelStyle("stretch")
-            cw_grid!.setStyle("background-color","yellow")            
             #grid! = new BBjGridExWidget(cw_grid!)
             #grid!.getHTMLView().setStyle("height","100%")
             
