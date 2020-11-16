@@ -99,10 +99,24 @@ REM     field private ConfigurationWidget    cfgwidget!
         if (f_init!) then
             rem rendering for the first time
             rem so have to initialize / create my controls
-            #grid! = new BBjGridExWidget(#getCanvas(), 100, 0, 30, #getWidth(), #getHeight()-30)
+                
+            canvas! = #getCanvas()
+            
+            cw_top! = canvas!.addChildWindow(100,0,0,1024,40,"Row",$00100800$,BBjAPI().getSysGui().getAvailableContext())
+            cw_top!.setStyle("height","50px")
+            cw_top!.addPanelStyle("stretch")
+            cw_top!.setStyle("background-color","rebeccapurple")
+                
+            cw_grid! = canvas!.addChildWindow(101,0,40,canvas!.getWidth(),canvas!.getHeight()-40,"Row",$00100800$,BBjAPI().getSysGui().getAvailableContext())
+            cw_grid!.setStyle("height","100%")
+            cw_grid!.addStyle("hundred")
+            cw_grid!.addPanelStyle("stretch")
+            cw_grid!.setStyle("background-color","yellow")            
+            #grid! = new BBjGridExWidget(cw_grid!)
+            #grid!.getHTMLView().setStyle("height","100%")
+            
             #grid!.getOptions().setNavigationBehavior(#grid!.GRID_NAVIGATION_BEHAVIOUR_NEXT_ROW())
             #grid!.setCallback(#grid!.ON_GRID_ROW_SELECT(), #this!, "onGridSelection")
-REM             #cfgbc! = new CustomConfigurationsBC("test5")
             #cfgbc! = new CustomConfigurationsBC(info(3,2))
 
             options! = #grid!.getOptions()
@@ -114,7 +128,7 @@ REM             #cfgbc! = new CustomConfigurationsBC("test5")
             rem need to wait for next Gx release:
             options!.setSuppressCellSelection(Boolean.TRUE)
 
-            #exportButton! = new ExportButton(#getCanvas(), 202, 0, 5, 20, 20)
+            #exportButton! = new ExportButton(cw_top!, 202, 0, 5, 20, 20)
             #exportButton!.setGrid(#this!)
             #exportButton!.setBC(new CustomConfigurationsBC(info(3,2), "configurationWidgetConfigs"))
             #exportButton!.getButton().setTabTraversable(0)
@@ -131,13 +145,13 @@ REM             #cfgbc! = new CustomConfigurationsBC("test5")
             endif
             #exportButton!.setProgramName(pgmName$)
             
-            #fitToGridButton! = #getCanvas().addMenuButton(203, 25, 5, 20, 20, "")
+            #fitToGridButton! = cast(BBjMenuButton,cw_top!.addMenuButton(203, 25, 5, 20, 20, ""))
             #fitToGridButton!.setCallback(#fitToGridButton!.ON_BUTTON_PUSH, #this!, "fitToGrid")
             #fitToGridButton!.setTabTraversable(0)
             #fitToGridButton!.setFocusable(0)
             #fitToGridButton!.setBorderPainted(0)
             
-            #autoSizeColumnsButton! = #getCanvas().addMenuButton(204, 50, 5, 20, 20, "")
+            #autoSizeColumnsButton! = cast(BBjMenuButton,cw_top!.addMenuButton(204, 50, 5, 20, 20, ""))
             #autoSizeColumnsButton!.setCallback(#autoSizeColumnsButton!.ON_BUTTON_PUSH, #this!, "autoSizeColumns")
             #autoSizeColumnsButton!.setTabTraversable(0)
             #autoSizeColumnsButton!.setFocusable(0)
@@ -148,7 +162,7 @@ REM             #cfgbc! = new CustomConfigurationsBC("test5")
             statusbar!.addComponent(new GxStatusBarSelectedRowCountComponent("center"))
             statusbar!.setComponentVisibility(GxStatusBarTotalAndFilteredRowCountComponent.getId(), Boolean.TRUE)
             
-            #getCanvas().setBackColor(#theme!.getBBjBackgroundColor())
+            cw_top!.setBackColor(#theme!.getBBjBackgroundColor())
             
             textProperties! = Props.getInstance()
             
@@ -197,18 +211,18 @@ REM             #cfgbc! = new CustomConfigurationsBC("test5")
             #grid!.addStyle(".ag-theme-balham",balhamTheme!)
             #grid!.addStyle(".ag-theme-balham .ag-row-selected", String.format("{""color"":""%s""}",textColor!))
 
+            cw_top!.setBackColor(#theme!.getBBjBackgroundColor())
         endif
 
-        #grid!.setSize(#getWidth(),#getHeight()-#widgetHeight - 10)
-REM 
+        if info(3,6)<>"6" then
+            #Canvas!.getControl(101).setSize(#getWidth(),#getHeight()-#widgetHeight - 10)
+            #grid!.setSize(#getWidth(),#getHeight()-#widgetHeight - 10)
+
 REM         if #cfgwidget! <> null() then
 REM             rem min padding for config widget to allow for the export and fitToGrid buttons to the left
 REM             #cfgwidget!.setLocation(#getWidth()-155, 5)
 REM         endif
-        
-        
-        #getCanvas().setBackColor(#theme!.getBBjBackgroundColor())        
-
+        fi   
         
     methodend
 
@@ -563,7 +577,8 @@ REM         #grid!.setState(new GxState(state!))
 REM         #cfgwidget! = new ConfigurationWidget(#getCanvas(),201, #getWidth()-155, 5 , #this!, #realm!, x$, #cfgbc! )
         xPos = #exportButton!.getButton().getX() + (3 * #widgetHeight)
         yPos = #exportButton!.getButton().getY()
-        #cfgbutton! = new ConfigurationButton(#getCanvas(),201, xPos, yPos, #this!, #realm!, x$, #cfgbc! )
+        cw! = #getCanvas().getControl(100)
+        #cfgbutton! = new ConfigurationButton(cw!,201, xPos, yPos, #this!, #realm!, x$, #cfgbc! )
         #cfgbutton!.applyAutoConfig()
     methodend
     

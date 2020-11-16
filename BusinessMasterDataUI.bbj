@@ -34,33 +34,74 @@ class public BusinessMasterDataUI
     field protected String title! = ""
     field protected String pgm! = ""
     field private Theme theme! = Theme.getInstance()
+    
+    field private BBjChildWindow topWnd!
+    field private BBjChildWindow bottomWnd!
+    
 
     method public BusinessMasterDataUI( BBjString BC$, BBjString TITLE$, BBjString PGMNAME$, ResultSet filter!, ResultSet form_defs!, HashMap controlPrefixMap!)
         ? 'HIDE'
         #sysgui! = BBjAPI().openSysGui("X0")
         #sysgui!.setRepaintEnabled(0)
 
-        if info(3,6)="5" then
-            #wnd! = #sysgui!.addWindow(100,100,1020,760,TITLE$,$01001010$)
-        else
-            #wnd! = #sysgui!.addWindow(100,100,1020,760,TITLE$,$00000093$)
+        switch info(3,6)
+            case "5"
+                #wnd! = #sysgui!.addWindow(100,100,1020,760,TITLE$,$01001010$)
+                #wnd!.setBackColor(#theme!.getBBjBackgroundColor())
+                break
+            case "6"
+                #wnd! = BBjAPI().openSysGui("X0").addWindow(10,10,800,600,"Simple CD-Store Demo",$00190003$)
+                #wnd!.addStyle("stretch")
+                #wnd!.addPanelStyle("stretch")
+                #wnd!.setStyle("height","100%")
+                #wnd!.setStyle("min-height","100%")
+            
+                tb! = #wnd!.addChildWindow(100,0,0,10,10,"Row",$00100800$,BBjAPI().getSysGui().getAvailableContext())
+                tb!.addStaticText(100,0,0,250,20,"TB!")
+                tb!.setStyle("height","50px")
+                tb!.addPanelStyle("stretch")
+                tb!.setStyle("background-color","rebeccapurple")
+                
+                #topWnd! = #wnd!.addChildWindow(101,0,0,10,10,"Row",$00100800$,BBjAPI().getSysGui().getAvailableContext())
+                #topWnd!.setStyle("height","100%")
+                #topWnd!.addStyle("fifty")
+                #topWnd!.addPanelStyle("stretch")
+            
+            
+                #bottomWnd! = #wnd!.addChildWindow(102,0,0,10,10,"Row",$00100800$,BBjAPI().getSysGui().getAvailableContext())
+                #bottomWnd!.setStyle("height","100%")
+                #bottomWnd!.addStyle("fifty")
+                #bottomWnd!.addPanelStyle("stretch")
+                #bottomWnd!.setStyle("background-color","yellow")
+                break
+            case "default"
+                #wnd! = #sysgui!.addWindow(100,100,1020,760,TITLE$,$00000093$)
+                #wnd!.setBackColor(#theme!.getBBjBackgroundColor())
+
+                break
+        swend
+
+        if info(3,6)<>"6" then
+
+            #splitter! = new HorizontalSplitter(#wnd!,112,2,45,890,800)
+            #formTabCtrl! = #splitter!.getBottomCanvas().addTabCtrl(115, 0, 0, 500, 500)
+            #formTabCtrl!.setBackColor(#theme!.getBBjBackgroundColor())
+            #formTabCtrl!.setForeColor(#theme!.getPrimaryColorPalette().getBBjColor("A700"))
+            #formTabCtrl!.setFont(#theme!.getBBjFont())
+        
+            #splitter!.getBottomCanvas().setBackColor(#theme!.getBBjBackgroundColor())
+            #splitter!.getTopCanvas().setBackColor(#theme!.getBBjBackgroundColor())
+            #splitter!.setBottomCtrl(#formTabCtrl!)
+            
+            #topWnd! = #splitter!.getTopCanvas()
+            #bottomWnd! = #splitter!.getBottomCanvas()
+            
         endif
 
-        #wnd!.setBackColor(#theme!.getBBjBackgroundColor())
-        #wnd!.setCallback(BBjAPI.ON_RESIZE, #this!,"resize")
-        #splitter! = new HorizontalSplitter(#wnd!,112,2,45,890,800)
-        
-        #formTabCtrl! = #splitter!.getBottomCanvas().addTabCtrl(115, 0, 0, 500, 500)
-        #formTabCtrl!.setBackColor(#theme!.getBBjBackgroundColor())
-        #formTabCtrl!.setForeColor(#theme!.getPrimaryColorPalette().getBBjColor("A700"))
-        #formTabCtrl!.setFont(#theme!.getBBjFont())
-        
-        #splitter!.getBottomCanvas().setBackColor(#theme!.getBBjBackgroundColor())
-        #splitter!.getTopCanvas().setBackColor(#theme!.getBBjBackgroundColor())
         
         #forms! = new BBjVector()
         #filters! = new BBjVector()
-        #splitter!.setBottomCtrl(#formTabCtrl!)
+        
         
         bc! = eval("new "+BC$+"()")
         #binder! = new BCBinder(bc!)
@@ -83,7 +124,8 @@ class public BusinessMasterDataUI
         endif
 
         #addWindowHandler(#pgm!)
-        
+        #wnd!.setCallback(BBjAPI.ON_RESIZE, #this!,"resize")
+
     methodend
 
     method public void doModal()
@@ -96,28 +138,49 @@ class public BusinessMasterDataUI
     
     rem ######### add methods for BC bound components #########
     method public void addForms(ResultSet form_defs!, HashMap controlPrefixMap!)
-        cwIdStart = 200
-        it! = form_defs!.iterator()
-        while it!.hasNext()
-            dr! = it!.next()
-            formCW! = #splitter!.getBottomCanvas().addChildWindow(cwIdStart + i,0,0,500,500,"",$00000800$, #sysgui!.getAvailableContext(),$$)
-            #formTabCtrl!.addTab(dr!.getFieldAsString("TABNAME"), formCW!)
+        
+        if #formTabCtrl! = null() then
+            rem only one form for now!
+            dr! = form_defs!.get(0)
 
-            if (dr!.contains("CLASSNAME")) then
-                form! = eval("new "+dr!.getFieldAsString("CLASSNAME")+"(formCW!,100,0,5,300,300)")
-            else
-                form! = new SimpleFormComponent(formCW!,100,0,5,300,300)
-                form!.setForm(dr!.getFieldAsString("ARC"), dr!.getFieldAsNumber("CWID"))
-            endif
-
-            if controlPrefixMap! <> null() then
-                form!.setControlPrefixMap(controlPrefixMap!)
-            endif
-
-            #forms!.addItem(form!)
-            #binder!.register(form!)
-            cwIdStart = cwIdStart + 1
-        wend
+                if (dr!.contains("CLASSNAME")) then
+                    form! = eval("new "+dr!.getFieldAsString("CLASSNAME")+"(formCW!,100,0,5,300,300)")
+                else
+                    form! = new SimpleFormComponent(CAST(BBjChildWindow,#bottomWnd!),100,0,5,300,300)
+                    form!.setForm(dr!.getFieldAsString("ARC"), dr!.getFieldAsNumber("CWID"))
+                endif
+    
+                if controlPrefixMap! <> null() then
+                    form!.setControlPrefixMap(controlPrefixMap!)
+                endif
+    
+                #forms!.addItem(form!)
+                #binder!.register(form!)
+                            
+        else
+            cwIdStart = 200
+            it! = form_defs!.iterator()
+            while it!.hasNext()
+                dr! = it!.next()
+                formCW! = CAST(BBjChildWindow,#bottomWnd!).addChildWindow(cwIdStart + i,0,0,500,500,"",$00000800$, #sysgui!.getAvailableContext(),$$)
+                #formTabCtrl!.addTab(dr!.getFieldAsString("TABNAME"), formCW!)
+    
+                if (dr!.contains("CLASSNAME")) then
+                    form! = eval("new "+dr!.getFieldAsString("CLASSNAME")+"(formCW!,100,0,5,300,300)")
+                else
+                    form! = new SimpleFormComponent(formCW!,100,0,5,300,300)
+                    form!.setForm(dr!.getFieldAsString("ARC"), dr!.getFieldAsNumber("CWID"))
+                endif
+    
+                if controlPrefixMap! <> null() then
+                    form!.setControlPrefixMap(controlPrefixMap!)
+                endif
+    
+                #forms!.addItem(form!)
+                #binder!.register(form!)
+                cwIdStart = cwIdStart + 1
+            wend
+        fi
     methodend
 
     method public BCBinder getBinder()
@@ -137,8 +200,10 @@ class public BusinessMasterDataUI
     methodend
 
     method public void addBusinessGrid()
-        #bgrid! = new BusinessGrid(#splitter!.getTopCanvas(),160,0,0,960,500)
-        #splitter!.setTopCtrl(#bgrid!)
+        #bgrid! = new BusinessGrid(#topWnd!)
+        if (#splitter! <> null()) then
+            #splitter!.setTopCtrl(#bgrid!)
+        fi
         #binder!.register(#bgrid!)
     methodend
 
@@ -190,10 +255,16 @@ class public BusinessMasterDataUI
             h = h - #topControl!.getHeight()
         endif
 
-        #splitter!.setSize(w-4 ,h-25)
-        for i = 0 to #forms!.size() - 1
-            cast(BBjWidget, #forms!.getItem(i)).setSize(w-4, h-25)
-        next i
+        if #splitter!<>null() then
+            #splitter!.setSize(w-4 ,h-25)
+        endif 
+        
+        it! = #forms!.iterator()
+        while it!.hasNext()
+            form! = it!.next()
+            cast(BBjWidget, form!).setSize(w-4, h-25)
+        wend
+        
 
         if #edittb! <> null() then
             #edittb!.redraw(0)
