@@ -57,11 +57,9 @@ class public BusinessMasterDataUI
                 #wnd!.setStyle("min-height","100%")
             
                 tb! = #wnd!.addChildWindow(100,0,0,10,10,"Row",$00100800$,BBjAPI().getSysGui().getAvailableContext())
-                tb!.addStaticText(100,0,0,250,20,"TB!")
                 tb!.setStyle("height","50px")
                 tb!.addPanelStyle("stretch")
-                tb!.setStyle("background-color","rebeccapurple")
-                
+
                 #topWnd! = #wnd!.addChildWindow(101,0,0,10,10,"Row",$00100800$,BBjAPI().getSysGui().getAvailableContext())
                 #topWnd!.setStyle("height","100%")
                 #topWnd!.addStyle("fifty")
@@ -72,7 +70,7 @@ class public BusinessMasterDataUI
                 #bottomWnd!.setStyle("height","100%")
                 #bottomWnd!.addStyle("fifty")
                 #bottomWnd!.addPanelStyle("stretch")
-                #bottomWnd!.setStyle("background-color","yellow")
+
                 break
             case "default"
                 #wnd! = #sysgui!.addWindow(100,100,1020,760,TITLE$,$00000093$)
@@ -195,7 +193,11 @@ class public BusinessMasterDataUI
     methodend
 
     method public void addEditToolbar()
-        #edittb! = new EditToolbarComponent(#wnd!,111,-2,-2,100,32)
+        if info(3,6)="6" then
+            #edittb! = new EditToolbarComponent(#wnd!.getChildWindow(100))
+        else
+            #edittb! = new EditToolbarComponent(#wnd!,111,-2,-2,100,32)
+        endif
         #binder!.register(#edittb!)
     methodend
 

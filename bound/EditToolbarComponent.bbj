@@ -11,11 +11,11 @@ rem  * A sample BBj Widget Implementation
 rem  */
 class public EditToolbarComponent extends AbstractBCBoundWidget
 
-    field protected BBjMenuButton btn_new!
-    field protected BBjMenuButton btn_save!
-    field protected BBjMenuButton btn_delete!
-    field protected BBjMenuButton btn_refresh!
-    field protected BBjMenuButton btn_blank!
+    field protected BBjButton btn_new!
+    field protected BBjButton btn_save!
+    field protected BBjButton btn_delete!
+    field protected BBjButton btn_refresh!
+    field protected BBjButton btn_blank!
     field protected BBjMenuButton btn_background!
     field protected Boolean btn_new_enabled! = Boolean.TRUE
     field protected Boolean btn_save_enabled! = Boolean.TRUE
@@ -43,6 +43,15 @@ class public EditToolbarComponent extends AbstractBCBoundWidget
     method public EditToolbarComponent(BBjWindow wnd!, BBjInt id!, BBjInt x!, BBjInt y!, BBjInt w!, BBjInt h!)
         #super!.create(wnd!,id!,x!,y!,w!,h!)
     methodend
+
+    rem /**
+    rem  * The constructor that creates the widget on wnd!
+    rem * @param BBjWindow wnd!: parent window
+    rem */
+    method public EditToolbarComponent(BBjChildWindow wnd!)
+        #super!.create(wnd!)
+    methodend    
+    
     rem ---------------------- methods from BBjWidget --------------------------------
     rem /**
     rem  * @Override
@@ -50,11 +59,12 @@ class public EditToolbarComponent extends AbstractBCBoundWidget
     rem  * @param Boolean f_init!: if TRUE the control is rendered for the first time so this method has to perform initial rendering
     rem  */
     method public void redraw(Boolean f_init!)
+        
         if (f_init!) then
             
             #getCanvas().setOpaque(0)
             bgColor! = #theme!.getPrimaryColorPalette().getBBjColor()
-            
+
             #btn_background! = #getCanvas().addMenuButton(99,0,0,20,20,"")
             #btn_background!.setTabTraversable(0)
             #btn_background!.setFocusable(0)
@@ -62,50 +72,59 @@ class public EditToolbarComponent extends AbstractBCBoundWidget
             #btn_background!.setForeColor(bgColor!)
             #btn_background!.setBackColor(bgColor!)
             
-            #btn_new! = #getCanvas().addMenuButton(100,0,0,20,20,"NEW")
+            #btn_new! = #getCanvas().addButton(100,0,0,20,20,"NEW")
             #btn_new!.setCallback(BBjAPI.ON_BUTTON_PUSH,#this!,"onBtnNew")
             #btn_new!.setTabTraversable(0)
             #btn_new!.setFocusable(0)
-            #btn_new!.setBorderPainted(0)
+REM             #btn_new!.setBorderPainted(0)
             #btn_new!.setOpaque(0)
             #btn_new!.setImage(#theme!.getBBjImage("IC_NEW",#theme!.ON_PRIMARY))
             #btn_new!.setBackColor(bgColor!)
+            #btn_new!.addStyle("btn btn-outline-primary")
 
-            #btn_save! = #getCanvas().addMenuButton(101,20,0,20,20,"SAVE")
+            #btn_save! = #getCanvas().addButton(101,20,0,20,20,"SAVE")
             #btn_save!.setCallback(BBjAPI.ON_BUTTON_PUSH,#this!,"onBtnSave")
             #btn_save!.setTabTraversable(0)
             #btn_save!.setFocusable(0)
-            #btn_save!.setBorderPainted(0)
+REM             #btn_save!.setBorderPainted(0)
             #btn_save!.setOpaque(0)
             #btn_save!.setImage(#theme!.getBBjImage("IC_SAVE",#theme!.ON_PRIMARY))
             #btn_save!.setBackColor(bgColor!)
+            #btn_save!.addStyle("btn btn-outline-primary")
             
-            #btn_delete! = #getCanvas().addMenuButton(102,40,0,20,20,"DELETE")
+            
+            #btn_delete! = #getCanvas().addButton(102,40,0,20,20,"DELETE")
             #btn_delete!.setCallback(BBjAPI.ON_BUTTON_PUSH,#this!,"onBtnDelete")
             #btn_delete!.setTabTraversable(0)
             #btn_delete!.setFocusable(0)
-            #btn_delete!.setBorderPainted(0)
+REM             #btn_delete!.setBorderPainted(0)
             #btn_delete!.setOpaque(0)
             #btn_delete!.setImage(#theme!.getBBjImage("IC_DELETE",#theme!.ON_PRIMARY))
             #btn_delete!.setBackColor(bgColor!)
+            #btn_delete!.addStyle("btn btn-outline-danger")
             
-            #btn_refresh! = #getCanvas().addMenuButton(103,60,0,20,20,"REFRESH")
+            
+            #btn_refresh! = #getCanvas().addButton(103,60,0,20,20,"REFRESH")
             #btn_refresh!.setCallback(BBjAPI.ON_BUTTON_PUSH,#this!,"onBtnRefresh")
             #btn_refresh!.setTabTraversable(0)
             #btn_refresh!.setFocusable(0)
-            #btn_refresh!.setBorderPainted(0)
+REM             #btn_refresh!.setBorderPainted(0)
             #btn_refresh!.setOpaque(0)
             #btn_refresh!.setImage(#theme!.getBBjImage("IC_REFRESH",#theme!.ON_PRIMARY))
             #btn_refresh!.setBackColor(bgColor!)
+            #btn_refresh!.addStyle("btn btn-outline-success")
             
-            #btn_blank! = #getCanvas().addMenuButton(104,60,0,20,20,"BLANK")
+            
+            #btn_blank! = #getCanvas().addButton(104,60,0,20,20,"BLANK")
             #btn_blank!.setCallback(BBjAPI.ON_BUTTON_PUSH,#this!,"onBtnBlank")
             #btn_blank!.setTabTraversable(0)
             #btn_blank!.setFocusable(0)
-            #btn_blank!.setBorderPainted(0)
+REM             #btn_blank!.setBorderPainted(0)
             #btn_blank!.setOpaque(0)
             #btn_blank!.setImage(#theme!.getBBjImage("IC_BLANK",#theme!.ON_PRIMARY))
-            #btn_blank!.setBackColor(bgColor!)            
+            #btn_blank!.setBackColor(bgColor!)     
+            
+       
             
             #alignAndSizeButtons()
             
