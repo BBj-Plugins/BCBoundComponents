@@ -70,6 +70,7 @@ class public BusinessMasterDataUI
                 #bottomWnd!.setStyle("height","100%")
                 #bottomWnd!.addStyle("fifty")
                 #bottomWnd!.addPanelStyle("stretch")
+                #bottomWnd!.setName("bottomWnd")
 
                 break
             case "default"
@@ -144,7 +145,7 @@ class public BusinessMasterDataUI
                 if (dr!.contains("CLASSNAME")) then
                     form! = eval("new "+dr!.getFieldAsString("CLASSNAME")+"(formCW!,100,0,5,300,300)")
                 else
-                    form! = new SimpleFormComponent(CAST(BBjChildWindow,#bottomWnd!),100,0,5,300,300)
+                    form! = new SimpleFormComponent(CAST(BBjChildWindow,#bottomWnd!))
                     form!.setForm(dr!.getFieldAsString("ARC"), dr!.getFieldAsNumber("CWID"))
                 endif
     

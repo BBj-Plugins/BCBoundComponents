@@ -47,10 +47,15 @@ class public SimpleFormComponent extends AbstractBCBoundWidget implements IPersi
     method public SimpleFormComponent(BBjWindow wnd!, BBjInt id!, BBjInt x!, BBjInt y!, BBjInt w!, BBjInt h!)
         #super!.create(wnd!,id!,x!,y!,w!,h!)
     methodend
+    
+    method public SimpleFormComponent(BBjWindow wnd!)
+        #super!.create(CAST(BBjChildWindow,wnd!))
+    methodend    
 
     method public void setForm(BBjString res_name$, BBjNumber id)
         res = BBjAPI().getSysGui().resOpen(res_name$)
         #cw! = #getCanvas().createChildWindow(res, id, 100, 0, 0)
+        #cw!.setName("FORMCW")
         #cw!.setVisible(Boolean.TRUE)
         #cw!.setBackColor(#theme!.getBBjBackgroundColor())
         #getCanvas().setBackColor(#theme!.getBBjBackgroundColor())
