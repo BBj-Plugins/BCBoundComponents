@@ -3,11 +3,15 @@
 	min-height: 100% !important;
 }
 .fifty {
-    height: 45% !important;
+    height: 50% !important;
 }
 
 .hundred {
     height: 98% !important;
+}
+
+.row{
+    margin: 5px !important;
 }
 
 /*!

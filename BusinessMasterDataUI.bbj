@@ -6,6 +6,7 @@ use ::BusinessUIComponents/bound/NavigatorComponent.bbj::NavigatorComponent
 use ::BusinessUIComponents/bound/EditToolbarComponent.bbj::EditToolbarComponent
 use ::BusinessUIComponents/configurations/ConfigurationButton.bbj::ConfigurationButton
 use ::BusinessUIComponents/bound/SimpleFormComponent.bbj::SimpleFormComponent
+use ::BusinessUIComponents/bound/SimpleWebFormComponent.bbj::SimpleWebFormComponent
 use ::BusinessUIComponents/bound/FilterComponent.bbj::FilterComponent
 use ::BusinessUIComponents/bound/SearchBar.bbj::SearchBar
 use ::BusinessUIComponents/bound/MenuBar.bbj::MenuBar
@@ -61,13 +62,12 @@ class public BusinessMasterDataUI
                 tb!.addPanelStyle("stretch")
 
                 #topWnd! = #wnd!.addChildWindow(101,0,0,10,10,"Row",$00100800$,BBjAPI().getSysGui().getAvailableContext())
-                #topWnd!.setStyle("height","100%")
+                #topWnd!.setStyle("height","92%")
                 #topWnd!.addStyle("fifty")
                 #topWnd!.addPanelStyle("stretch")
             
-            
                 #bottomWnd! = #wnd!.addChildWindow(102,0,0,10,10,"Row",$00100800$,BBjAPI().getSysGui().getAvailableContext())
-                #bottomWnd!.setStyle("height","100%")
+                #bottomWnd!.setStyle("height","92%")
                 #bottomWnd!.addStyle("fifty")
                 #bottomWnd!.addPanelStyle("stretch")
                 #bottomWnd!.setName("bottomWnd")
@@ -137,49 +137,67 @@ class public BusinessMasterDataUI
     
     rem ######### add methods for BC bound components #########
     method public void addForms(ResultSet form_defs!, HashMap controlPrefixMap!)
-        
-        if #formTabCtrl! = null() then
-            rem only one form for now!
+    
+        if info(3,6) = "6" then
+            
             dr! = form_defs!.get(0)
+            form! = new SimpleWebFormComponent(CAST(BBjChildWindow,#bottomWnd!))
+            form!.setForm(dr!.getFieldAsString("ARC"), dr!.getFieldAsNumber("CWID"))
+            
+            if controlPrefixMap! <> null() then
+                form!.setControlPrefixMap(controlPrefixMap!)
+            endif
 
-                if (dr!.contains("CLASSNAME")) then
-                    form! = eval("new "+dr!.getFieldAsString("CLASSNAME")+"(formCW!,100,0,5,300,300)")
-                else
-                    form! = new SimpleFormComponent(CAST(BBjChildWindow,#bottomWnd!))
-                    form!.setForm(dr!.getFieldAsString("ARC"), dr!.getFieldAsNumber("CWID"))
-                endif
-    
-                if controlPrefixMap! <> null() then
-                    form!.setControlPrefixMap(controlPrefixMap!)
-                endif
-    
-                #forms!.addItem(form!)
-                #binder!.register(form!)
-                            
+            #forms!.addItem(form!)
+            #binder!.register(form!)
+            
         else
-            cwIdStart = 200
-            it! = form_defs!.iterator()
-            while it!.hasNext()
-                dr! = it!.next()
-                formCW! = CAST(BBjChildWindow,#bottomWnd!).addChildWindow(cwIdStart + i,0,0,500,500,"",$00000800$, #sysgui!.getAvailableContext(),$$)
-                #formTabCtrl!.addTab(dr!.getFieldAsString("TABNAME"), formCW!)
+        
+            if #formTabCtrl! = null() then
+                rem only one form for now!
+                dr! = form_defs!.get(0)
     
-                if (dr!.contains("CLASSNAME")) then
-                    form! = eval("new "+dr!.getFieldAsString("CLASSNAME")+"(formCW!,100,0,5,300,300)")
-                else
-                    form! = new SimpleFormComponent(formCW!,100,0,5,300,300)
-                    form!.setForm(dr!.getFieldAsString("ARC"), dr!.getFieldAsNumber("CWID"))
-                endif
-    
-                if controlPrefixMap! <> null() then
-                    form!.setControlPrefixMap(controlPrefixMap!)
-                endif
-    
-                #forms!.addItem(form!)
-                #binder!.register(form!)
-                cwIdStart = cwIdStart + 1
-            wend
-        fi
+                    if (dr!.contains("CLASSNAME")) then
+                        form! = eval("new "+dr!.getFieldAsString("CLASSNAME")+"(formCW!,100,0,5,300,300)")
+                    else
+                        form! = new SimpleFormComponent(CAST(BBjChildWindow,#bottomWnd!))
+                        form!.setForm(dr!.getFieldAsString("ARC"), dr!.getFieldAsNumber("CWID"))
+                    endif
+        
+                    if controlPrefixMap! <> null() then
+                        form!.setControlPrefixMap(controlPrefixMap!)
+                    endif
+        
+                    #forms!.addItem(form!)
+                    #binder!.register(form!)
+                                
+            else
+                cwIdStart = 200
+                it! = form_defs!.iterator()
+                while it!.hasNext()
+                    dr! = it!.next()
+                    formCW! = CAST(BBjChildWindow,#bottomWnd!).addChildWindow(cwIdStart + i,0,0,500,500,"",$00000800$, #sysgui!.getAvailableContext(),$$)
+                    #formTabCtrl!.addTab(dr!.getFieldAsString("TABNAME"), formCW!)
+        
+                    if (dr!.contains("CLASSNAME")) then
+                        form! = eval("new "+dr!.getFieldAsString("CLASSNAME")+"(formCW!,100,0,5,300,300)")
+                    else
+                        form! = new SimpleFormComponent(formCW!,100,0,5,300,300)
+                        form!.setForm(dr!.getFieldAsString("ARC"), dr!.getFieldAsNumber("CWID"))
+                    endif
+        
+                    if controlPrefixMap! <> null() then
+                        form!.setControlPrefixMap(controlPrefixMap!)
+                    endif
+        
+                    #forms!.addItem(form!)
+                    #binder!.register(form!)
+                    cwIdStart = cwIdStart + 1
+                wend
+            fi
+            
+        endif
+        
     methodend
 
     method public BCBinder getBinder()

@@ -578,8 +578,10 @@ REM         #cfgwidget! = new ConfigurationWidget(#getCanvas(),201, #getWidth()-
         xPos = #exportButton!.getButton().getX() + (3 * #widgetHeight)
         yPos = #exportButton!.getButton().getY()
         cw! = #getCanvas().getControl(100)
-        #cfgbutton! = new ConfigurationButton(cw!,201, xPos, yPos, #this!, #realm!, x$, #cfgbc! )
-        #cfgbutton!.applyAutoConfig()
+        if info(3,6) <> "6" then
+            #cfgbutton! = new ConfigurationButton(cw!,201, xPos, yPos, #this!, #realm!, x$, #cfgbc! )
+            #cfgbutton!.applyAutoConfig()
+        endif
     methodend
     
     method public void onSignal(int signal!, Object payload!)
@@ -590,7 +592,9 @@ REM         #cfgwidget! = new ConfigurationWidget(#getCanvas(),201, #getWidth()-
                 break
             case binder!.SIGNAL_TERMINATE
 REM                 #cfgwidget!.saveAutoConfig(#retrieveState())
-                #cfgbutton!.saveAutoConfig(#retrieveState())
+                if #cfgbutton! <> null() then
+                    #cfgbutton!.saveAutoConfig(#retrieveState())
+                endif
                 break
             case default
                 break
