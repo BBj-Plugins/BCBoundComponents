@@ -14,6 +14,11 @@
     margin: 5px !important;
 }
 
+basis-button[type="default"]::part(button) {
+    background-color: var(--basis-color-success-70);
+    color: var(--basis-color-white);
+}
+
 /*!
  * Bootstrap v4.5.2 (https://getbootstrap.com/)
  * Copyright 2011-2020 The Bootstrap Authors

@@ -65,12 +65,14 @@ class public EditToolbarComponent extends AbstractBCBoundWidget
             #getCanvas().setOpaque(0)
             bgColor! = #theme!.getPrimaryColorPalette().getBBjColor()
 
-            #btn_background! = #getCanvas().addMenuButton(99,0,0,20,20,"")
-            #btn_background!.setTabTraversable(0)
-            #btn_background!.setFocusable(0)
-            #btn_background!.setBorderPainted(1)
-            #btn_background!.setForeColor(bgColor!)
-            #btn_background!.setBackColor(bgColor!)
+            if info(3,6)<>"5" then
+                #btn_background! = #getCanvas().addMenuButton(99,0,0,20,20,"")
+                #btn_background!.setTabTraversable(0)
+                #btn_background!.setFocusable(0)
+                #btn_background!.setBorderPainted(1)
+                #btn_background!.setForeColor(bgColor!)
+                #btn_background!.setBackColor(bgColor!)
+            endif
             
             #btn_new! = #getCanvas().addButton(100,0,0,20,20,"NEW")
             #btn_new!.setCallback(BBjAPI.ON_BUTTON_PUSH,#this!,"onBtnNew")
@@ -80,6 +82,7 @@ REM             #btn_new!.setBorderPainted(0)
             #btn_new!.setOpaque(0)
             #btn_new!.setImage(#theme!.getBBjImage("IC_NEW",#theme!.ON_PRIMARY))
             #btn_new!.setBackColor(bgColor!)
+            #btn_new!.setStyle("height","30px")
 
             #btn_save! = #getCanvas().addButton(101,20,0,20,20,"SAVE")
             #btn_save!.setCallback(BBjAPI.ON_BUTTON_PUSH,#this!,"onBtnSave")
@@ -89,6 +92,7 @@ REM             #btn_save!.setBorderPainted(0)
             #btn_save!.setOpaque(0)
             #btn_save!.setImage(#theme!.getBBjImage("IC_SAVE",#theme!.ON_PRIMARY))
             #btn_save!.setBackColor(bgColor!)
+            #btn_save!.setStyle("height","30px")
             
             
             #btn_delete! = #getCanvas().addButton(102,40,0,20,20,"DELETE")
@@ -99,7 +103,7 @@ REM             #btn_delete!.setBorderPainted(0)
             #btn_delete!.setOpaque(0)
             #btn_delete!.setImage(#theme!.getBBjImage("IC_DELETE",#theme!.ON_PRIMARY))
             #btn_delete!.setBackColor(bgColor!)
-            
+            #btn_delete!.setStyle("height","30px")
             
             #btn_refresh! = #getCanvas().addButton(103,60,0,20,20,"REFRESH")
             #btn_refresh!.setCallback(BBjAPI.ON_BUTTON_PUSH,#this!,"onBtnRefresh")
@@ -109,6 +113,7 @@ REM             #btn_refresh!.setBorderPainted(0)
             #btn_refresh!.setOpaque(0)
             #btn_refresh!.setImage(#theme!.getBBjImage("IC_REFRESH",#theme!.ON_PRIMARY))
             #btn_refresh!.setBackColor(bgColor!)
+            #btn_refresh!.setStyle("height","30px")
             
             #btn_blank! = #getCanvas().addButton(104,60,0,20,20,"BLANK")
             #btn_blank!.setCallback(BBjAPI.ON_BUTTON_PUSH,#this!,"onBtnBlank")
@@ -118,6 +123,7 @@ REM             #btn_blank!.setBorderPainted(0)
             #btn_blank!.setOpaque(0)
             #btn_blank!.setImage(#theme!.getBBjImage("IC_BLANK",#theme!.ON_PRIMARY))
             #btn_blank!.setBackColor(bgColor!)     
+            #btn_blank!.setStyle("height","30px")
             
             #alignAndSizeButtons()
             

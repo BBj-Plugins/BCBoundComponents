@@ -131,7 +131,7 @@ REM     field private ConfigurationWidget    cfgwidget!
             #exportButton!.setBC(new CustomConfigurationsBC(info(3,2), "configurationWidgetConfigs"))
             #exportButton!.getButton().setTabTraversable(0)
             #exportButton!.getButton().setFocusable(0)
-            
+                       
             
             pgmName! = pgm(-1)
             declare String[] split!
@@ -143,16 +143,21 @@ REM     field private ConfigurationWidget    cfgwidget!
             endif
             #exportButton!.setProgramName(pgmName$)
             
-            #fitToGridButton! = cast(BBjButton,cw_top!.addButton(203, 25, 5, 20, 20, "Fit"))
+            #fitToGridButton! = cast(BBjButton,cw_top!.addButton(203, 25, 5, 20, 20, ""))
             #fitToGridButton!.setCallback(#fitToGridButton!.ON_BUTTON_PUSH, #this!, "fitToGrid")
             #fitToGridButton!.setTabTraversable(0)
             #fitToGridButton!.setFocusable(0)
+            #fitToGridButton!.setStyle("width","30px")
+            #fitToGridButton!.setStyle("height","30px")
             rem #fitToGridButton!.setBorderPainted(0)
             
-            #autoSizeColumnsButton! = cast(BBjButton,cw_top!.addButton(204, 50, 5, 20, 20, "Auto"))
+            #autoSizeColumnsButton! = cast(BBjButton,cw_top!.addButton(204, 50, 5, 20, 20, ""))
             #autoSizeColumnsButton!.setCallback(#autoSizeColumnsButton!.ON_BUTTON_PUSH, #this!, "autoSizeColumns")
             #autoSizeColumnsButton!.setTabTraversable(0)
             #autoSizeColumnsButton!.setFocusable(0)
+            #autoSizeColumnsButton!.setStyle("width","30px")
+            #autoSizeColumnsButton!.setStyle("height","30px")
+            
             rem #autoSizeColumnsButton!.setBorderPainted(0)
 
             statusbar! = #grid!.getStatusbar()

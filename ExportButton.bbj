@@ -40,7 +40,9 @@ class public ExportButton extends BBjWidget
     methodend
 
     method public ExportButton(BBjWindow wnd!, BBjNumber id, BBjNumber x, BBjNumber y, BBjNumber width, BBjNumber height)
-        #exportButton! = wnd!.addButton(id, x, y, width, height, "Export")
+        #exportButton! = wnd!.addButton(id, x, y, width, height, "")
+        #exportButton!.setStyle("height","30px")
+        #exportButton!.setStyle("width","30px")
         #exportButton!.setCallback(BBjButton.ON_BUTTON_PUSH, #this!, "onExportButtonPush")
         #mainWindow! = wnd!
     methodend
