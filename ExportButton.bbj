@@ -42,7 +42,6 @@ class public ExportButton extends BBjWidget
     method public ExportButton(BBjWindow wnd!, BBjNumber id, BBjNumber x, BBjNumber y, BBjNumber width, BBjNumber height)
         #exportButton! = wnd!.addButton(id, x, y, width, height, "Export")
         #exportButton!.setCallback(BBjButton.ON_BUTTON_PUSH, #this!, "onExportButtonPush")
-        #exportButton!.addStyle("btn btn-outline-primary")
         #mainWindow! = wnd!
     methodend
     

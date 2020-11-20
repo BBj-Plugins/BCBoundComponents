@@ -80,7 +80,6 @@ REM             #btn_new!.setBorderPainted(0)
             #btn_new!.setOpaque(0)
             #btn_new!.setImage(#theme!.getBBjImage("IC_NEW",#theme!.ON_PRIMARY))
             #btn_new!.setBackColor(bgColor!)
-            #btn_new!.addStyle("btn btn-outline-primary")
 
             #btn_save! = #getCanvas().addButton(101,20,0,20,20,"SAVE")
             #btn_save!.setCallback(BBjAPI.ON_BUTTON_PUSH,#this!,"onBtnSave")
@@ -90,7 +89,6 @@ REM             #btn_save!.setBorderPainted(0)
             #btn_save!.setOpaque(0)
             #btn_save!.setImage(#theme!.getBBjImage("IC_SAVE",#theme!.ON_PRIMARY))
             #btn_save!.setBackColor(bgColor!)
-            #btn_save!.addStyle("btn btn-outline-primary")
             
             
             #btn_delete! = #getCanvas().addButton(102,40,0,20,20,"DELETE")
@@ -101,7 +99,6 @@ REM             #btn_delete!.setBorderPainted(0)
             #btn_delete!.setOpaque(0)
             #btn_delete!.setImage(#theme!.getBBjImage("IC_DELETE",#theme!.ON_PRIMARY))
             #btn_delete!.setBackColor(bgColor!)
-            #btn_delete!.addStyle("btn btn-outline-danger")
             
             
             #btn_refresh! = #getCanvas().addButton(103,60,0,20,20,"REFRESH")
@@ -112,7 +109,6 @@ REM             #btn_refresh!.setBorderPainted(0)
             #btn_refresh!.setOpaque(0)
             #btn_refresh!.setImage(#theme!.getBBjImage("IC_REFRESH",#theme!.ON_PRIMARY))
             #btn_refresh!.setBackColor(bgColor!)
-            #btn_refresh!.addStyle("btn btn-outline-success")
             
             #btn_blank! = #getCanvas().addButton(104,60,0,20,20,"BLANK")
             #btn_blank!.setCallback(BBjAPI.ON_BUTTON_PUSH,#this!,"onBtnBlank")
