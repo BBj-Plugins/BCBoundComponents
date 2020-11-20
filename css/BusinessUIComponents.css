@@ -3,11 +3,11 @@
 	min-height: 100% !important;
 }
 .fifty {
-    height: 50% !important;
+    height: calc(50% - 25px) !important;
 }
 
 .hundred {
-    height: 98% !important;
+    height: calc(100% - 50px) !important;
 }
 
 .row{

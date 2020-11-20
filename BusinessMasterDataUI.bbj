@@ -60,14 +60,16 @@ class public BusinessMasterDataUI
                 tb! = #wnd!.addChildWindow(100,0,0,10,10,"Row",$00100800$,BBjAPI().getSysGui().getAvailableContext())
                 tb!.setStyle("height","50px")
                 tb!.addPanelStyle("stretch")
+                tb!.setName("toolbar")
 
                 #topWnd! = #wnd!.addChildWindow(101,0,0,10,10,"Row",$00100800$,BBjAPI().getSysGui().getAvailableContext())
-                #topWnd!.setStyle("height","92%")
+                #topWnd!.setStyle("height","calc(100% - 25px)")
                 #topWnd!.addStyle("fifty")
                 #topWnd!.addPanelStyle("stretch")
+                #topWnd!.setName("topWnd")
             
                 #bottomWnd! = #wnd!.addChildWindow(102,0,0,10,10,"Row",$00100800$,BBjAPI().getSysGui().getAvailableContext())
-                #bottomWnd!.setStyle("height","92%")
+                #bottomWnd!.setStyle("height","calc(100% - 25px)")
                 #bottomWnd!.addStyle("fifty")
                 #bottomWnd!.addPanelStyle("stretch")
                 #bottomWnd!.setName("bottomWnd")
