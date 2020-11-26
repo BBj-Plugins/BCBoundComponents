@@ -665,7 +665,7 @@ REM                 endif
             it! = #FieldSelection!.iterator()
             while it!.hasNext()
                 field! = it!.next()
-                fields! = fields! + "," + field!
+                fields! = fields! + field! + ","
             wend
             rem remove last comma
             fields! = fields!.substring(0,fields!.length() - 1)

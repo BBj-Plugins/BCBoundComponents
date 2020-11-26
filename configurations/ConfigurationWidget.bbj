@@ -90,7 +90,7 @@ class public ConfigurationWidget extends BBjWidget
         if keyx!.length() > 35 then
             keyx! = keyx!.substring(keyx!.length() - 35)
         endif
-
+        
         #keyx! = keyx!
         #container! = container!
 

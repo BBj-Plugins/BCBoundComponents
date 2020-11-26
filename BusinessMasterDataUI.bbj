@@ -47,7 +47,7 @@ class public BusinessMasterDataUI
 
         switch info(3,6)
             case "5"
-                #wnd! = #sysgui!.addWindow(100,100,1020,760,TITLE$,$01001010$)
+                #wnd! = #sysgui!.addWindow(100,100,1200,760,TITLE$,$01001010$)
                 #wnd!.setBackColor(#theme!.getBBjBackgroundColor())
                 break
             case "6"
@@ -217,7 +217,7 @@ class public BusinessMasterDataUI
         if info(3,6)="6" then
             #edittb! = new EditToolbarComponent(#wnd!.getChildWindow(100))
         else
-            #edittb! = new EditToolbarComponent(#wnd!,111,-2,-2,100,32)
+            #edittb! = new EditToolbarComponent(#wnd!,111,-2,-2,800,32)
         endif
         #binder!.register(#edittb!)
     methodend

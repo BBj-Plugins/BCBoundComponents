@@ -59,20 +59,21 @@ class public EditToolbarComponent extends AbstractBCBoundWidget
     rem  * @param Boolean f_init!: if TRUE the control is rendered for the first time so this method has to perform initial rendering
     rem  */
     method public void redraw(Boolean f_init!)
+    
         
         if (f_init!) then
             
             #getCanvas().setOpaque(0)
             bgColor! = #theme!.getPrimaryColorPalette().getBBjColor()
 
-            if info(3,6)<>"5" then
+REM             if info(3,6)<>"5" then
                 #btn_background! = #getCanvas().addMenuButton(99,0,0,20,20,"")
                 #btn_background!.setTabTraversable(0)
                 #btn_background!.setFocusable(0)
                 #btn_background!.setBorderPainted(1)
                 #btn_background!.setForeColor(bgColor!)
                 #btn_background!.setBackColor(bgColor!)
-            endif
+REM             endif
             
             #btn_new! = #getCanvas().addButton(100,0,0,20,20,"NEW")
             #btn_new!.setCallback(BBjAPI.ON_BUTTON_PUSH,#this!,"onBtnNew")
@@ -140,7 +141,9 @@ REM             #btn_blank!.setBorderPainted(0)
         height = #theme!.getNumProperty("PRIMARY_TB_HEIGHT")
         #getCanvas().setSize(#getCanvas().getWidth(), height + 4)
         imageSize = height - 4
-        #btn_background!.setSize(#btn_background!.getWidth(), height + 4)
+REM         if #btn_background! <> null() then
+            #btn_background!.setSize(#btn_background!.getWidth(), height + 4)
+REM         endif
         currentXpos = 2
 
         if #btn_blank_enabled! then
