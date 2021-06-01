@@ -1,0 +1,70 @@
+html {
+    --xbasis-button-border-radius:3px;
+}
+
+.stretch, body, html, .BBjTopLevelWindow, .BBjWindowManagerDesktop{
+    height: 100% !important;
+	min-height: 100% !important;
+}
+
+
+.fifty {
+    height: calc(50% - 25px) !important;
+}
+
+.hundred {
+    height: calc(100% - 50px) !important;
+}
+
+.row{
+    margin: 5px !important;
+}
+
+basis-button[type='default']::part(button) {
+    background-color: var(--basis-color-success-70);
+    color: var(--basis-color-white);
+}
+
+
+.tbar {
+    background-color:#293237;
+    height:35px;
+    display:flex;
+    padding-top:4px;
+    justify-content: flex-start;
+}
+
+
+.tbarleft {
+    left:10px;
+    position:absolute;
+}
+
+.tbarright {
+    right:10px;
+    position:absolute;
+}
+
+
+.tbn {
+    color:white;
+    float: right;
+    margin-left:2px;    
+}
+
+.tbn:hover {
+    background-color:#4BB92C;
+}
+
+
+
+.tilelabel {
+    font-family:Nunito, sans-serif;
+    font-size:18px;
+    font-style:normal;
+    font-weight:600;      
+}
+
+.tileselected {
+    background-color:#4BB92C;
+}
