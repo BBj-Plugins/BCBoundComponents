@@ -5,7 +5,6 @@ use ::BusinessUIComponents/ExampleBCs/ChileCustomerBC.bbj::ChileCustomerBC
 use com.basiscomponents.db.ResultSet
 use com.basiscomponents.bc.BCBinder
 
-theme! = com.basiscomponents.ui.theming.Theme.getInstance(BBjAPI().getFileSystem().resolvePath("BusinessUIComponents/configurations/ui.properties"),BBjAPI())
 com.basiscomponents.i18n.Props.setLocale(stbl("!LOCALE"))
 com.basiscomponents.i18n.Props.setProperyDir(BBjAPI().getFileSystem().resolvePath("BusinessUIComponents/configurations/textProperties/"))
 

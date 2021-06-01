@@ -10,7 +10,5 @@ interface public IBCMetaDataModel
     method public DataRow mergeAttributes(DataRow attributesRecord!, String locale!)
     
     method public BBjVector getLocales()
-    
-    
 
 interfaceend

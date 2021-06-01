@@ -4,7 +4,6 @@ use com.basiscomponents.db.DataRow
 use com.basiscomponents.db.ResultSet
 use com.basiscomponents.db.util.SqlTypeNames
 
-use com.basiscomponents.ui.theming.Theme
 use com.basiscomponents.i18n.Props
 
 use com.google.gson.JsonObject
@@ -21,10 +20,10 @@ use ::BBjGridExWidget/GxStatusBar.bbj::GxStatusBarTotalAndFilteredRowCountCompon
 use ::BBjGridExWidget/GxStatusBar.bbj::GxStatusBarSelectedRowCountComponent
 use ::BBjGridExWidget/GxFilters.bbj::GxFilterSetFilter
 
-use ::BusinessUIComponents/AbstractBCBoundWidget.bbj::AbstractBCBoundWidget
+use ::BusinessUIComponents/bound/AbstractBCBoundWidget.bbj::AbstractBCBoundWidget
 use ::BusinessUIComponents/ExportButton.bbj::ExportButton
 
-REM use ::BusinessUIComponents/configurations/ConfigurationWidget.bbj::ConfigurationWidget
+use ::BusinessUIComponents/configurations/ConfigurationWidget.bbj::ConfigurationWidget
 use ::BusinessUIComponents/configurations/ConfigurationButton.bbj::ConfigurationButton
 use ::BusinessUIComponents/configurations/CustomConfigurationsBC.bbj::CustomConfigurationsBC
 use ::BusinessUIComponents/configurations/IPersistentState.bbj::IPersistentState
@@ -43,12 +42,15 @@ class public BusinessGrid extends AbstractBCBoundWidget implements IPersistentSt
     
     field private String realm! = "GRD"
 
-REM     field private ConfigurationWidget    cfgwidget!
+    field private ConfigurationWidget    cfgwidget!
     field private ConfigurationButton    cfgbutton!
     field private CustomConfigurationsBC cfgbc!
     field private ExportButton           exportButton!
-    field private BBjButton          fitToGridButton!
-    field private BBjButton          autoSizeColumnsButton!
+    
+    field private BBjChildWindow         toolbar_handle!
+    
+    field private BBjChildWindow         fitToGridButton!
+    field private BBjChildWindow          autoSizeColumnsButton!
     field private Boolean                barista!
 
     field private Boolean columnConfigurationSet! = Boolean.FALSE
@@ -58,7 +60,6 @@ REM     field private ConfigurationWidget    cfgwidget!
     
     field private BBjNumber widgetHeight = 20
     
-    field private Theme theme! = Theme.getInstance()
     
     rem --------------------- constructors -------------------------------------
 
@@ -88,6 +89,14 @@ REM     field private ConfigurationWidget    cfgwidget!
     method public BusinessGrid(BBjChildWindow wnd!)
         #super!.create(wnd!)
     methodend
+    
+    rem /**
+    rem  * The constructor using an existing child-window (canvas) on which the widget is created.
+    rem  */
+    method public BusinessGrid(BBjChildWindow wnd!,BBjChildWindow tbar_wnd!)
+        #toolbar_handle! = tbar_wnd!
+        #super!.create(wnd!)
+    methodend    
 
     rem /**
     rem  * This method is called whenever the widget needs to be rendered.
@@ -101,17 +110,21 @@ REM     field private ConfigurationWidget    cfgwidget!
             rem so have to initialize / create my controls
                 
             canvas! = #getCanvas()
-            
-            cw_top! = canvas!.addChildWindow(100,0,0,1024,40,"Row",$00100800$,BBjAPI().getSysGui().getAvailableContext())
-            cw_top!.setStyle("height","50px")
-            cw_top!.addPanelStyle("stretch")
+            canvas!.setName("BusinessGridCanvas")
+            if #toolbar_handle! = null() then
+                cw_top! = canvas!.addChildWindow(100,0,0,1024,40,"Row",$00100800$,BBjAPI().getSysGui().getAvailableContext())
+            else
+                cw_top! = #toolbar_handle!
+            fi
                 
-            cw_grid! = canvas!.addChildWindow(101,0,40,canvas!.getWidth(),canvas!.getHeight()-40,"Row",$00100800$,BBjAPI().getSysGui().getAvailableContext())
-            cw_grid!.setStyle("height","100%")
-            cw_grid!.addStyle("hundred")
-            cw_grid!.addPanelStyle("stretch")
+            cw_grid! = canvas!.addChildWindow(101,0,40,10,10,"Row",$00100800$,BBjAPI().getSysGui().getAvailableContext())
             #grid! = new BBjGridExWidget(cw_grid!)
-            #grid!.getHTMLView().setStyle("height","100%")
+            cw_grid!.setDockStyle("height","100%")
+            cw_grid!.setDockStyle("min-height","100%")
+            cw_grid!.setStyle("height","100%")
+            cw_grid!.setStyle("min-height","100%")
+            cw_grid!.setPanelStyle("height","100%")
+            cw_grid!.setPanelStyle("min-height","100%")
             
             #grid!.getOptions().setNavigationBehavior(#grid!.GRID_NAVIGATION_BEHAVIOUR_NEXT_ROW())
             #grid!.setCallback(#grid!.ON_GRID_ROW_SELECT(), #this!, "onGridSelection")
@@ -129,8 +142,6 @@ REM     field private ConfigurationWidget    cfgwidget!
             #exportButton! = new ExportButton(cw_top!, 202, 0, 5, 20, 20)
             #exportButton!.setGrid(#this!)
             #exportButton!.setBC(new CustomConfigurationsBC(info(3,2), "configurationWidgetConfigs"))
-            #exportButton!.getButton().setTabTraversable(0)
-            #exportButton!.getButton().setFocusable(0)
                        
             
             pgmName! = pgm(-1)
@@ -143,20 +154,26 @@ REM     field private ConfigurationWidget    cfgwidget!
             endif
             #exportButton!.setProgramName(pgmName$)
             
-            #fitToGridButton! = cast(BBjButton,cw_top!.addButton(203, 25, 5, 20, 20, ""))
-            #fitToGridButton!.setCallback(#fitToGridButton!.ON_BUTTON_PUSH, #this!, "fitToGrid")
-            #fitToGridButton!.setTabTraversable(0)
-            #fitToGridButton!.setFocusable(0)
-            #fitToGridButton!.setStyle("width","30px")
-            #fitToGridButton!.setStyle("height","30px")
-            rem #fitToGridButton!.setBorderPainted(0)
             
-            #autoSizeColumnsButton! = cast(BBjButton,cw_top!.addButton(204, 50, 5, 20, 20, ""))
-            #autoSizeColumnsButton!.setCallback(#autoSizeColumnsButton!.ON_BUTTON_PUSH, #this!, "autoSizeColumns")
-            #autoSizeColumnsButton!.setTabTraversable(0)
-            #autoSizeColumnsButton!.setFocusable(0)
-            #autoSizeColumnsButton!.setStyle("width","30px")
-            #autoSizeColumnsButton!.setStyle("height","30px")
+            #fitToGridButton! =  CAST(BBjChildWindow,cw_top!.addChildWindow(204,0,0,100,80,"",$00100800$,BBjAPI().getSysGui().getAvailableContext()))
+            #fitToGridButton!.addPanelStyle("tbn")
+            #fitToGridButton!.setStyle("float","right")
+            #fitToGridButton!.setStyle("width","fit-content")
+            #fitToGridButton!.setStyle("width","-moz-fit-content")
+            img! = #fitToGridButton!.addStaticText(101,0,0,48,48,"fit_screen")
+            img!.addStyle("material-icons")
+            #fitToGridButton!.setCallback(BBjAPI.ON_MOUSE_DOWN,#this!,"fitToGrid")
+            
+            
+            #autoSizeColumnsButton! =  CAST(BBjChildWindow,cw_top!.addChildWindow(205,0,0,100,80,"",$00100800$,BBjAPI().getSysGui().getAvailableContext()))
+            #autoSizeColumnsButton!.addPanelStyle("tbn")
+            #autoSizeColumnsButton!.setStyle("float","right")
+            #autoSizeColumnsButton!.setStyle("width","fit-content")
+            #autoSizeColumnsButton!.setStyle("width","-moz-fit-content")
+            img! = #autoSizeColumnsButton!.addStaticText(101,0,0,48,48,"view_list")
+             img!.addStyle("material-icons")
+            #autoSizeColumnsButton!.setCallback(BBjAPI.ON_MOUSE_DOWN,#this!,"autoSizeColumns")
+
             
             rem #autoSizeColumnsButton!.setBorderPainted(0)
 
@@ -165,67 +182,19 @@ REM     field private ConfigurationWidget    cfgwidget!
             statusbar!.addComponent(new GxStatusBarSelectedRowCountComponent("center"))
             statusbar!.setComponentVisibility(GxStatusBarTotalAndFilteredRowCountComponent.getId(), Boolean.TRUE)
             
-            cw_top!.setBackColor(#theme!.getBBjBackgroundColor())
             
             textProperties! = Props.getInstance()
             
-            #exportButton!.setImage(#theme!.getBBjImage("IC_EXPORT",Theme.PRIMARY))
             #exportButton!.getButton().setToolTipText(textProperties!.getText("BUSINESS_GRID_TOOLTIP_EXPORT"))
+            #exportButton!.getButton().setStyle("float","right")
             
-            #fitToGridButton!.setImage(#theme!.getBBjImage("IC_FIT_TO_GRID",Theme.PRIMARY))
             #fitToGridButton!.setToolTipText(textProperties!.getText("BUSINESS_GRID_TOOLTIP_FIT_TO_GRID"))
             
-            #autoSizeColumnsButton!.setImage(#theme!.getBBjImage("IC_AUTO_SIZE_COLUMNS",Theme.PRIMARY))
             #autoSizeColumnsButton!.setToolTipText(textProperties!.getText("BUSINESS_GRID_TOOLTIP_AUTO_SIZE_COLUMNS"))
-      
-            #widgetHeight = cast(BBjNumber, #theme!.getNumProperty("SECONDARY_TB_HEIGHT"))
-            xPos = #exportButton!.getButton().getX()
-            yPos = #exportButton!.getButton().getY()
-            #exportButton!.setSize(#widgetHeight, #widgetHeight)
-            #exportButton!.setImageSize(#widgetHeight-4, #widgetHeight-4)
-            #exportButton!.setBackColor(#theme!.getBBjBackgroundColor())
-            xPos = xPos + #widgetHeight
-            #fitToGridButton!.setSize(#widgetHeight, #widgetHeight)
-            #fitToGridButton!.setImageSize(#widgetHeight-4, #widgetHeight-4)
-            #fitToGridButton!.setLocation(xPos, yPos)
-            #fitToGridButton!.setBackColor(#theme!.getBBjBackgroundColor())
-            xPos = xPos + #widgetHeight
-            #autoSizeColumnsButton!.setSize(#widgetHeight, #widgetHeight)
-            #autoSizeColumnsButton!.setImageSize(#widgetHeight-4, #widgetHeight-4)
-            #autoSizeColumnsButton!.setLocation(xPos, yPos)
-            #autoSizeColumnsButton!.setBackColor(#theme!.getBBjBackgroundColor())
+     
             
-            #grid!.setLocation(#grid!.getX(), #widgetHeight + 10)
-      REM         if #cfgbutton! <> null() then 
-      REM             xPos = xPos + #widgetHeight
-      REM             #cfgbutton!.setLocation(xPos, yPos)
-      REM         endif
-      REM         if #cfgwidget! <> null() then 
-      REM             xPos = xPos + #widgetHeight
-      REM             #cfgwidget!.setMinPaddingLeft(xPos)
-      REM         endif
-            primary! = #theme!.getPrimaryColorPalette().getHexColor("300")
-            textColor! = #theme!.getPrimaryColorPalette().getForeColor()
-            
-            #grid!.setTheme( #grid!.GRID_THEME_BALHAM() )
-            balhamTheme! = new JsonObject()
-            balhamTheme!.addProperty("--ag-balham-active-color",primary!)
-            balhamTheme!.addProperty("--ag-selected-row-background-color",primary!)
-            #grid!.addStyle(".ag-theme-balham",balhamTheme!)
-            #grid!.addStyle(".ag-theme-balham .ag-row-selected", String.format("{""color"":""%s""}",textColor!))
-
-            cw_top!.setBackColor(#theme!.getBBjBackgroundColor())
         endif
 
-        if info(3,6)<>"6" then
-            #Canvas!.getControl(101).setSize(#getWidth(),#getHeight()-#widgetHeight - 10)
-            #grid!.setSize(#getWidth(),#getHeight()-#widgetHeight - 10)
-
-REM         if #cfgwidget! <> null() then
-REM             rem min padding for config widget to allow for the export and fitToGrid buttons to the left
-REM             #cfgwidget!.setLocation(#getWidth()-155, 5)
-REM         endif
-        fi   
         
     methodend
 
@@ -252,7 +221,7 @@ REM         endif
     rem  * This method is called by the BCBinder object after having performed a retrieval.
     rem  */
     method public void onSetData()
-    
+        
         declare ResultSet rs!
         declare ResultSet rsa!
         declare DataRow ar!
@@ -462,6 +431,7 @@ REM         endif
     rem  *
     rem  */
     method public void onSetSelection()
+    
             if (#sending!) then methodret
 
             sel! = #getBinder().getSelection()
@@ -471,14 +441,14 @@ REM         endif
             s! = new BBjVector()
             while it!.hasNext()
                 rowkey$ = it!.next()
-REM                 i = rs!.indexOf(rowkey$)
                 s!.addItem(rowkey$)
             wend
 
             #grid!.deselectAll()
             if (s!.size()>0) then
-                #grid!.setSelectedRows(s!)
-                #grid!.ensureIndexVisible(s!.getItem(0), #grid!.GRID_ROWPOS_MIDDLE())
+                #ignoreNext! = Boolean.TRUE
+                 #grid!.setSelectedRows(s!)
+                 #grid!.ensureIndexVisible(s!.getItem(0), #grid!.GRID_ROWPOS_MIDDLE())
             endif
     methodend
 
@@ -496,12 +466,6 @@ REM                 i = rs!.indexOf(rowkey$)
               rows! = x!.getSelectedRows()
               sel! = new BBjVector()
               rs! = #getBinder().getRS()
-REM               if rs! = null() or rs!.isEmpty() then
-REM REM                   #sending! = Boolean.TRUE
-REM                   #getBinder().setSelection(sel!)
-REM REM                   #sending! = Boolean.FALSE
-REM                   methodret
-REM               endif
               it! = rows!.iterator()
               while it!.hasNext()
                   row! = it!.next()
@@ -585,14 +549,16 @@ REM         #grid!.setState(new GxState(state!))
             x$ = x$(1, pos("@"=x$)-1)
         endif
         
-REM         #cfgwidget! = new ConfigurationWidget(#getCanvas(),201, #getWidth()-155, 5 , #this!, #realm!, x$, #cfgbc! )
-        xPos = #exportButton!.getButton().getX() + (3 * #widgetHeight)
-        yPos = #exportButton!.getButton().getY()
-        cw! = #getCanvas().getControl(100)
-        if info(3,6) <> "6" then
-            #cfgbutton! = new ConfigurationButton(cw!,201, xPos, yPos, #this!, #realm!, x$, #cfgbc! )
-            #cfgbutton!.applyAutoConfig()
-        endif
+        
+          if #toolbar_handle! = null() then
+              cw! = #getCanvas().getControl(100)
+          else
+              cw! = #toolbar_handle!
+          fi
+        
+          #cfgbutton! = new ConfigurationButton(cw!, #this!, #realm!, x$, #cfgbc! )
+          
+        
     methodend
     
     method public void onSignal(int signal!, Object payload!)
@@ -602,7 +568,7 @@ REM         #cfgwidget! = new ConfigurationWidget(#getCanvas(),201, #getWidth()-
                 #grid!.focus()
                 break
             case binder!.SIGNAL_TERMINATE
-REM                 #cfgwidget!.saveAutoConfig(#retrieveState())
+                 #cfgwidget!.saveAutoConfig(#retrieveState())
                 if #cfgbutton! <> null() then
                     #cfgbutton!.saveAutoConfig(#retrieveState())
                 endif
@@ -658,10 +624,10 @@ REM                 #cfgwidget!.saveAutoConfig(#retrieveState())
         
     method public void setRealm(String realm!)
         #realm! = realm!
-REM         if #cfgwidget! <> null() then 
-REM             #cfgwidget!.setRealm(realm!)
-REM             #cfgwidget!.init()
-REM         endif
+        if #cfgwidget! <> null() then 
+            #cfgwidget!.setRealm(realm!)
+            #cfgwidget!.init()
+        endif
         if #cfgbutton! <> null() then 
             #cfgbutton!.setRealm(realm!)
             #cfgbutton!.applyAutoConfig()

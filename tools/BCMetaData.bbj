@@ -3,7 +3,6 @@ use com.basiscomponents.bc.BCBinder
 use com.basiscomponents.db.DataRow
 use com.basiscomponents.db.ResultSet
 
-use com.basiscomponents.ui.theming.Theme
 use com.basiscomponents.i18n.Props
 
 use ::BBjGridExWidget/GxColumns.bbj::GxColumn
@@ -22,7 +21,7 @@ use ::BusinessUIComponents/configurations/CustomConfigurationsBC.bbj::CustomConf
 use ::BusinessUIComponents/configurations/IPersistentState.bbj::IPersistentState
 use ::BusinessUIComponents/bound/WindowHandler.bbj::WindowHandler
 
-use ::BusinessUIComponents/tools/IBCMetaDataPersistenceModel.bbj::IBCMetaDataModel
+use com.basiscomponents.bc.meta.IBCMetaDataModel
 
 use com.google.gson.JsonArray
 
@@ -80,7 +79,6 @@ class public BCMetaData extends BBDialog implements IPersistentState
     
     field private IBCMetaDataModel meta_model!
     
-    field private Theme theme! = Theme.getInstance()
     
     
     method private BCMetaData()
@@ -199,17 +197,13 @@ REM 		#super!.getControlByName("BCMetaData").setCallback(BBjAPI.ON_CLOSE,#this!,
     	#C_BTN_GRID! = cast(BBjButton,#super!.getControlByName("BTN_GRID"))
     	rem /** DLGWIZ_INI_END **/
     	
-    	ico! = #theme!.getBBjImage("IC_SAVE",#theme!.PRIMARY)
         #C_BTN_SAVE!.setImage(ico!)
         #C_BTN_SAVE!.setImageSize(20,20)
 
-        ico! = #theme!.getBBjImage("IC_GRID",#theme!.PRIMARY)
         #C_BTN_GRID!.setImage(ico!)
         #C_BTN_GRID!.setImageSize(20,20)
 
         
-    	#Wnd!.setBackColor(#theme!.getBBjBackgroundColor())
-    
     	v! = new BBjVector()
     	it! = #BCList!.iterator()
     	while it!.hasNext()
@@ -337,9 +331,9 @@ REM 		#super!.getControlByName("BCMetaData").setCallback(BBjAPI.ON_CLOSE,#this!,
         wend
 
         rem grid!.updateColumns()
-        #cfgbc! = new CustomConfigurationsBC(info(3,2))
-        #cfgbutton! = new ConfigurationButton(#Wnd!, 201, #Wnd!.getWidth()-50, 5, #this!, #realm!, #pgmname!, #cfgbc! )
-        #cfgbutton!.applyAutoConfig()
+REM         #cfgbc! = new CustomConfigurationsBC(info(3,2))
+REM         #cfgbutton! = new ConfigurationButton(#Wnd!, 201, #Wnd!.getWidth()-50, 5, #this!, #realm!, #pgmname!, #cfgbc! )
+REM         #cfgbutton!.applyAutoConfig()
     methodend
 
     rem /**
@@ -395,7 +389,7 @@ REM 		#super!.getControlByName("BCMetaData").setCallback(BBjAPI.ON_CLOSE,#this!,
 	method public void BCMetaData__ON_RESIZE(BBjResizeEvent ev!)
 		  w=ev!.getWidth()
 		  h=ev!.getHeight()
-		  #cfgbutton!.setLocation(w-40,5)
+REM 		  #cfgbutton!.setLocation(w-40,5)
 		  #grid!.setSize(w,h-40)
 	methodend
 

@@ -181,10 +181,9 @@ class public ChileCustomerBC implements BusinessComponent
         dr!.setFieldAttribute("CREDIT_CODE","HIDE","1");rem set as hidden
 
         rem merge model
-       use ::BusinessUIComponents/tools/BCMetaDataJSONModel.bbj::BCMetaDataJSONModel
-       model! = new BCMetaDataJSONModel("BusinessUIComponents/ExampleBCs/meta/")
-       model!.loadModel("ChileCustomerBC")
-
+        use ::BusinessUIComponents/tools/BCMetaDataJSONModel.bbj::BCMetaDataJSONModel
+        model! = new BCMetaDataJSONModel("BusinessUIComponents/ExampleBCs/meta/")
+        model!.loadModel("ChileCustomerBC")
         #AttributesRecord! = CAST(DataRow,model!.mergeAttributes(dr!,stbl("!LOCALE")))
         methodret dr!
 

@@ -1,4 +1,4 @@
-use ::BusinessUIComponents/AbstractBCBoundWidget.bbj::AbstractBCBoundWidget
+use ::BusinessUIComponents/bound/AbstractBCBoundWidget.bbj::AbstractBCBoundWidget
 use ::BBjGridExWidget/BBjGridExWidget.bbj::BBjGridExWidget
 use ::BusinessUIComponents/utils/QuickSearchField.bbj::QuickSearchField
 use ::BusinessUIComponents/configurations/IPersistentState.bbj::IPersistentState
@@ -7,13 +7,13 @@ use com.basiscomponents.bc.BCBinder
 use com.basiscomponents.bc.BusinessComponent
 use com.basiscomponents.db.ResultSet
 use com.basiscomponents.db.DataRow
-use com.basiscomponents.ui.theming.Theme
 use com.google.common.collect.BiMap
 use com.google.common.collect.HashBiMap
 use java.util.HashMap
 use java.util.ArrayList
 use java.time.LocalDateTime
 use java.time.format.DateTimeFormatter
+use com.basiscomponents.ui.layout.dwc.DWCLayout
 
 class public SimpleFormComponent extends AbstractBCBoundWidget implements IPersistentState
 
@@ -28,7 +28,6 @@ class public SimpleFormComponent extends AbstractBCBoundWidget implements IPersi
     field protected String quickSearchField! = "_SEARCH"
     field protected Boolean quickSearchUseWildCard! = Boolean.TRUE
     field protected Boolean listButtonFirstRowEmpty! = Boolean.FALSE
-    field private Theme theme! = Theme.getInstance()
     rem --------------------- constructors -------------------------------------
     rem /**
     rem  * disabled default constructor
@@ -51,15 +50,19 @@ class public SimpleFormComponent extends AbstractBCBoundWidget implements IPersi
     method public SimpleFormComponent(BBjWindow wnd!)
         #super!.create(CAST(BBjChildWindow,wnd!))
     methodend    
-
-    method public void setForm(BBjString res_name$, BBjNumber id)
-        res = BBjAPI().getSysGui().resOpen(res_name$)
-        #cw! = #getCanvas().createChildWindow(res, id, 100, 0, 0)
+    
+    method public void setDWCForm(BBjString res_name$)
+        #cw! = #getCanvas()
+        ch=unt
+        open (ch)res_name$
+        read record (ch,siz=dec(fin(ch)(1,4))+10)json$
+        close (ch)
+        layout! = DWCLayout.fromJson(json$)
+        layout!.render(#cw!,BBjAPI().getSysGui())
         #cw!.setName("FORMCW")
         #cw!.setVisible(Boolean.TRUE)
-        #cw!.setBackColor(#theme!.getBBjBackgroundColor())
-        #getCanvas().setBackColor(#theme!.getBBjBackgroundColor())
     methodend
+    
     rem ---------------------- methods from BBjWidget --------------------------------
     rem /**
     rem  * @Override
@@ -69,12 +72,6 @@ class public SimpleFormComponent extends AbstractBCBoundWidget implements IPersi
     method public void redraw(Boolean f_init!)
         if (f_init!) then
             
-        endif
-
-        if (#cw! <> null()) then
-            #cw!.setSize(#getWidth(),#getHeight())
-            #getCanvas().setBackColor(#theme!.getBBjBackgroundColor())
-            #cw!.setBackColor(#theme!.getBBjBackgroundColor())
         endif
     methodend
 
@@ -154,9 +151,11 @@ class public SimpleFormComponent extends AbstractBCBoundWidget implements IPersi
         wend
 
         #cw!.setEnabled(1)
+        rem BBjAPI().getBuiManager().setShowConfirmCloseDialog(0,err=*next)
     methodend
 
     method protected void clearControl(BBjControl control!)
+    
         switch control!.getControlType()
             case BBjControl.LISTBUTTON_TYPE
                 cast(BBjListButton, control!).deselect()
@@ -202,6 +201,7 @@ class public SimpleFormComponent extends AbstractBCBoundWidget implements IPersi
 
         #cw!.setEnabled(1)
         #toggleIDFieldEnabled(Boolean.FALSE)
+        rem BBjAPI().getBuiManager().setShowConfirmCloseDialog(0,err=*next)
     methodend
 
     method protected void fillControl(BBjControl control!, DataRow dr!, BBjString fieldName$)
@@ -382,12 +382,15 @@ class public SimpleFormComponent extends AbstractBCBoundWidget implements IPersi
         attributes! = #getBinder().getAttributesRecord()
         attrList! = attributes!.getFieldNames()
         #controlList! = #getAllControlsRecursive(new BBjVector(), #cw!)
+        
         fieldList! = new BBjVector()
+        controlMap! = #getControlMap()
+        
         it! = #controlList!.iterator()
+        
         while it!.hasNext()
             c! = it!.next()
             controlName$=c!.getName()
-            controlMap! = #getControlMap()
 
             if !(controlMap!.get(controlName$) = null()) then
                 fieldName$ = controlMap!.get(controlName$)
@@ -400,20 +403,24 @@ class public SimpleFormComponent extends AbstractBCBoundWidget implements IPersi
                 #registerCallbacks(c!)
                 #formatField(c!)
             endif
+
+            if pos(".label"=controlName$)>0 then
+                orig_name$=controlName$(1,pos(".label"=controlName$)-1)
+                if attrList!.contains(orig_name$) AND attributes!.contains(orig_name$) then
+                    lbl$=""
+                    lbl$ = attributes!.getFieldAttribute(orig_name$,"LABEL",err=*next)
+                    if lbl$>"" then
+                        c!.setText(lbl$)
+                    else
+                        c!.setText(orig_name$)
+                    fi
+                fi
+            fi
         wend
 
         #fieldList! = CAST(BBjVector,fieldList!)
     methodend
 
-    method public void controlChangeBackColorOnGainedFocus(BBjGainedFocusEvent ev!)
-        control! = ev!.getControl()
-        control!.setBackColor(#getColorFocusGained())
-    methodend
-
-    method public void controlChangeBackColorOnLostFocus(BBjLostFocusEvent ev!)
-        control! = ev!.getControl()
-        control!.setBackColor(#getColorFocusLost())
-    methodend
     rem /**
     rem  * formats a control by parsing the attributes record and appliying those attributes.
     rem  */
@@ -425,13 +432,9 @@ class public SimpleFormComponent extends AbstractBCBoundWidget implements IPersi
         precision! = attributes!.getFieldPrecision(fieldName$)
         switch c!.getControlType()
             case BBjControl.INPUTE_TYPE
-                c!.setCallback(c!.ON_GAINED_FOCUS, #this!, "controlChangeBackColorOnGainedFocus")
-                c!.setCallback(c!.ON_LOST_FOCUS, #this!, "controlChangeBackColorOnLostFocus")
                 #applyQuickSearch(cast(BBjInputE, c!), fieldName$, fieldAttributes!)
                 break
             case BBjControl.INPUTN_TYPE
-                c!.setCallback(c!.ON_GAINED_FOCUS, #this!, "controlChangeBackColorOnGainedFocus")
-                c!.setCallback(c!.ON_LOST_FOCUS, #this!, "controlChangeBackColorOnLostFocus")
 
                 if fieldAttributes!.containsKey("MASK") then
                     mask! = fieldAttributes!.get("MASK")
@@ -509,6 +512,7 @@ class public SimpleFormComponent extends AbstractBCBoundWidget implements IPersi
             case default
                 break
         swend
+        
     methodend
 
     method protected void applyQuickSearch(BBjInputE control!, String fieldName!, HashMap fieldAttributes!)
@@ -661,8 +665,6 @@ class public SimpleFormComponent extends AbstractBCBoundWidget implements IPersi
         calendarButton! = #getCanvas().addMenuButton(#getCanvas().getAvailableControlID(), control!.getX() + control!.getWidth() - control!.getHeight() + 1, control!.getY() + 1, control!.getHeight() - 2, control!.getHeight() - 2, "")
         #calendarButtons!.add(calendarButton!)
         calendarButton!.setImageSize(control!.getHeight() - 6,control!.getHeight() - 6)
-        calendarButton!.setImage(#theme!.getBBjImage("IC_CALENDAR",Theme.ON_PRIMARY))
-        calendarButton!.setBackColor(#theme!.getPrimaryColorPalette().getBBjColor())
 
         calendarButton!.setUserData(control!)
         calendarButton!.setCallback(BBjAPI.ON_BUTTON_PUSH,#this!,"onCalendarButtonPush")
@@ -670,21 +672,22 @@ class public SimpleFormComponent extends AbstractBCBoundWidget implements IPersi
 
     method protected void registerCallbacks(BBjControl c!)
         switch c!.getControlType()
-            case BBjControl.INPUTE_TYPE
-            case BBjControl.INPUTN_TYPE
-            case BBjControl.INPUTD_TYPE
-                c!.setCallback(BBjAPI.ON_EDIT_MODIFY,#this!,"onControlEditModify")
-                break
+REM don't use ON_EDIT_MODIFY as long as DWC reports ON_EDIT_MODIFY also on programmatic changes
+REM             case BBjControl.INPUTE_TYPE
+REM             case BBjControl.INPUTN_TYPE
+REM             case BBjControl.INPUTD_TYPE
+REM                 c!.setCallback(BBjAPI.ON_EDIT_MODIFY,#this!,"onControlDirty")
+REM                 break
             case BBjControl.LISTBUTTON_TYPE
             case BBjControl.LISTEDIT_TYPE
-                c!.setCallback(BBjAPI.ON_LIST_SELECT,#this!,"onControlListSelect")
+                c!.setCallback(BBjAPI.ON_LIST_SELECT,#this!,"onControlDirty")
                 break
             case BBjControl.CHECKBOX_TYPE
-                c!.setCallback(BBjAPI.ON_CHECK_ON,#this!,"onControlGainedFocus",err=*next)
-                c!.setCallback(BBjAPI.ON_CHECK_OFF,#this!,"onControlGainedFocus",err=*next)
+                c!.setCallback(BBjAPI.ON_CHECK_ON,#this!,"onControlDirty",err=*next)
+                c!.setCallback(BBjAPI.ON_CHECK_OFF,#this!,"onControlDirty",err=*next)
                 break
             case default
-                c!.setCallback(BBjAPI.ON_GAINED_FOCUS,#this!,"onControlGainedFocus",err=*next)
+                c!.setCallback(BBjAPI.ON_GAINED_FOCUS,#this!,"onControlDirty",err=*next)
                 break
         swend
     methodend
@@ -692,9 +695,10 @@ class public SimpleFormComponent extends AbstractBCBoundWidget implements IPersi
     method public void setBinder(BCBinder binder!)
         #super!.setBinder(binder!)
     methodend
-
-    method public void onControlGainedFocus(BBjEvent ev!)
+    
+    method public void onControlDirty(BBjEvent ev!)
         #getBinder().sendSignal(BCBinder.SIGNAL_DIRTY)
+        BBjAPI().getBuiManager().setShowConfirmCloseDialog(1,err=*next)
     methodend
 
     method public void onCalendarButtonPush(BBjButtonPushEvent ev!)
@@ -703,13 +707,7 @@ class public SimpleFormComponent extends AbstractBCBoundWidget implements IPersi
         cast(BBjInputD, inputD!).calendar()
     methodend
 
-    method public void onControlEditModify(BBjEditModifyEvent ev!)
-        #getBinder().sendSignal(BCBinder.SIGNAL_DIRTY)
-    methodend
 
-    method public void onControlListSelect(BBjListSelectEvent ev!)
-        #getBinder().sendSignal(BCBinder.SIGNAL_DIRTY)
-    methodend
     rem returns the bc-fieldname linked to the control or "" when unlinked
     method public String getFieldNameForControl(BBjControl control!)
         controlName! = control!.getName()

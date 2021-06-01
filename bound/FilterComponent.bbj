@@ -1,4 +1,4 @@
-use ::BusinessUIComponents/AbstractBCBoundWidget.bbj::AbstractBCBoundWidget
+use ::BusinessUIComponents/bound/AbstractBCBoundWidget.bbj::AbstractBCBoundWidget
 use ::BBjGridExWidget/BBjGridExWidget.bbj::BBjGridExWidget
 use ::BusinessUIComponents/configurations/SelectionBC.bbj::SelectionBC
 use ::BusinessUIComponents/utils/QuickSearchField.bbj::QuickSearchField
@@ -12,7 +12,6 @@ use com.basiscomponents.bc.IConfigurationsBC
 use com.basiscomponents.bc.BusinessComponent
 use com.basiscomponents.db.ResultSet
 use com.basiscomponents.db.DataRow
-use  com.basiscomponents.ui.theming.Theme
 use com.google.common.collect.BiMap
 use com.google.common.collect.HashBiMap
 use java.util.HashMap
@@ -27,7 +26,6 @@ class public FilterComponent extends SimpleFormComponent
     field protected BBjMenuButton fetchButton!
 REM     field protected ConfigurationWidget configWidget!
     field protected ConfigurationButton configButton!
-    field private Theme theme! = Theme.getInstance()
     rem --------------------- constructors -------------------------------------
     rem /**
     rem  * disabled default constructor
@@ -78,9 +76,6 @@ REM         #addConfigurationWidget()
     method protected void addButtons()
         #fetchButton! = #getCanvas().addMenuButton(#getCanvas().getAvailableControlID(),0,2,20,20,"")
         #fetchButton!.setCallback(#fetchButton!.ON_BUTTON_PUSH,#this!,"buttonPushFetch")
-        #fetchButton!.setImage(#theme!.getBBjImage("IC_PLAY",Theme.PRIMARY))
-        #fetchButton!.setBackColor(#theme!.getBBjBackgroundColor())
-        size = #theme!.getNumProperty("SECONDARY_TB_HEIGHT")
         #fetchButton!.setSize(size, size)
         #fetchButton!.setImageSize(size - 4, size - 4)
         #configButton! = new ConfigurationButton(#getCanvas(),#getCanvas().getAvailableControlID(), size, 2 , #this!, "SEL", #selectionBC!.getKey(), #selectionBC!.getConfigurationsBC() )
@@ -89,7 +84,6 @@ REM             #configWidget!.setMinPaddingLeft(#fetchButton!.getY() + #fetchBu
 REM         endif
     endif
 
-    #getCanvas().setBackColor(#theme!.getBBjBackgroundColor())
     methodend
 
     method public void buttonPushFetch(BBjEvent ev!)

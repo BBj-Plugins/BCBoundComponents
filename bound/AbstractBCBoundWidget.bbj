@@ -1,0 +1,61 @@
+use ::BBjWidget/BBjWidget.bbj::BBjWidget
+use com.basiscomponents.bc.IBCBound
+use com.basiscomponents.bc.BCBinder
+use com.basiscomponents.db.ResultSet
+use com.basiscomponents.db.DataRow
+
+use ::BusinessUIComponents/utils/UIUtils.bbj::UIUtils
+
+class public AbstractBCBoundWidget extends BBjWidget implements IBCBound
+
+    field private BCBinder binder!
+
+    method protected AbstractBCBoundWidget()
+    methodend
+    
+    method public BBjChildWindow getChildWindow()
+        methodret #getCanvas()
+    methodend
+    
+    rem -------------------------BCBinder methods--------------------------------
+    method public void setBinder(BCBinder binder!)
+        #binder! = binder!
+    methodend    
+    
+    method public BCBinder getBinder()
+        methodret #binder!
+    methodend    
+    
+    rem ------------------methods to override--------------------------------------
+    method public void onSetData()
+    methodend
+   
+    method public void onSetSelection()
+    methodend
+    
+    method public Boolean canSetSelection()
+        methodret BBjAPI.TRUE
+    methodend
+    
+    method public Boolean canTerminate()
+        methodret BBjAPI.TRUE
+    methodend
+    
+    method public void onSignal(int signal!, Object payload!)
+    
+    methodend
+    
+    method public DataRow getFieldsForWrite()
+        methodret new DataRow()
+    methodend
+    
+    method public DataRow getFieldsForFieldSelection()
+        methodret new DataRow()
+    methodend
+    
+    method protected void setBackgroundColor()
+    methodend
+    rem ------------------properties manager--------------------------------------
+
+    
+classend

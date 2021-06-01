@@ -24,7 +24,7 @@ use com.basiscomponents.db.BBArrayList
 
 class public ExportButton extends BBjWidget
 
-    field private BBjButton exportButton!
+    field private BBjChildWindow exportButton!
     field private BusinessGrid grid!
     field private CustomConfigurationsBC cfgBC!
     field private BBjString pgmName$
@@ -40,11 +40,15 @@ class public ExportButton extends BBjWidget
     methodend
 
     method public ExportButton(BBjWindow wnd!, BBjNumber id, BBjNumber x, BBjNumber y, BBjNumber width, BBjNumber height)
-        #exportButton! = wnd!.addButton(id, x, y, width, height, "")
-        #exportButton!.setStyle("height","30px")
-        #exportButton!.setStyle("width","30px")
-        #exportButton!.setCallback(BBjButton.ON_BUTTON_PUSH, #this!, "onExportButtonPush")
-        #mainWindow! = wnd!
+    
+            #exportButton! =  CAST(BBjChildWindow,wnd!.addChildWindow(203,0,0,100,80,"",$00100800$,BBjAPI().getSysGui().getAvailableContext()))
+            #exportButton!.addPanelStyle("tbn")
+            #exportButton!.setStyle("width","fit-content")
+            #exportButton!.setStyle("width","-moz-fit-content")
+            img! = #exportButton!.addStaticText(101,0,0,48,48,"download")
+             img!.addStyle("material-icons")
+            #exportButton!.setCallback(BBjAPI.ON_MOUSE_DOWN,#this!,"onExportButtonPush")
+            #mainWindow! = wnd!
     methodend
     
     method public void onExportButtonPush(BBjEvent ev!)
@@ -106,7 +110,7 @@ class public ExportButton extends BBjWidget
         #customReports! = customReports!
     methodend
     
-    method public BBjButton getButton()
+    method public BBjChildWindow getButton()
     	methodret #exportButton!
     methodend
     

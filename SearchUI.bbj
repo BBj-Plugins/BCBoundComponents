@@ -1,5 +1,5 @@
 use ::BBjWidget/BBjWidget.bbj::BBjWidget
-use ::BusinessUIComponents/AbstractBCBoundWidget.bbj::AbstractBCBoundWidget
+use ::BusinessUIComponents/bound/AbstractBCBoundWidget.bbj::AbstractBCBoundWidget
 use ::BusinessUIComponents/BusinessGrid.bbj::BusinessGrid
 use ::BusinessUIComponents/bound/BCErrorHandler.bbj::BCErrorHandler
 use ::BusinessUIComponents/bound/WindowHandler.bbj::WindowHandler
@@ -9,7 +9,6 @@ use com.basiscomponents.db.DataRow
 use com.basiscomponents.db.ResultSet
 use java.util.HashMap
 
-use com.basiscomponents.ui.theming.Theme
 use com.basiscomponents.i18n.Props
 
 
@@ -76,17 +75,12 @@ class public SearchUI
         #addWindowHandler(#title!)
         #registerComponentsToBinder()
         
-        theme! = Theme.getInstance()
                 
         
-        #height = cast(BBjNumber,theme!.getNumProperty("PRIMARY_TB_HEIGHT"))
         #quickFilterControl!.setLocation(#quickFilterControl!.getX(), (#height - #quickFilterControl!.getHeight()) / 2)
         
-        bgColor! = theme!.getPrimaryColorPalette().getBBjColor()
         
         #buttonBackground!.setSize(#buttonBackground!.getWidth(), #height)
-        #buttonBackground!.setForeColor(bgColor!)
-        #buttonBackground!.setBackColor(bgColor!)
         
         if #bgrid! <> null() then #bgrid!.setLocation(#bgrid!.getX(), #height)
         
@@ -96,9 +90,9 @@ class public SearchUI
         
         #quickFilterIcon!.setSize(iconS, iconS)
         #quickFilterIcon!.setLocation(iconX, iconY)
-        #quickFilterIcon!.setImage(theme!.getBBjImage("IC_SEARCH",Theme.PRIMARY))
+
         #quickFilterIcon!.setImageSize(iconS - 2, iconS - 2)
-        #quickFilterIcon!.setBackColor(theme!.getBBjBackgroundColor())
+
         
     methodend
     
