@@ -62,6 +62,10 @@ class public BCErrorHandler implements IBCBound
             endif
 
             a = msgbox(message!,16,#title!);rem 16 = OK button + stop sign
+            bc! = #getBinder().getBC()
+            stmt$ = bc!.getLastSqlStatement()
+            a=msgbox(stmt$)
+            
         endif
     methodend
 

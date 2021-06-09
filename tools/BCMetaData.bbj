@@ -352,12 +352,12 @@ REM 		#super!.getControlByName("BCMetaData").setCallback(BBjAPI.ON_CLOSE,#this!,
             grid!.addColumnGroup(loc$ , loc$, group! , 0 , "")
         wend
 
-        rem grid!.updateColumns()
-REM         #cfgbc! = new CustomConfigurationsBC(info(3,2))
-REM         #cfgbutton! = new ConfigurationButton(#Wnd!, 201, #Wnd!.getWidth()-50, 5, #this!, #realm!, #pgmname!, #cfgbc! )
-REM         #cfgbutton!.applyAutoConfig()
 
-        
+            json$=BBjAPI().getThinClient().getUserProperty(1,"BCMETADATAGRIDSTATE",err=*next)
+            if json$>"" then
+                #grid!.setState(new GxState(json$))
+            fi
+            
     methodend
 
     rem /**
