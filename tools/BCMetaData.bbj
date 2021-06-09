@@ -79,6 +79,8 @@ class public BCMetaData extends BBDialog implements IPersistentState
     
     field private IBCMetaDataModel meta_model!
     
+    field private Boolean GridInitialized! = Boolean.FALSE
+    
     
     
     method private BCMetaData()
@@ -103,8 +105,7 @@ class public BCMetaData extends BBDialog implements IPersistentState
         endif
 
         #Wnd!=#super!.getWndTop()
-        if #API!.isInMDI() then #MDI!=#API!.getMDI()
-
+        
         if #Wnd!<>null() then
             #setCallbacks()
         endif
@@ -124,6 +125,8 @@ REM 		#super!.getControlByName("BCMetaData").setCallback(BBjAPI.ON_CLOSE,#this!,
 		#super!.getControlByName("BTN_SAVE").setCallback(BBjAPI.ON_BUTTON_PUSH,#this!,"BTN_SAVE__ON_BUTTON_PUSH")
 		#super!.getControlByName("BTN_GRID").setCallback(BBjAPI.ON_BUTTON_PUSH,#this!,"BTN_GRID__ON_BUTTON_PUSH")
 		rem /** DLGWIZ_CBS_END **/
+		
+
 
     methodend
     
@@ -131,6 +134,22 @@ REM 		#super!.getControlByName("BCMetaData").setCallback(BBjAPI.ON_CLOSE,#this!,
         #windowHandler! = new WindowHandler(#Wnd!)
         #windowHandler!.setProgramName(#pgmname!)
         #windowHandler!.applyWindowConfig()
+    methodend
+    
+    method public void saveGridState(BBjCustomEvent ev!)
+        if !#GridInitialized! then
+            
+            json$=BBjAPI().getThinClient().getUserProperty(1,"BCMETADATAGRIDSTATE",err=*next)
+            if json$>"" then
+                #grid!.setState(new GxState(json$))
+            fi
+            
+            #GridInitialized! = Boolean.TRUE
+        else
+            BBjAPI().getThinClient().setUserProperty(1,"BCMETADATAGRIDSTATE",str(ev!.getObject()))
+            
+        fi
+        
     methodend
 
     rem /**
@@ -162,6 +181,9 @@ REM 		#super!.getControlByName("BCMetaData").setCallback(BBjAPI.ON_CLOSE,#this!,
 
         #onInitDialog()
         #Wnd!.setVisible(#TRUE)
+        
+        #Wnd!.maximize()
+        #grid!.setCallback(#grid!.ON_GRID_COLUMN_STATE_CHANGE(), #this!, "saveGridState")
 
         do_process_events:
             process_events,err=*same
@@ -334,6 +356,8 @@ REM 		#super!.getControlByName("BCMetaData").setCallback(BBjAPI.ON_CLOSE,#this!,
 REM         #cfgbc! = new CustomConfigurationsBC(info(3,2))
 REM         #cfgbutton! = new ConfigurationButton(#Wnd!, 201, #Wnd!.getWidth()-50, 5, #this!, #realm!, #pgmname!, #cfgbc! )
 REM         #cfgbutton!.applyAutoConfig()
+
+        
     methodend
 
     rem /**
@@ -426,6 +450,9 @@ REM         #cfgbutton!.applyAutoConfig()
           rs! = new ResultSet()
 
           fields! = ar!.getFieldNames()
+          
+          fields!.remove("_ENTITIES",err=*next)
+          fields!.remove("_ENTITY",err=*next)
           fields!.insertItem(0,"_ENTITIES")
           fields!.insertItem(0,"_ENTITY")
 

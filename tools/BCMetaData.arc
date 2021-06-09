@@ -2,13 +2,13 @@
 
 VERSION "4.0"
 
-WINDOW 101 "BCMetaData" 10 10 1000 700
+WINDOW 101 "BCMetaData" 0 0 1000 700
 BEGIN
+    DIALOGBEHAVIOR
     EVENTMASK 0
-    INVISIBLE
     KEYBOARDNAVIGATION
-    MAXIMIZED
     NAME "BCMetaData"
+    NOT SIZABLE
     LISTBUTTON 102, "List Button\n", 8, 8, 250, 288
     BEGIN
         NAME "LB_CLASS"
@@ -16,15 +16,16 @@ BEGIN
         OPENWIDTH 250
     END
 
-    BUTTON 103, "Save", 262, 5, 30, 30
+    BUTTON 103, "Save", 262, 5, 66, 30
     BEGIN
         NAME "BTN_SAVE"
         NOT OPAQUE
         NOT FOCUSABLE
     END
 
-    BUTTON 104, "Grid Setup", 294, 5, 90, 30
+    BUTTON 104, "Grid Setup", 367, 5, 90, 30
     BEGIN
+        INVISIBLE
         NAME "BTN_GRID"
         NOT OPAQUE
         NOT FOCUSABLE
