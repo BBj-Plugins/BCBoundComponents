@@ -8,21 +8,10 @@ html {
 }
 
 
-.fifty {
-    height: calc(50% - 25px) !important;
-}
-
-.hundred {
-    height: calc(100% - 50px) !important;
-}
-
-.row{
-    margin: 5px !important;
-}
 
 basis-button[type='default']::part(button) {
-    background-color: var(--basis-color-success-70);
-    color: var(--basis-color-white);
+    background-color: var(--bbj-color-success-70);
+    color: var(--bbj-color-white);
 }
 
 
@@ -53,7 +42,7 @@ basis-button[type='default']::part(button) {
 }
 
 .tbn:hover {
-    background-color:#4BB92C;
+    background-color: var(--bbj-color-primary-70);
 }
 
 
@@ -66,5 +55,12 @@ basis-button[type='default']::part(button) {
 }
 
 .tileselected {
-    background-color:#4BB92C;
+    background-color: var(--bbj-color-primary-70);
+}
+
+.fullheight,
+.fullheight > div,
+.fullheight > div > div 
+{
+    height:100%;
 }
