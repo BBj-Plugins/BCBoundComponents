@@ -15,7 +15,7 @@ use ::BBjGridExWidget/GxCellEditors.bbj::GxCellEditorSelect
 use ::BBjGridExWidget/GxClientEvents.bbj::GxClientEventsCell
 use ::BBjGridExWidget/GxClientModels.bbj::GxClientCellModel
 
-use ::BusinessUIComponents/BusinessGrid.bbj::BusinessGrid
+use ::BusinessUIComponents/bound/BusinessGrid.bbj::BusinessGrid
 use ::BusinessUIComponents/configurations/ConfigurationButton.bbj::ConfigurationButton
 use ::BusinessUIComponents/configurations/CustomConfigurationsBC.bbj::CustomConfigurationsBC
 use ::BusinessUIComponents/configurations/IPersistentState.bbj::IPersistentState
