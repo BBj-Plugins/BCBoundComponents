@@ -661,6 +661,8 @@ publish_preview:
     appConfig!.setProgramName(source$)
     appConfig!.setConfigFile(config$)
     appConfig!.setWorkingDirectory(path$)
+    appConfig!.setDwcEnabled(1)
+    appConfig!.setBuiEnabled(0)
     app! = appConfig!.buildApplication(appname$+"_x")
     published = appServer!.isPublished(app!)
     appServer!.publish(app!)
