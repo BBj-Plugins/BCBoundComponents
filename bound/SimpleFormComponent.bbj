@@ -215,8 +215,7 @@ class public SimpleFormComponent extends AbstractBCBoundWidget implements IPersi
                     cast(BBjListButton, control!).deselect()
                     for i = 0 to vecKeys!.size() - 1
                         currentKey! = vecKeys!.get(i)
-
-                        if currentKey!.trim().equals(value!) then
+                        if currentKey!.trim().equals(value!.trim()) then
                             cast(BBjListButton, control!).selectIndex(i)
                             break
                         endif
