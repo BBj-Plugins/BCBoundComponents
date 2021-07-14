@@ -160,6 +160,10 @@ class public SimpleFormComponent extends AbstractBCBoundWidget implements IPersi
             case BBjControl.LISTBUTTON_TYPE
                 cast(BBjListButton, control!).deselect()
                 break
+            case BBjControl.LISTBOX_TYPE
+                cast(BBjListBox, control!).deselectAll()
+                break
+                
             case BBjControl.CHECKBOX_TYPE
                 cast(BBjCheckBox, control!).setSelected(0)
                 break
@@ -223,6 +227,24 @@ class public SimpleFormComponent extends AbstractBCBoundWidget implements IPersi
                 endif
 
                 break
+            case BBjControl.LISTBOX_TYPE
+                vecKeys! = control!.getUserData()
+                value! = value!.trim()
+
+                if vecKeys! <> null() and vecKeys!.size() then
+                    cast(BBjListBox, control!).deselectAll()
+                    seltmp$ = value!.trim()
+                    selset! = new BBjVector()
+                    for i = 0 to vecKeys!.size() - 1
+                        currentKey$ = vecKeys!.get(i)
+                        if pos(currentKey$=seltmp$)>0 then
+                            selset!.addItem(i)
+                        fi
+                    next i
+                    cast(BBjListBox, control!).setSelectedIndices(selset!)
+                endif
+
+                break                
             case BBjControl.CHECKBOX_TYPE
                 value! = value!.trim()
 
@@ -506,8 +528,11 @@ class public SimpleFormComponent extends AbstractBCBoundWidget implements IPersi
                 #addCalendarButton(cast(BBjInputD, c!))
                 break
             case BBjControl.LISTBUTTON_TYPE
-                #applyLookupForListEdit(cast(BBjListButton, c!),fieldAttributes!)
+                #applyLookupForListButton(cast(BBjListButton, c!),fieldAttributes!)
                 break
+            case BBjControl.LISTBOX_TYPE
+                #applyLookupForListBox(cast(BBjListBox, c!),fieldAttributes!)
+                break                
             case default
                 break
         swend
@@ -563,10 +588,12 @@ class public SimpleFormComponent extends AbstractBCBoundWidget implements IPersi
             qs!.setUseWildCard(useWildCard!)
         wend
     methodend
+
+
     rem /**
     rem  * calls retrieveLookup and tries to apply resultset to listbutton
     rem  */
-    method protected void applyLookupForListEdit(BBjListButton control!, HashMap fieldAttributes!)
+    method protected void applyLookupForListButton(BBjListButton control!, HashMap fieldAttributes!)
         if !fieldAttributes!.containsKey("LOOKUP") or !fieldAttributes!.get("LOOKUP").equals("1") then
             methodret
         endif
@@ -659,6 +686,108 @@ class public SimpleFormComponent extends AbstractBCBoundWidget implements IPersi
         control!.setUserData(vectorKeys!)
         control!.insertItems(0, vectorValues!)
     methodend
+
+
+    rem /**
+    rem  * calls retrieveLookup and tries to apply resultset to listbutton
+    rem  */
+    method protected void applyLookupForListBox(BBjListBox control!, HashMap fieldAttributes!)
+        if !fieldAttributes!.containsKey("LOOKUP") or (!fieldAttributes!.get("LOOKUP").equals("1") and !fieldAttributes!.get("LOOKUP").equals("2")) then
+            methodret
+        endif
+
+        fieldName! = #getFieldNameForControl(control!)
+
+        if fieldName! = "" then
+            methodret
+        endif
+
+        control!.removeAllItems()
+        
+        control!.setMultipleSelection(fieldAttributes!.get("LOOKUP").equals("2"))
+        
+        rem get selected row for lookup when one item is selected
+        sel! = #getBinder().getSelection()
+
+        if (sel!.size() = 1) then
+            rsBinder! = #getBinder().getRS()
+            rowkey$ = sel!.get(0)
+            selDr! = rsBinder!.get(rowkey$)
+        else
+            selDr! = null()
+        endif
+        rem try to call getLookup(). when it does not work or is empty, try to call getLookupData. if neither brings results, methodret.
+        lookup! = cast(BusinessComponent, #getBinder().getBC()).getLookup(fieldName!, selDr!, err=*next)
+
+        if lookup! = null() then
+            rs! = cast(BusinessComponent, #getBinder().getBC()).getLookupData(fieldName!, selDr!, err=*next)
+
+            if rs! = null() or rs!.isEmpty() then
+                methodret
+            endif
+
+            lookupAttributes! = rs!.get(0)
+        else
+            rs! = lookup!.retrieve(err=*next)
+
+            if rs! = null() or rs!.isEmpty() then
+                methodret
+            endif
+
+            lookupAttributes! = lookup!.getAttributesRecord()
+        endif
+        REM         rs! = cast(BusinessComponent, #getBinder().getBC()).getLookupData(fieldName!, selDr!)
+        ids! = lookupAttributes!.getFieldsHavingAttributeValue("EDITABLE", "2")
+        REM         ids! = rs!.get(0).getFieldsHavingAttributeValue("EDITABLE", "2")
+        if !ids!.isEmpty() then
+            idNames! = ids!.getFieldNames()
+        else
+            idNames! = new BBjVector()
+            idNames!.add(rs!.get(0).getColumnName(0))
+        endif
+
+        if rs!.getColumnIndex("DESC") >= 0 then
+            hasDesc! = Boolean.TRUE
+        else
+            hasDesc! = Boolean.FALSE
+        endif
+
+        vectorKeys! = new BBjVector()
+        vectorValues! = new BBjVector()
+
+        if #listButtonFirstRowEmpty! then
+            vectorKeys!.add("")
+            vectorValues!.add("")
+        endif
+
+        itResultSet! = rs!.iterator()
+        while itResultSet!.hasNext()
+            dr! = itResultSet!.next()
+            idField! = new StringBuilder()
+            itIDNames! = idNames!.iterator()
+            while itIDNames!.hasNext()
+                idName! = itIDNames!.next()
+                idField!.append(dr!.getFieldAsString(idName!))
+
+                if itIDNames!.hasNext() then
+                    idField!.append($00$)
+                endif
+            wend
+
+            idField! = idField!.toString()
+            vectorKeys!.add(idField!)
+
+            if hasDesc! then
+                vectorValues!.add(dr!.getFieldAsString("DESC"))
+            else
+                vectorValues!.add(idField! + ": no DESC")
+            endif
+        wend
+
+        control!.setUserData(vectorKeys!)
+        control!.insertItems(0, vectorValues!)
+    methodend
+    
 
     method protected void addCalendarButton(BBjInputD control!)
         calendarButton! = #getCanvas().addMenuButton(#getCanvas().getAvailableControlID(), control!.getX() + control!.getWidth() - control!.getHeight() + 1, control!.getY() + 1, control!.getHeight() - 2, control!.getHeight() - 2, "")
@@ -821,6 +950,56 @@ REM                 break
                 vectorKeys! = listEdit!.getUserData()
                 methodret vectorKeys!.get(selIndex)
                 break
+            case BBjControl.LISTBOX_TYPE
+                
+                listEdit! = cast(BBjListBox, control!)
+                if listEdit!.getMultipleSelection() then
+                    selIndices! = listEdit!.getSelectedIndices()
+                    if selIndices!.size() = 0 then
+                        methodret ""
+                    endif
+
+                    if listEdit!.getUserData() = null() then
+                        x$=""
+                        it! = selIndices!.iterator()
+                        while it!.hasNext()
+                            if x$>"" then
+                                x$=x$+$0a$
+                            fi
+                            x$=x$+listEdit!.getItemAt(it!.next())
+                        wend    
+                        methodret x$ 
+                    endif
+                    
+                    vectorKeys! = listEdit!.getUserData()
+
+                        x$=""
+                        it! = selIndices!.iterator()
+                        while it!.hasNext()
+                            if x$>"" then
+                                x$=x$+$0a$
+                            fi
+                            x$=x$+vectorKeys!.get(it!.next())
+                        wend    
+                    methodret x$ 
+
+                    
+                else
+                    selIndex = listEdit!.getSelectedIndex()
+    
+                    if selIndex < 0 then
+                        methodret ""
+                    endif
+    
+                    if listEdit!.getUserData() = null() then
+                        methodret listEdit!.getItemAt(selIndex)
+                    endif
+    
+                    vectorKeys! = listEdit!.getUserData()
+                    methodret vectorKeys!.get(selIndex)
+                endif
+                break
+                
             case BBjControl.CHECKBOX_TYPE
                 selected! = cast(BBjCheckBox, control!).isSelected()
 
