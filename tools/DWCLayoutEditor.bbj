@@ -229,7 +229,7 @@ updateData:
     el!.setStyleProperties(style_props!)
 
 
-    if name$="Panel" OR name$="GridPanel" then
+    if name$="Panel" OR name$="GridPanel" or name$="DWCLayout" then
         el!.setPanelStyleProperties(panel_style_props!)
         el!.setOuterStyleProperties(outer_style_props!)
     fi
@@ -388,7 +388,6 @@ onTreeDrop:
         drop_el! = nodeInventory!.get(drop!)
     fi
     drop_type$ = drop_el!.getClass().getSimpleName()
-    escape
     if pos(drop_type$="Panel DWCLayout GridPanel TabPanel")>0 then
         l!.removeElement(el!)
         drop_el!.addFirst(el!)
@@ -480,7 +479,7 @@ onTreeSelectJump:
         cw_control_controltype!.selectIndex(BBjControlPodTypes!.indexOf(str(el!.getType())))
     fi
 
-    if name$="Panel" OR name$="GridPanel" or name$="TreePanel" then
+    if name$="Panel" OR name$="DWCLayout" OR name$="GridPanel" or name$="TreePanel" then
 
       css$ = ""
       it! = el!.getPanelStyles().iterator()
