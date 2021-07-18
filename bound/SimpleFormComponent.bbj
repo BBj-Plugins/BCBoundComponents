@@ -60,6 +60,7 @@ class public SimpleFormComponent extends AbstractBCBoundWidget implements IPersi
         layout! = DWCLayout.fromJson(json$)
         layout!.render(#cw!,BBjAPI().getSysGui())
         #cw!.setName("FORMCW")
+        #cw!.setStyle("overflow","unset")
         #cw!.setVisible(Boolean.TRUE)
     methodend
     
@@ -268,7 +269,7 @@ class public SimpleFormComponent extends AbstractBCBoundWidget implements IPersi
                 wend
 
                 if !isQS! then
-                    control!.setText(value!)
+                    control!.setText(cvs(value!,3))
                     break
                 endif
 
@@ -287,6 +288,7 @@ class public SimpleFormComponent extends AbstractBCBoundWidget implements IPersi
                 control!.setText(desc!)
                 break
             case BBjControl.INPUTD_TYPE
+
             case BBjControl.STATIC_TEXT_TYPE
                 if value!.trim().equals("") then
                     break
@@ -327,6 +329,7 @@ class public SimpleFormComponent extends AbstractBCBoundWidget implements IPersi
                             break
                     swend
 
+
                     if dr!.getFieldType(fieldName$) = java.sql.Types.DATE then
                         if value!.trim().length() = 10 then
                             value! = value! + " 00:00:00.0"
@@ -334,6 +337,7 @@ class public SimpleFormComponent extends AbstractBCBoundWidget implements IPersi
 
                         datetime! = LocalDateTime.parse(value!, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.S"))
                         value! = datetime!.format(DateTimeFormatter.ofPattern(dateMask$))
+                        
                     endif
 
                     if dr!.getFieldType(fieldName$) = java.sql.Types.TIMESTAMP then
@@ -507,25 +511,27 @@ class public SimpleFormComponent extends AbstractBCBoundWidget implements IPersi
                     locale! = stbl("!LOCALE")
                     switch locale!.toUpperCase()
                         case "DE_DE"
-                            mask! = "%Dz.%Mz.%Y"
+                            mask! = "%Dz.%Mz.%Yl"
                             break
                         case "EN_US"
-                            mask! = "%Mz/%Dz/%Y"
+                            mask! = "%Mz/%Dz/%Yl"
                             break
                         case "EN_GB"
-                            mask! = "%Dz/%Mz/%Y"
+                            mask! = "%Dz/%Mz/%Yl"
                             break
                         case "NL_NL"
-                            mask! = "%Dz-%Mz-%Y"
+                            mask! = "%Dz-%Mz-%Yl"
                             break
                         case default
-                            mask! = "%Mz/%Dz/%Y"
+                            mask! = "%Mz/%Dz/%Yl"
                             break
                     swend
                 endif
 
                 cast(BBjInputD, c!).setMask(mask!)
-                #addCalendarButton(cast(BBjInputD, c!))
+                c!.setAttribute("show-weeks","1")
+                c!.setAttribute("visible-calender-icon","1")
+
                 break
             case BBjControl.LISTBUTTON_TYPE
                 #applyLookupForListButton(cast(BBjListButton, c!),fieldAttributes!)
@@ -789,15 +795,6 @@ class public SimpleFormComponent extends AbstractBCBoundWidget implements IPersi
     methodend
     
 
-    method protected void addCalendarButton(BBjInputD control!)
-        calendarButton! = #getCanvas().addMenuButton(#getCanvas().getAvailableControlID(), control!.getX() + control!.getWidth() - control!.getHeight() + 1, control!.getY() + 1, control!.getHeight() - 2, control!.getHeight() - 2, "")
-        #calendarButtons!.add(calendarButton!)
-        calendarButton!.setImageSize(control!.getHeight() - 6,control!.getHeight() - 6)
-
-        calendarButton!.setUserData(control!)
-        calendarButton!.setCallback(BBjAPI.ON_BUTTON_PUSH,#this!,"onCalendarButtonPush")
-    methodend
-
     method protected void registerCallbacks(BBjControl c!)
         switch c!.getControlType()
 REM don't use ON_EDIT_MODIFY as long as DWC reports ON_EDIT_MODIFY also on programmatic changes
@@ -921,7 +918,7 @@ REM                 break
         methodret writeDR!
     methodend
 
-    method protected String getValueFromControl(BBjControl control!)
+    method protected Object getValueFromControl(BBjControl control!)
         controlType = control!.getControlType()
         switch controlType
             case BBjControl.INPUTE_TYPE
@@ -1004,21 +1001,14 @@ REM                 break
                 selected! = cast(BBjCheckBox, control!).isSelected()
 
                 if selected! then
-                    methodret "1"
+                    methodret Boolean.TRUE
                 else
-                    methodret "0"
+                    methodret Boolean.FALSE
                 endif
 
                 break
             case BBjControl.INPUTD_TYPE
-                attributes! = #getBinder().getAttributesRecord()
-                controlMap! = #getControlMap()
-                fieldName! = controlMap!.get(control!.getName())
-                if attributes!.getFieldType(fieldName!) = java.sql.Types.NUMERIC then
-                    value! = str(cast(BBjInputD, control!).getValue())
-                else
-                    value! = control!.getText()
-                endif
+                value! = cast(BBjInputD, control!).getValue()
                 methodret value!
                 break
             case default
