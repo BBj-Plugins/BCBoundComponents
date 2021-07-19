@@ -19,10 +19,10 @@ class public StandardMasterDataUI extends BBjWebWidget
     
     field protected EditToolbarComponent EditToolbar!
     
-    field private BBjChildWindow EditTbWnd!
-    field private BBjChildWindow GridTbWnd!
-    field private BBjChildWindow GridWnd!
-    field private BBjChildWindow FormWnd!
+    field protected BBjChildWindow EditTbWnd!
+    field protected BBjChildWindow GridTbWnd!
+    field protected BBjChildWindow GridWnd!
+    field protected BBjChildWindow FormWnd!
     field protected BBjTabCtrl formTabCtrl!
 
 
@@ -92,7 +92,7 @@ class public StandardMasterDataUI extends BBjWebWidget
             formCW!.setStyle("overflow-y","auto")
             
             #addForm(formCW!)
-
+            #addAdditonalTabs()
             errorhandler! = new BCErrorHandler()
             errorhandler!.setTitle("Error")
 
@@ -107,5 +107,9 @@ class public StandardMasterDataUI extends BBjWebWidget
             form!.setDWCForm(#Form$)
             #Binder!.register(form!)
     methodend
+
+    method protected void addAdditonalTabs()
+    methodend
+
     
 classend
