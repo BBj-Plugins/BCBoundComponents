@@ -651,10 +651,13 @@ class public SimpleFormComponent extends AbstractBCBoundWidget implements IPersi
             idNames!.add(rs!.get(0).getColumnName(0))
         endif
 
+        desc$ = "" 
         if rs!.getColumnIndex("DESC") >= 0 then
-            hasDesc! = Boolean.TRUE
+            desc$="DESC"
         else
-            hasDesc! = Boolean.FALSE
+            if rs!.getColumnIndex("desc") >= 0 then
+                desc$="desc"
+            endif
         endif
 
         vectorKeys! = new BBjVector()
@@ -682,8 +685,8 @@ class public SimpleFormComponent extends AbstractBCBoundWidget implements IPersi
             idField! = idField!.toString()
             vectorKeys!.add(idField!)
 
-            if hasDesc! then
-                vectorValues!.add(dr!.getFieldAsString("DESC"))
+            if desc$>"" then
+                vectorValues!.add(dr!.getFieldAsString(desc$))
             else
                 vectorValues!.add(idField! + ": no DESC")
             endif
@@ -752,10 +755,13 @@ class public SimpleFormComponent extends AbstractBCBoundWidget implements IPersi
             idNames!.add(rs!.get(0).getColumnName(0))
         endif
 
+        desc$ = "" 
         if rs!.getColumnIndex("DESC") >= 0 then
-            hasDesc! = Boolean.TRUE
+            desc$="DESC"
         else
-            hasDesc! = Boolean.FALSE
+            if rs!.getColumnIndex("desc") >= 0 then
+                desc$="desc"
+            endif
         endif
 
         vectorKeys! = new BBjVector()
@@ -783,8 +789,8 @@ class public SimpleFormComponent extends AbstractBCBoundWidget implements IPersi
             idField! = idField!.toString()
             vectorKeys!.add(idField!)
 
-            if hasDesc! then
-                vectorValues!.add(dr!.getFieldAsString("DESC"))
+            if desc$>"" then
+                vectorValues!.add(dr!.getFieldAsString(desc$))
             else
                 vectorValues!.add(idField! + ": no DESC")
             endif
