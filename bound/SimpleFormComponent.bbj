@@ -1,6 +1,5 @@
 use ::BusinessUIComponents/bound/AbstractBCBoundWidget.bbj::AbstractBCBoundWidget
 use ::BBjGridExWidget/BBjGridExWidget.bbj::BBjGridExWidget
-use ::BusinessUIComponents/utils/QuickSearchField.bbj::QuickSearchField
 use ::BusinessUIComponents/configurations/IPersistentState.bbj::IPersistentState
 use com.basiscomponents.bc.BCBound
 use com.basiscomponents.bc.BCBinder
