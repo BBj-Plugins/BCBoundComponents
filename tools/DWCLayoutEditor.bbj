@@ -9,6 +9,8 @@ use com.basiscomponents.ui.layout.dwc.GridPanel
 use com.basiscomponents.ui.layout.dwc.TabPanel
 
 use com.basiscomponents.ui.layout.dwc.BBjControlPod
+use com.basiscomponents.ui.layout.dwc.BBjWidgetPod 
+
 use java.util.HashMap
 
 sg! = BBjAPI().openSysGui("X0")
@@ -710,10 +712,16 @@ open (sysgui)"X0"
 sysgui! = bbjapi().getSysGui()
 
     BBjAPI().getGlobalNamespace().setCallbackForVariableChange("dwcpanelmodel","updateview")
+
+wh! = new WidgetHelper()
+rem com.basiscomponents.ui.layout.dwc.BBjWidgetPod.setBBjWidgetHelper(wh!)
+    
+    
     gosub updateview
     process_events
 
 updateview:
+
 
 
 if window! <> null() then
@@ -726,3 +734,15 @@ fi
     l! = DWCLayout.fromJson(json$)
     l!.render(window!,sysgui!)
 return
+
+
+
+class public WidgetHelper implements com.basiscomponents.ui.layout.dwc.IBBjWidgetHelper
+    
+         method public BBjControl createWidget(BBjChildWindow wnd!, String classname!)
+                ex$ = "new "+classname!+"(wnd!,wnd!.getAvailableControlID())"
+                c! = eval(ex$)
+                methodret c! 
+         methodend
+
+classend
