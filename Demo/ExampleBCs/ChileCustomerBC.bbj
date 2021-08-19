@@ -182,7 +182,7 @@ class public ChileCustomerBC implements BusinessComponent
 
         rem merge model
         use ::BusinessUIComponents/tools/BCMetaDataJSONModel.bbj::BCMetaDataJSONModel
-        model! = new BCMetaDataJSONModel("BusinessUIComponents/ExampleBCs/meta/")
+        model! = new BCMetaDataJSONModel("BusinessUIComponents/Demo/ExampleBCs/meta/")
         model!.loadModel("ChileCustomerBC")
         #AttributesRecord! = CAST(DataRow,model!.mergeAttributes(dr!,stbl("!LOCALE")))
         methodret dr!
