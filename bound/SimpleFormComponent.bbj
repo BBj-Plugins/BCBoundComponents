@@ -1,6 +1,7 @@
 use ::BusinessUIComponents/bound/AbstractBCBoundWidget.bbj::AbstractBCBoundWidget
 use ::BBjGridExWidget/BBjGridExWidget.bbj::BBjGridExWidget
 use ::BusinessUIComponents/configurations/IPersistentState.bbj::IPersistentState
+use ::BusinessUIComponents/bound/BCQuickSearch.bbj::BCQuickSearch
 use com.basiscomponents.bc.BCBound
 use com.basiscomponents.bc.BCBinder
 use com.basiscomponents.bc.BusinessComponent
@@ -20,9 +21,9 @@ class public SimpleFormComponent extends AbstractBCBoundWidget implements IPersi
     field protected BBjVector fieldList!
     field protected BBjVector controlList!
     field protected BBjVector idControls!
-    field protected BBjVector quickSearchElements! = new BBjVector()
     field protected BBjVector calendarButtons! = new BBjVector()
     field protected BiMap controlMap!
+    field protected HashMap allControls! 
     field protected HashMap controlPrefixMap!
     field protected String quickSearchField! = "_SEARCH"
     field protected Boolean quickSearchUseWildCard! = Boolean.TRUE
@@ -56,8 +57,13 @@ class public SimpleFormComponent extends AbstractBCBoundWidget implements IPersi
         open (ch)res_name$
         read record (ch,siz=dec(fin(ch)(1,4))+10)json$
         close (ch)
+        
+        wh! = new ::WebKit/util/DWCWidgetHelper.bbj::DWCWidgetHelper()
+        com.basiscomponents.ui.layout.dwc.BBjWidgetPod.setBBjWidgetHelper(wh!)
+
+
         layout! = DWCLayout.fromJson(json$)
-        layout!.render(#cw!,BBjAPI().getSysGui())
+        #allControls! = CAST(HashMap,layout!.render(#cw!,BBjAPI().getSysGui()))
         #cw!.setName("FORMCW")
         #cw!.setStyle("overflow","unset")
         #cw!.setVisible(Boolean.TRUE)
@@ -109,7 +115,6 @@ class public SimpleFormComponent extends AbstractBCBoundWidget implements IPersi
             while it!.hasNext()
                 control! = it!.next()
                 controlName$ = control!.getName()
-
                 if attributes!.contains(controlName$) then
                     map!.put(controlName$, controlName$)
                 endif
@@ -255,37 +260,7 @@ class public SimpleFormComponent extends AbstractBCBoundWidget implements IPersi
                 selected! = Boolean.parseBoolean(value!)
                 cast(BBjCheckBox, control!).setSelected(selected!)
                 break
-            case BBjControl.INPUTE_TYPE
-                it! = #quickSearchElements!.iterator()
-                isQS! = Boolean.FALSE
-                while it!.hasNext()
-                    qs! = cast(QuickSearchField, it!.next())
 
-                    if qs!.getControl().equals(control!) then
-                        isQS! = Boolean.TRUE
-                        break
-                    endif
-                wend
-
-                if !isQS! then
-                    control!.setText(cvs(value!,3))
-                    break
-                endif
-
-                if value!.equals("") then
-                    control!.setUserData(null())
-                else
-                    control!.setUserData(value!)
-                endif
-
-                desc! = qs!.getDescForID(value!)
-
-                if desc! = null() then
-                    desc! = value!
-                endif
-
-                control!.setText(desc!)
-                break
             case BBjControl.INPUTD_TYPE
 
             case BBjControl.STATIC_TEXT_TYPE
@@ -371,23 +346,6 @@ class public SimpleFormComponent extends AbstractBCBoundWidget implements IPersi
         #updateScreen()
     methodend
 
-    method protected BBjVector getAllControlsRecursive(BBjVector controls!, BBjWindow window!)
-        currentControls! = window!.getAllControls()
-        it! = currentControls!.iterator()
-        while it!.hasNext()
-            control! = it!.next()
-            type = control!.getControlType()
-
-            if type = BBjControl.CHILD_TYPE then
-                controls! = #getAllControlsRecursive(controls!,cast(BBjChildWindow, control!))
-            else
-                controls!.add(control!)
-            endif
-        wend
-
-        methodret controls!
-    methodend
-
     method protected BBjControl getControlFromControlList(String controlName!)
         it! = #controlList!.iterator()
         while it!.hasNext()
@@ -405,7 +363,12 @@ class public SimpleFormComponent extends AbstractBCBoundWidget implements IPersi
     method protected void buildFieldList()
         attributes! = #getBinder().getAttributesRecord()
         attrList! = attributes!.getFieldNames()
-        #controlList! = #getAllControlsRecursive(new BBjVector(), #cw!)
+        
+        it! = #allControls!.keySet().iterator()
+        #controlList! = new BBjVector()
+        while it!.hasNext()
+            #controlList!.add(#allControls!.get(it!.next()))
+        wend
         
         fieldList! = new BBjVector()
         controlMap! = #getControlMap()
@@ -456,7 +419,6 @@ class public SimpleFormComponent extends AbstractBCBoundWidget implements IPersi
         precision! = attributes!.getFieldPrecision(fieldName$)
         switch c!.getControlType()
             case BBjControl.INPUTE_TYPE
-                #applyQuickSearch(cast(BBjInputE, c!), fieldName$, fieldAttributes!)
                 break
             case BBjControl.INPUTN_TYPE
 
@@ -539,60 +501,80 @@ class public SimpleFormComponent extends AbstractBCBoundWidget implements IPersi
                 #applyLookupForListBox(cast(BBjListBox, c!),fieldAttributes!)
                 break                
             case default
+                class$=str(c!)
+                if pos("::BCQuickSearch"=class$)>0 then 
+                    rem #applyQuickSearch(cast(BBjInputE, c!), fieldName$, fieldAttributes!)
+                    sel! = #getBinder().getSelection()
+            
+                    if (sel!.size() = 1) then
+                        rsBinder! = #getBinder().getRS()
+                        rowkey$ = sel!.get(0)
+                        selDr! = rsBinder!.get(rowkey$)
+                    else
+                        selDr! = null()
+                    endif                    
+                    lookup! = cast(BusinessComponent, #getBinder().getBC()).getLookup(fieldName$, selDr!, err=*next)
+                    if lookup!<> null() then
+                        cast(BCQuickSearch,c!).setBC(lookup!)
+                    fi
+                    
+                fi
                 break
         swend
         
     methodend
 
-    method protected void applyQuickSearch(BBjInputE control!, String fieldName!, HashMap fieldAttributes!)
-        if !fieldAttributes!.containsKey("LOOKUP") then
-            methodret
-        endif
-
-        sel! = #getBinder().getSelection()
-
-        if (sel!.size() = 1) then
-            rsBinder! = #getBinder().getRS()
-            rowkey$ = sel!.get(0)
-            selDr! = rsBinder!.get(rowkey$)
-        else
-            selDr! = null()
-        endif
-        rem try to call getLookup(). when it does not work or is empty, try to call getLookupData. if neither brings results, methodret.
-        lookup! = cast(BusinessComponent, #getBinder().getBC()).getLookup(fieldName!, selDr!, err=*next)
-
-        if lookup! = null() then
-            methodret
-        endif
-
-        qs! = new QuickSearchField(control!, lookup!)
-        qs!.setBinder(#getBinder())
-        qs!.setSearchFieldName(#quickSearchField!)
-        qs!.setUseWildCard(#quickSearchUseWildCard!)
-        #quickSearchElements!.add(qs!)
-    methodend
-    rem /**
-    rem  * default is "_SEARCH"
-    rem  */
-    method public void setQuickSearchFieldName(String quickSearchField!)
-        #quickSearchField! = quickSearchField!
-        it! = #quickSearchElements!.iterator()
-        while it!.hasNext()
-            qs! = cast(QuickSearchField, it!.next())
-            qs!.setSearchFieldName(quickSearchField!)
-        wend
-    methodend
-    rem /**
-    rem  * default is TRUE
-    rem  */
-    method public void setQuickSearchUseWildCard(Boolean useWildCard!)
-        #quickSearchUseWildCard! = useWildCard!
-        it! = #quickSearchElements!.iterator()
-        while it!.hasNext()
-            qs! = cast(QuickSearchField, it!.next())
-            qs!.setUseWildCard(useWildCard!)
-        wend
-    methodend
+REM     method protected void applyQuickSearch(BBjInputE control!, String fieldName!, HashMap fieldAttributes!)
+REM         if !fieldAttributes!.containsKey("LOOKUP") then
+REM             methodret
+REM         endif
+REM 
+REM         sel! = #getBinder().getSelection()
+REM 
+REM         if (sel!.size() = 1) then
+REM             rsBinder! = #getBinder().getRS()
+REM             rowkey$ = sel!.get(0)
+REM             selDr! = rsBinder!.get(rowkey$)
+REM         else
+REM             selDr! = null()
+REM         endif
+REM         rem try to call getLookup(). when it does not work or is empty, try to call getLookupData. if neither brings results, methodret.
+REM         lookup! = cast(BusinessComponent, #getBinder().getBC()).getLookup(fieldName!, selDr!, err=*next)
+REM 
+REM         if lookup! = null() then
+REM             methodret
+REM         endif
+REM 
+REM         qs! = new QuickSearchField(control!, lookup!)
+REM         qs!.setBinder(#getBinder())
+REM         qs!.setSearchFieldName(#quickSearchField!)
+REM         qs!.setUseWildCard(#quickSearchUseWildCard!)
+REM         #quickSearchElements!.add(qs!)
+REM     methodend
+REM 
+REM 
+REM     rem /**
+REM     rem  * default is "_SEARCH"
+REM     rem  */
+REM     method public void setQuickSearchFieldName(String quickSearchField!)
+REM         #quickSearchField! = quickSearchField!
+REM         it! = #quickSearchElements!.iterator()
+REM         while it!.hasNext()
+REM             qs! = cast(QuickSearchField, it!.next())
+REM             qs!.setSearchFieldName(quickSearchField!)
+REM         wend
+REM     methodend
+REM     rem /**
+REM     rem  * default is TRUE
+REM     rem  */
+REM     method public void setQuickSearchUseWildCard(Boolean useWildCard!)
+REM         #quickSearchUseWildCard! = useWildCard!
+REM         it! = #quickSearchElements!.iterator()
+REM         while it!.hasNext()
+REM             qs! = cast(QuickSearchField, it!.next())
+REM             qs!.setUseWildCard(useWildCard!)
+REM         wend
+REM     methodend
 
 
     rem /**
@@ -803,11 +785,11 @@ class public SimpleFormComponent extends AbstractBCBoundWidget implements IPersi
     method protected void registerCallbacks(BBjControl c!)
         switch c!.getControlType()
 REM don't use ON_EDIT_MODIFY as long as DWC reports ON_EDIT_MODIFY also on programmatic changes
-REM             case BBjControl.INPUTE_TYPE
-REM             case BBjControl.INPUTN_TYPE
-REM             case BBjControl.INPUTD_TYPE
-REM                 c!.setCallback(BBjAPI.ON_EDIT_MODIFY,#this!,"onControlDirty")
-REM                 break
+            case BBjControl.INPUTE_TYPE
+            case BBjControl.INPUTN_TYPE
+            case BBjControl.INPUTD_TYPE
+                c!.setCallback(BBjAPI.ON_EDIT_MODIFY,#this!,"onControlDirty")
+                break
             case BBjControl.LISTBUTTON_TYPE
             case BBjControl.LISTEDIT_TYPE
                 c!.setCallback(BBjAPI.ON_LIST_SELECT,#this!,"onControlDirty")
@@ -1087,12 +1069,6 @@ REM                 break
                 #focusFirstIDField()
                 break
             case binder!.SIGNAL_TERMINATE
-                it! = #quickSearchElements!.iterator()
-                while it!.hasNext()
-                    qs! = cast(QuickSearchField, it!.next())
-                    qs!.terminateSearchUI()
-                wend
-
                 break
             case default
                 break

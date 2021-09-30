@@ -1,6 +1,6 @@
-use ::WebKit/widgets/BBjWebWidget.bbj::BBjWebWidget
+use ::BBjWidget/BBjWidget.bbj::BBjWidget
 use ::WebKit/util/ClientUtil.bbj::ClientUtil
-use ::WebKit/widgets/Splitter.bbj::Splitter
+use ::WebKit/widgets/Splitter/Splitter.bbj::Splitter
 use ::BusinessUIComponents/bound/BusinessGrid.bbj::BusinessGrid
 use ::BusinessUIComponents/bound/SimpleFormComponent.bbj::SimpleFormComponent
 use ::BusinessUIComponents/bound/EditToolbarComponent.bbj::EditToolbarComponent
@@ -10,7 +10,7 @@ use com.basiscomponents.db.ResultSet
 use com.basiscomponents.db.DataRow
 use com.basiscomponents.bc.BCBinder
 
-class public StandardMasterDataUI extends BBjWebWidget
+class public StandardMasterDataUI extends BBjWidget
 
     field protected BBjString BC$
     field protected BBjString Form$
