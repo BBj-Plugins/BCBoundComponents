@@ -1009,7 +1009,7 @@ REM don't use ON_EDIT_MODIFY as long as DWC reports ON_EDIT_MODIFY also on progr
         it! = idControls!.iterator()
         while it!.hasNext()
             idControl! = it!.next()
-            idControl!.setEditable(enabled!)
+            idControl!.setEditable(enabled!,err=*next)
         wend
     methodend
 
