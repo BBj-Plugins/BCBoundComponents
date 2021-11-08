@@ -1,4 +1,4 @@
-use ::BusinessUIComponents/AbstractBCBoundWidget.bbj::AbstractBCBoundWidget
+use ::BusinessUIComponents/bound/AbstractBCBoundWidget.bbj::AbstractBCBoundWidget
 use ::BBjGridExWidget/BBjGridExWidget.bbj::BBjGridExWidget
 use ::BusinessUIComponents/configurations/CustomConfigurationsBC.bbj::CustomConfigurationsBC
 use ::BusinessUIComponents/configurations/IPersistentState.bbj::IPersistentState
@@ -9,7 +9,6 @@ use com.basiscomponents.bc.BCBinder
 use ::BusinessUIComponents/utils/UIUtils.bbj::UIUtils
 use com.basiscomponents.db.ResultSet
 use com.basiscomponents.db.DataRow
-use com.basiscomponents.ui.theming.Theme
 
 class public WindowHandler implements IBCBound, IPersistentState
 
@@ -22,7 +21,6 @@ class public WindowHandler implements IBCBound, IPersistentState
     field protected static BBjNumber CLOSE_MODE_DESTROY = 100
     field protected static BBjNumber CLOSE_MODE_RELEASE = 110
     field protected static BBjNumber CLOSE_MODE_OFF = 120
-    field private Theme theme! = Theme.getInstance()
 
     method public WindowHandler(BBjWindow wnd!)
         #wnd! = wnd!
@@ -194,28 +192,6 @@ class public WindowHandler implements IBCBound, IPersistentState
     methodend
 
     method protected void updateProperties()
-        windowLogo! = #theme!.getProperty("WINDOW_LOGO")
-
-        if !windowLogo!.equals("") then
-            #wnd!.setIcon(windowLogo!)
-        endif
-
-        #wnd!.setBackColor(#theme!.getBBjBackgroundColor())
-        allControls! = UIUtils.getAllControlsRecursive(new BBjVector(), #wnd!, Boolean.TRUE)
-        it! = allControls!.iterator()
-        while it!.hasNext()
-            control! = cast(BBjControl, it!.next())
-            switch control!.getControlType()
-                case BBjControl.WINDOW
-                case BBjControl.TOP_TYPE
-                case BBjControl.CHILD_TYPE
-                case BBjControl.TABCTRL_TYPE
-                    control!.setBackColor(#theme!.getBBjBackgroundColor())
-                    break
-                case default
-                    break
-            swend
-        wend
     methodend
 
 classend

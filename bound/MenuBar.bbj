@@ -1,4 +1,4 @@
-use ::BusinessUIComponents/AbstractBCBoundWidget.bbj::AbstractBCBoundWidget
+use ::BusinessUIComponents/bound/AbstractBCBoundWidget.bbj::AbstractBCBoundWidget
 use com.basiscomponents.bc.BCBound
 use com.basiscomponents.bc.BCBinder
 use com.basiscomponents.db.DataRow

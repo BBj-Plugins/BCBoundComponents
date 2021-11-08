@@ -1,0 +1,37 @@
+use ::WebKit/widgets/QuickSearch.bbj::QuickSearch
+use com.basiscomponents.bc.BCBound
+use com.basiscomponents.bc.BCBinder
+use com.basiscomponents.bc.BusinessComponent
+use com.basiscomponents.db.ResultSet
+use com.basiscomponents.db.DataRow
+
+class public BCQuickSearch extends QuickSearch
+
+    field private BusinessComponent BC!
+    
+    method public BCQuickSearch(BBjChildWindow wnd!)
+        #super!(wnd!)
+    methodend
+
+    method public BCQuickSearch(BBjWindow wnd!, BBjInt id!)
+        #super!(wnd!,id!)
+    methodend
+    
+    method public void setBC(BusinessComponent BC!)
+        #BC! = BC!
+        #setCallback(QuickSearch.ON_FETCH_SUGGESTIONS,#this!,"onFetchSuggestions")
+        #setSuggestionMask("[[DESC]] ([[ID]])")
+    methodend
+    
+    method public void onFetchSuggestions(BBjCustomEvent ev!)
+        if #BC! <> null() then
+            data! = ev!.getObject()
+            filter! = new DataRow()
+            filter!.setFieldValue("_SEARCH","*"+data!+"*")
+            #BC!.setFilter(filter!)
+            rs! = #BC!.retrieve()
+            #setSuggestions(rs!)
+        fi
+    methodend
+
+classend

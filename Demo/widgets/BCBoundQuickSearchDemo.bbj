@@ -1,0 +1,61 @@
+use ::WebKit/util/ClientUtil.bbj::ClientUtil
+use ::WebKit/widgets/QuickSearch.bbj::QuickSearch
+use com.basiscomponents.db.ResultSet
+use com.basiscomponents.db.DataRow
+use com.basiscomponents.db.DataField
+
+if INFO(3,6)<>"6" then
+    call "WebKit/util/deploy.bbj",pgm(-1)
+FI
+
+declare BBjSysGui sysGui!
+declare BBjWindow mainWindow!
+declare QuickSearch quicksearch!
+declare BBjChildWindow wnd!
+
+sysGui! = BBjAPI().openSysGui("X0")
+
+mainWindow! = sysGui!.addWindow(sysGui!.getAvailableContext(),25,25,1200,750,"QuickSearch Demo",$01101083$)
+wnd! = mainWindow!.addChildWindow(mainWindow!.getAvailableControlID(),0,0,0,0,"",$00100800$,BBjAPI().getSysGui().getAvailableContext())
+wnd!.setDockStyle("margin-left","15px")
+wnd!.setDockStyle("margin-top","15px")
+wnd!.addStaticText(wnd!.getAvailableControlID(),0,0,0,0,"Select a Customer: ")
+quicksearch! = new QuickSearch(wnd!,wnd!.getAvailableControlID())
+quicksearch!.setCallback(QuickSearch.ON_FETCH_SUGGESTIONS,"onFetchSuggestions")
+quicksearch!.setCallback(QuickSearch.ON_SUFFIX_CLICK,"onSuffixClick")
+quicksearch!.setCallback(QuickSearch.ON_ITEM_SELECT,"onItemSelect")
+quicksearch!.getInputField().setPlaceholder("Type")
+quicksearch!.setSuffixIcon("WebKit/demo/assets/search.svg")
+quicksearch!.getIconControl().setStyle("height","24px")
+quicksearch!.getIconControl().setStyle("margin-left","15px")
+
+
+use ::BusinessUIComponents/Demo/ExampleBCs/ChileCustomerBC.bbj::ChileCustomerBC
+bc! = new ChileCustomerBC()
+
+process_events
+
+
+onFetchSuggestions:
+
+  data! = cast(BBjString,cast(BBjCustomEvent,BBjAPI().getLastEvent()).getObject())
+  
+  filter! = new DataRow()
+  filter!.setFieldValue("_SEARCH","*"+data!+"*")
+  bc!.setFilter(filter!)
+  rs! = bc!.retrieve()
+  
+  quicksearch!.setSuggestionMask("[[LAST_NAME]], [[FIRST_NAME]] ([[CUST_NUM]])")
+  quicksearch!.setSuggestions(rs!)
+return
+
+onSuffixClick:
+    a = msgbox("pressed Icon!")
+return
+
+onItemSelect:
+    declare DataRow dr!
+    dr! = cast(DataRow,cast(BBjCustomEvent,BBjAPI().getLastEvent()).getObject())
+    quicksearch!.getInputField().setPlaceholder(dr!.getFieldAsString("CUST_NUM")+":"+dr!.getFieldAsString("LAST_NAME"))
+    quicksearch!.getInputField().setText("")
+return

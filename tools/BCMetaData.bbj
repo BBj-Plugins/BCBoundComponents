@@ -3,7 +3,6 @@ use com.basiscomponents.bc.BCBinder
 use com.basiscomponents.db.DataRow
 use com.basiscomponents.db.ResultSet
 
-use com.basiscomponents.ui.theming.Theme
 use com.basiscomponents.i18n.Props
 
 use ::BBjGridExWidget/GxColumns.bbj::GxColumn
@@ -16,13 +15,13 @@ use ::BBjGridExWidget/GxCellEditors.bbj::GxCellEditorSelect
 use ::BBjGridExWidget/GxClientEvents.bbj::GxClientEventsCell
 use ::BBjGridExWidget/GxClientModels.bbj::GxClientCellModel
 
-use ::BusinessUIComponents/BusinessGrid.bbj::BusinessGrid
+use ::BusinessUIComponents/bound/BusinessGrid.bbj::BusinessGrid
 use ::BusinessUIComponents/configurations/ConfigurationButton.bbj::ConfigurationButton
 use ::BusinessUIComponents/configurations/CustomConfigurationsBC.bbj::CustomConfigurationsBC
 use ::BusinessUIComponents/configurations/IPersistentState.bbj::IPersistentState
 use ::BusinessUIComponents/bound/WindowHandler.bbj::WindowHandler
 
-use ::BusinessUIComponents/tools/IBCMetaDataPersistenceModel.bbj::IBCMetaDataModel
+use com.basiscomponents.bc.meta.IBCMetaDataModel
 
 use com.google.gson.JsonArray
 
@@ -80,7 +79,8 @@ class public BCMetaData extends BBDialog implements IPersistentState
     
     field private IBCMetaDataModel meta_model!
     
-    field private Theme theme! = Theme.getInstance()
+    field private Boolean GridInitialized! = Boolean.FALSE
+    
     
     
     method private BCMetaData()
@@ -105,8 +105,7 @@ class public BCMetaData extends BBDialog implements IPersistentState
         endif
 
         #Wnd!=#super!.getWndTop()
-        if #API!.isInMDI() then #MDI!=#API!.getMDI()
-
+        
         if #Wnd!<>null() then
             #setCallbacks()
         endif
@@ -126,6 +125,8 @@ REM 		#super!.getControlByName("BCMetaData").setCallback(BBjAPI.ON_CLOSE,#this!,
 		#super!.getControlByName("BTN_SAVE").setCallback(BBjAPI.ON_BUTTON_PUSH,#this!,"BTN_SAVE__ON_BUTTON_PUSH")
 		#super!.getControlByName("BTN_GRID").setCallback(BBjAPI.ON_BUTTON_PUSH,#this!,"BTN_GRID__ON_BUTTON_PUSH")
 		rem /** DLGWIZ_CBS_END **/
+		
+
 
     methodend
     
@@ -133,6 +134,22 @@ REM 		#super!.getControlByName("BCMetaData").setCallback(BBjAPI.ON_CLOSE,#this!,
         #windowHandler! = new WindowHandler(#Wnd!)
         #windowHandler!.setProgramName(#pgmname!)
         #windowHandler!.applyWindowConfig()
+    methodend
+    
+    method public void saveGridState(BBjCustomEvent ev!)
+        if !#GridInitialized! then
+            
+            json$=BBjAPI().getThinClient().getUserProperty(1,"BCMETADATAGRIDSTATE",err=*next)
+            if json$>"" then
+                #grid!.setState(new GxState(json$))
+            fi
+            
+            #GridInitialized! = Boolean.TRUE
+        else
+            BBjAPI().getThinClient().setUserProperty(1,"BCMETADATAGRIDSTATE",str(ev!.getObject()))
+            
+        fi
+        
     methodend
 
     rem /**
@@ -164,6 +181,9 @@ REM 		#super!.getControlByName("BCMetaData").setCallback(BBjAPI.ON_CLOSE,#this!,
 
         #onInitDialog()
         #Wnd!.setVisible(#TRUE)
+        
+        #Wnd!.maximize()
+        #grid!.setCallback(#grid!.ON_GRID_COLUMN_STATE_CHANGE(), #this!, "saveGridState")
 
         do_process_events:
             process_events,err=*same
@@ -199,17 +219,13 @@ REM 		#super!.getControlByName("BCMetaData").setCallback(BBjAPI.ON_CLOSE,#this!,
     	#C_BTN_GRID! = cast(BBjButton,#super!.getControlByName("BTN_GRID"))
     	rem /** DLGWIZ_INI_END **/
     	
-    	ico! = #theme!.getBBjImage("IC_SAVE",#theme!.PRIMARY)
         #C_BTN_SAVE!.setImage(ico!)
         #C_BTN_SAVE!.setImageSize(20,20)
 
-        ico! = #theme!.getBBjImage("IC_GRID",#theme!.PRIMARY)
         #C_BTN_GRID!.setImage(ico!)
         #C_BTN_GRID!.setImageSize(20,20)
 
         
-    	#Wnd!.setBackColor(#theme!.getBBjBackgroundColor())
-    
     	v! = new BBjVector()
     	it! = #BCList!.iterator()
     	while it!.hasNext()
@@ -336,10 +352,12 @@ REM 		#super!.getControlByName("BCMetaData").setCallback(BBjAPI.ON_CLOSE,#this!,
             grid!.addColumnGroup(loc$ , loc$, group! , 0 , "")
         wend
 
-        rem grid!.updateColumns()
-        #cfgbc! = new CustomConfigurationsBC(info(3,2))
-        #cfgbutton! = new ConfigurationButton(#Wnd!, 201, #Wnd!.getWidth()-50, 5, #this!, #realm!, #pgmname!, #cfgbc! )
-        #cfgbutton!.applyAutoConfig()
+
+            json$=BBjAPI().getThinClient().getUserProperty(1,"BCMETADATAGRIDSTATE",err=*next)
+            if json$>"" then
+                #grid!.setState(new GxState(json$))
+            fi
+            
     methodend
 
     rem /**
@@ -395,7 +413,7 @@ REM 		#super!.getControlByName("BCMetaData").setCallback(BBjAPI.ON_CLOSE,#this!,
 	method public void BCMetaData__ON_RESIZE(BBjResizeEvent ev!)
 		  w=ev!.getWidth()
 		  h=ev!.getHeight()
-		  #cfgbutton!.setLocation(w-40,5)
+REM 		  #cfgbutton!.setLocation(w-40,5)
 		  #grid!.setSize(w,h-40)
 	methodend
 
@@ -432,6 +450,9 @@ REM         #cfgbutton!.applyAutoConfig()
           rs! = new ResultSet()
 
           fields! = ar!.getFieldNames()
+          
+          fields!.remove("_ENTITIES",err=*next)
+          fields!.remove("_ENTITY",err=*next)
           fields!.insertItem(0,"_ENTITIES")
           fields!.insertItem(0,"_ENTITY")
 

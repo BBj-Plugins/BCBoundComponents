@@ -393,27 +393,7 @@ class public BBjSettingsWidget extends BBjWidget
   method public void removeItem(SwModelsGroup group!, BBjString itemId!)
     #removeItem(group!.getId(), itemId!)
   methodend
-  rem /**
-  rem  * Update the widget size
-  rem  *
-  rem  * @param BBjNumber w! The windget's width
-  rem  * @param BBjNumber h! The windget's height
-  rem  */
-  method public void setSize(BBjNumber w!, BBjNumber h!)
-    #super!.setSize(w!,h!)
-    th!     = #getTabControlHeight()
 
-    if(#getFcw() <> null())
-      #getFcw().setSize(w!, th!)
-    FI
-
-    if(#getScw() <> null())
-      #getScw().setSize(w!, h! - th!)
-      grid! = #getGrid()
-      grid!.setSize(w!, h! - th!)
-      grid!.setFitToGrid()
-    FI
-  methodend
   rem /**
   rem  * force the widget redraw whenever the widget needs to be rendered
   rem  *
@@ -793,16 +773,36 @@ class public BBjSettingsWidget extends BBjWidget
     rem /**
     rem  * Create the top child window and attach the tab control
     rem  */
-    #Fcw! = cast(BBjChildWindow, canvas!.addChildWindow(101, 0, 0, cw!, th!, "", $00000800$, sysGui!.getAvailableContext()))
-    #TabControl! = cast(BBjTabCtrl, #Fcw!.addTabCtrl(101, 0, 0, cw!, th!))
-    #TabControl!.setVisible(0)
+REM     #Fcw! = cast(BBjChildWindow, canvas!.addChildWindow(101, 0, 0, cw!, th!, "", $00100800$, sysGui!.getAvailableContext()))
+REM     #Fcw!.setStyle("height","60px")
+REM     #Fcw!.setStyle("width","100%")
+
+
+    
+    #TabControl! = cast(BBjTabCtrl,canvas!.addTabCtrl(101, 0, 0, cw!, th!))
+    #TabControl!.setStyle("height","calc( 100vh - 100px )")
+    #TabControl!.setStyle("width","100%")
+    #TabControl!.setStyle("min-width","100%")
+    #TabControl!.setAttribute("tab-layout","shrink")
     #TabControl!.setCallback(#TabControl!.ON_TAB_SELECT, #this!, "onTabSelected")
-    #TabArea! = cast(BBjChildWindow, #Fcw!.addChildWindow(102, 50, 50, 1, 1, "",sysGui!.getAvailableContext()))
+    #TabArea! = cast(BBjChildWindow, canvas!.addChildWindow(102, 1, 1, 1, 1, "",sysGui!.getAvailableContext()))
+
     rem /**
     rem  * Create the second child window and attach the grid
     rem  */
-    #Scw! = cast(BBjChildWindow, canvas!.addChildWindow(103, 0, th!, cw!, ch! - th!, "", $00000800$,  sysGui!.getAvailableContext()))
-    rem BBjGridExWidget.setDebug(1)
+    #Scw! = cast(BBjChildWindow, canvas!.addChildWindow(103, 0, th!, cw!, ch! - th!, "", $00100800$,  sysGui!.getAvailableContext()))
+    #Scw!.setDockStyle("height","calc( 100vh - 140px )")
+    #Scw!.setStyle("height","calc( 100vh - 140px )")
+    #Scw!.setPanelStyle("height","calc( 100vh - 144px )")
+    #Scw!.setDockStyle("width","100%")
+    #Scw!.setStyle("width","calc( 100% - 4px )")
+    #Scw!.setPanelStyle("width","100%")
+    #Scw!.setStyle("position","absolute")
+    #Scw!.setStyle("left","2px")
+    #Scw!.setStyle("top","46px")
+    
+    
+    
     #Grid! = new BBjGridExWidget(#Scw!, #readAssetsAsString("grid.tpl"))
     #Grid!.setRowNodeId("ID")
     #Grid!.setForceCommunityBuild(1)

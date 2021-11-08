@@ -1,29 +1,28 @@
-use ::BusinessUIComponents/AbstractBCBoundWidget.bbj::AbstractBCBoundWidget
-use ::BBjGridExWidget/BBjGridExWidget.bbj::BBjGridExWidget
+use ::BusinessUIComponents/bound/AbstractBCBoundWidget.bbj::AbstractBCBoundWidget
 use com.basiscomponents.bc.BCBound
 use com.basiscomponents.bc.BCBinder
 use com.basiscomponents.db.ResultSet
 use com.basiscomponents.db.DataRow
-use com.basiscomponents.ui.theming.Theme
 use com.basiscomponents.i18n.Props
+
+
+
 rem /**
 rem  * A sample BBj Widget Implementation
 rem  */
 class public EditToolbarComponent extends AbstractBCBoundWidget
 
-    field protected BBjButton btn_new!
-    field protected BBjButton btn_save!
-    field protected BBjButton btn_delete!
-    field protected BBjButton btn_refresh!
-    field protected BBjButton btn_blank!
-    field protected BBjMenuButton btn_background!
+    field protected BBjChildWindow btn_new!
+    field protected BBjChildWindow btn_save!
+    field protected BBjChildWindow btn_delete!
+    field protected BBjChildWindow btn_refresh!
+    field protected BBjChildWindow btn_blank!
     field protected Boolean btn_new_enabled! = Boolean.TRUE
     field protected Boolean btn_save_enabled! = Boolean.TRUE
     field protected Boolean btn_delete_enabled! = Boolean.TRUE
     field protected Boolean btn_refresh_enabled! = Boolean.TRUE
     field protected Boolean btn_blank_enabled! = Boolean.FALSE
     field private Boolean dirty! = BBjAPI.FALSE
-    field private Theme theme! = Theme.getInstance()
     field private Props props! = Props.getInstance()
     rem --------------------- constructors -------------------------------------
     rem /**
@@ -59,143 +58,56 @@ class public EditToolbarComponent extends AbstractBCBoundWidget
     rem  * @param Boolean f_init!: if TRUE the control is rendered for the first time so this method has to perform initial rendering
     rem  */
     method public void redraw(Boolean f_init!)
-    
-        
+
         if (f_init!) then
             
-            #getCanvas().setOpaque(0)
-            bgColor! = #theme!.getPrimaryColorPalette().getBBjColor()
+            #getCanvas().addPanelStyle("tbar")
+                                    
+            #btn_new! =  #getCanvas().addChildWindow(80,0,0,100,80,"",$00100800$,BBjAPI().getSysGui().getAvailableContext())
+            #btn_new!.addPanelStyle("tbn")
+            #btn_new!.setStyle("width","fit-content")
+            #btn_new!.setStyle("width","-moz-fit-content")
+            img! = #btn_new!.addStaticText(101,0,0,48,48,"add")
+            img!.addStyle("material-icons")
+            #btn_new!.setCallback(BBjAPI.ON_MOUSE_DOWN,#this!,"onBtnNew")
 
-REM             if info(3,6)<>"5" then
-                #btn_background! = #getCanvas().addMenuButton(99,0,0,20,20,"")
-                #btn_background!.setTabTraversable(0)
-                #btn_background!.setFocusable(0)
-                #btn_background!.setBorderPainted(1)
-                #btn_background!.setForeColor(bgColor!)
-                #btn_background!.setBackColor(bgColor!)
-REM             endif
+            #btn_save! =  #getCanvas().addChildWindow(81,0,0,100,80,"",$00100800$,BBjAPI().getSysGui().getAvailableContext())
+            #btn_save!.addPanelStyle("tbn")
+            #btn_save!.setStyle("width","fit-content")
+            #btn_save!.setStyle("width","-moz-fit-content")
+            img! = #btn_save!.addStaticText(101,0,0,48,48,"save")
+            img!.addStyle("material-icons")
+            #btn_save!.setCallback(BBjAPI.ON_MOUSE_DOWN,#this!,"onBtnSave")
             
-            #btn_new! = #getCanvas().addButton(100,0,0,20,20,"NEW")
-            #btn_new!.setCallback(BBjAPI.ON_BUTTON_PUSH,#this!,"onBtnNew")
-            #btn_new!.setTabTraversable(0)
-            #btn_new!.setFocusable(0)
-REM             #btn_new!.setBorderPainted(0)
-            #btn_new!.setOpaque(0)
-            #btn_new!.setImage(#theme!.getBBjImage("IC_NEW",#theme!.ON_PRIMARY))
-            #btn_new!.setBackColor(bgColor!)
-            #btn_new!.setStyle("height","30px")
+            #btn_delete! =  #getCanvas().addChildWindow(82,0,0,100,80,"",$00100800$,BBjAPI().getSysGui().getAvailableContext())
+            #btn_delete!.addPanelStyle("tbn")
+            #btn_delete!.setStyle("width","fit-content")
+            #btn_delete!.setStyle("width","-moz-fit-content")
+            img! = #btn_delete!.addStaticText(101,0,0,48,48,"delete")
+            img!.addStyle("material-icons")
+            #btn_delete!.setCallback(BBjAPI.ON_MOUSE_DOWN,#this!,"onBtnDelete")            
 
-            #btn_save! = #getCanvas().addButton(101,20,0,20,20,"SAVE")
-            #btn_save!.setCallback(BBjAPI.ON_BUTTON_PUSH,#this!,"onBtnSave")
-            #btn_save!.setTabTraversable(0)
-            #btn_save!.setFocusable(0)
-REM             #btn_save!.setBorderPainted(0)
-            #btn_save!.setOpaque(0)
-            #btn_save!.setImage(#theme!.getBBjImage("IC_SAVE",#theme!.ON_PRIMARY))
-            #btn_save!.setBackColor(bgColor!)
-            #btn_save!.setStyle("height","30px")
+            #btn_refresh! =  #getCanvas().addChildWindow(83,0,0,100,80,"",$00100800$,BBjAPI().getSysGui().getAvailableContext())
+            #btn_refresh!.addPanelStyle("tbn")
+            #btn_refresh!.setStyle("width","fit-content")
+            #btn_refresh!.setStyle("width","-moz-fit-content")
+            img! = #btn_refresh!.addStaticText(101,0,0,48,48,"refresh")
+            img!.addStyle("material-icons")
+            #btn_refresh!.setCallback(BBjAPI.ON_MOUSE_DOWN,#this!,"onBtnRefresh")
             
+REM             #btn_blank! =  #getCanvas().addChildWindow(84,0,0,100,80,"",$00100800$,BBjAPI().getSysGui().getAvailableContext())
+REM             #btn_blank!.addPanelStyle("tbn")
+REM             #btn_blank!.setStyle("width","fit-content")
+REM             #btn_blank!.setStyle("width","-moz-fit-content")
+REM             img! = #btn_blank!.addStaticText(101,0,0,48,48,"material-design-icons/content/1x_web/ic_add_circle_outline_white_48dp.png")
+REM             #btn_blank!.setCallback(BBjAPI.ON_MOUSE_DOWN,#this!,"onBtnBlank")   
             
-            #btn_delete! = #getCanvas().addButton(102,40,0,20,20,"DELETE")
-            #btn_delete!.setCallback(BBjAPI.ON_BUTTON_PUSH,#this!,"onBtnDelete")
-            #btn_delete!.setTabTraversable(0)
-            #btn_delete!.setFocusable(0)
-REM             #btn_delete!.setBorderPainted(0)
-            #btn_delete!.setOpaque(0)
-            #btn_delete!.setImage(#theme!.getBBjImage("IC_DELETE",#theme!.ON_PRIMARY))
-            #btn_delete!.setBackColor(bgColor!)
-            #btn_delete!.setStyle("height","30px")
-            
-            #btn_refresh! = #getCanvas().addButton(103,60,0,20,20,"REFRESH")
-            #btn_refresh!.setCallback(BBjAPI.ON_BUTTON_PUSH,#this!,"onBtnRefresh")
-            #btn_refresh!.setTabTraversable(0)
-            #btn_refresh!.setFocusable(0)
-REM             #btn_refresh!.setBorderPainted(0)
-            #btn_refresh!.setOpaque(0)
-            #btn_refresh!.setImage(#theme!.getBBjImage("IC_REFRESH",#theme!.ON_PRIMARY))
-            #btn_refresh!.setBackColor(bgColor!)
-            #btn_refresh!.setStyle("height","30px")
-            
-            #btn_blank! = #getCanvas().addButton(104,60,0,20,20,"BLANK")
-            #btn_blank!.setCallback(BBjAPI.ON_BUTTON_PUSH,#this!,"onBtnBlank")
-            #btn_blank!.setTabTraversable(0)
-            #btn_blank!.setFocusable(0)
-REM             #btn_blank!.setBorderPainted(0)
-            #btn_blank!.setOpaque(0)
-            #btn_blank!.setImage(#theme!.getBBjImage("IC_BLANK",#theme!.ON_PRIMARY))
-            #btn_blank!.setBackColor(bgColor!)     
-            #btn_blank!.setStyle("height","30px")
-            
-            #alignAndSizeButtons()
             
             #enableControls()
         endif
 
-        #getCanvas().setSize(#getCanvas().getParentWindow().getWidth() + 2, #getCanvas().getHeight())
-        #btn_background!.setSize(#getCanvas().getWidth() + 4, #btn_background!.getHeight())
     methodend
 
-    REM TODO: this method might be removed. (?) Instead, place the buttons right away in the correct location!
-    REM check: enabled vs. visible
-    method protected void alignAndSizeButtons()
-        height = #theme!.getNumProperty("PRIMARY_TB_HEIGHT")
-        #getCanvas().setSize(#getCanvas().getWidth(), height + 4)
-        imageSize = height - 4
-REM         if #btn_background! <> null() then
-            #btn_background!.setSize(#btn_background!.getWidth(), height + 4)
-REM         endif
-        currentXpos = 2
-
-        if #btn_blank_enabled! then
-            #btn_blank!.setImageSize(imageSize, imageSize)
-            #btn_blank!.setSize(height, height)
-            #btn_blank!.setLocation(currentXpos, 2)
-            #btn_blank!.setVisible(1)
-            currentXpos = currentXpos + height
-        else
-            #btn_blank!.setVisible(0)
-        endif
-
-        if #btn_new_enabled! then
-            #btn_new!.setImageSize(imageSize, imageSize)
-            #btn_new!.setSize(height, height)
-            #btn_new!.setLocation(currentXpos, 2)
-            #btn_new!.setVisible(1)
-            currentXpos = currentXpos + height
-        else
-            #btn_new!.setVisible(0)
-        endif
-
-        if #btn_save_enabled! then
-            #btn_save!.setImageSize(imageSize, imageSize)
-            #btn_save!.setSize(height, height)
-            #btn_save!.setLocation(currentXpos, 2)
-            #btn_save!.setVisible(1)
-            currentXpos = currentXpos + height
-        else
-            #btn_save!.setVisible(0)
-        endif
-
-        if #btn_delete_enabled! then
-            #btn_delete!.setImageSize(imageSize, imageSize)
-            #btn_delete!.setSize(height, height)
-            #btn_delete!.setLocation(currentXpos, 2)
-            #btn_delete!.setVisible(1)
-            currentXpos = currentXpos + height
-        else
-            #btn_delete!.setVisible(0)
-        endif
-
-        if #btn_refresh_enabled! then
-            #btn_refresh!.setImageSize(imageSize, imageSize)
-            #btn_refresh!.setSize(height, height)
-            #btn_refresh!.setLocation(currentXpos, 2)
-            #btn_refresh!.setVisible(1)
-            currentXpos = currentXpos + height
-        else
-            #btn_refresh!.setVisible(0)
-        endif
-    methodend
 
     method public void setEnabledButtons(Boolean btn_blank_enabled!, Boolean btn_new_enabled!, Boolean btn_save_enabled!, Boolean btn_delete_enabled!, Boolean btn_refresh_enabled!)
         #btn_new_enabled! = btn_new_enabled!

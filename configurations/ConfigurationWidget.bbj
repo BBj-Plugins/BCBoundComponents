@@ -12,7 +12,6 @@ use ::BusinessUIComponents/configurations/IPersistentState.bbj::IPersistentState
 use com.basiscomponents.bc.IConfigurationsBC
 use com.basiscomponents.db.DataRow
 use com.basiscomponents.db.ResultSet
-use com.basiscomponents.ui.theming.Theme
 use com.basiscomponents.i18n.Props
 use java.util.UUID
 use java.io.File
@@ -60,7 +59,6 @@ class public ConfigurationWidget extends BBjWidget
     field protected BBjNumber widgetHeight = 0
     field protected BBjNumber listEditPopupHeight = 0
     field protected BBjNumber optionsListeditWidth = 0
-    field private Theme theme! = Theme.getInstance()
     field private Props props! = Props.getInstance()
     rem /**
     rem  * default constructor disabled
@@ -101,7 +99,7 @@ class public ConfigurationWidget extends BBjWidget
             #userName! = ""
         endif
 
-        #stateHandler! = new ConfigurationStateHandler(statePersistable!, #this!)
+        rem #stateHandler! = new ConfigurationStateHandler(statePersistable!, #this!)
         #create(container!,id,x,y,160,20)
     methodend
     rem /**
@@ -235,18 +233,12 @@ class public ConfigurationWidget extends BBjWidget
 
             #createPopupButton()
             #toggleSaveButton(Boolean.FALSE)
-            #widgetWidth = cast(BBjNumber, #theme!.getNumProperty("CONFIG_WIDGET_WIDTH"))
-            #widgetHeight = cast(BBjNumber, #theme!.getNumProperty("SECONDARY_TB_HEIGHT"))
             #listEditOptions!.setFieldHeight(#widgetHeight - 2)
             #getCanvas().setSize(#widgetWidth + 2, #widgetHeight + 2)
             #optionsListeditWidth = #widgetWidth - (3 * #widgetHeight);REM list edit is widget width minus the 3 buttons
-            #listEditPopupHeight = cast(BBjNumber, #theme!.getNumProperty("CONFIG_WIDGET_LISTEDIT_POPUP_HEIGHT"))
-            #buttonDelete!.setImage(#theme!.getBBjImage("IC_DELETE"))
-            size = #theme!.getNumProperty("SECONDARY_TB_HEIGHT") - 4
             #buttonDelete!.setImageSize(size,size)
             #buttonDelete!.setSize(size + 2, size + 2)
             #buttonDelete!.setShortCue(#props!.getText("CONFIG_WIDGET_BTN_DELETE_SHORT_CUE"))
-            #buttonSave!.setImage(#theme!.getBBjImage("IC_SAVE"))
             #buttonSave!.setImageSize(size,size)
             #buttonSave!.setSize(size + 2, size + 2)
             #buttonSave!.setShortCue(#props!.getText("CONFIG_WIDGET_BTN_SAVE_SHORT_CUE"))
@@ -257,25 +249,17 @@ class public ConfigurationWidget extends BBjWidget
                 #buttonAdmin!.setSize(size + 2, size + 2)
                 switch #accessMode
                     case #ACCESS_MODE_FACTORYDEFAULT
-                        #buttonAdmin!.setImage(#theme!.getBBjImage("IC_FACTORYDEFAULTS_ENABLED",Theme.PRIMARY))
                         #buttonAdmin!.setShortCue( #props!.getText("CONFIG_WIDGET_BTN_FACTORYDEFAULTS_ENABLED_SHORT_CUE"))
                         break
                     case #ACCESS_MODE_ADMIN
-                        #buttonAdmin!.setImage(#theme!.getBBjImage("IC_ADMIN_ENABLED",Theme.PRIMARY))
                         #buttonAdmin!.setShortCue( #props!.getText("CONFIG_WIDGET_BTN_ADMIN_ENABLED_SHORT_CUE"))
                         break
                     case #ACCESS_MODE_USER
-                        #buttonAdmin!.setImage(#theme!.getBBjImage("IC_ADMIN_DISABLED",Theme.PRIMARY))
                         #buttonAdmin!.setShortCue( #props!.getText("CONFIG_WIDGET_BTN_ADMIN_DISABLED_SHORT_CUE"))
                         break
                 swend
             endif
 
-            r = #theme!.getNumProperty("CONTROL_GAINED_FOCUS_RED")
-            g = #theme!.getNumProperty("CONTROL_GAINED_FOCUS_GREEN")
-            b = #theme!.getNumProperty("CONTROL_GAINED_FOCUS_BLUE")
-            #colorFocusGained! = BBjAPI().getSysGui().makeColor(r,g,b,err=*next)
-            #colorFocusLost! = #theme!.getBBjBackgroundColor()
             #listEditOptions!.setCallback(#listEditOptions!.ON_GAINED_FOCUS, #this!, "controlChangeBackColorOnGainedFocus")
             #listEditOptions!.setCallback(#listEditOptions!.ON_LOST_FOCUS, #this!, "controlChangeBackColorOnLostFocus")
             REM             #setCallback(BBjAPI.ON_PAGE_LOADED, #this!, "init")
@@ -298,7 +282,6 @@ class public ConfigurationWidget extends BBjWidget
         buttonsX = #optionsListeditWidth
         buttonsY = 0
         #getCanvas().setLocation(xStart,#getY())
-        #getCanvas().setBackColor(#theme!.getBBjBackgroundColor())
         #listEditOptions!.setLocation(0,1)
         #listEditOptions!.setSize(#optionsListeditWidth, #listEditPopupHeight)
         #buttonDelete!.setLocation(buttonsX,buttonsY)
@@ -626,21 +609,18 @@ class public ConfigurationWidget extends BBjWidget
     method protected void updateAccessButton()
         switch #accessMode
             case #ACCESS_MODE_ADMIN
-                #buttonAdmin!.setImage( #theme!.getBBjImage("IC_ADMIN_ENABLED",Theme.PRIMARY))
                 #buttonAdmin!.setShortCue( #props!.getText("CONFIG_WIDGET_BTN_ADMIN_ENABLED_SHORT_CUE"))
                 if #menuAdmin! <> null() then #menuAdmin!.setSelected(Boolean.TRUE)
                 if #menuFactoryDefaults! <> null() then #menuFactoryDefaults!.setSelected(Boolean.FALSE)
                 #bc!.setUserName(#bc!.getAdminUser())
                 break
             case #ACCESS_MODE_USER
-                #buttonAdmin!.setImage(  #theme!.getBBjImage("IC_ADMIN_DISABLED",Theme.PRIMARY))
                 #buttonAdmin!.setShortCue( #props!.getText("CONFIG_WIDGET_BTN_ADMIN_DISABLED_SHORT_CUE"))
                 if #menuAdmin! <> null() then #menuAdmin!.setSelected(Boolean.FALSE)
                 if #menuFactoryDefaults! <> null() then #menuFactoryDefaults!.setSelected(Boolean.FALSE)
                 #bc!.setUserName(#userName!)
                 break
             case #ACCESS_MODE_FACTORYDEFAULT
-                #buttonAdmin!.setImage(  #theme!.getBBjImage("IC_FACTORYDEFAULTS",Theme.PRIMARY))
                 #buttonAdmin!.setShortCue( #props!.getText("CONFIG_WIDGET_BTN_FACTORYDEFAULTS_ENABLED_SHORT_CUE"))
                 if #menuAdmin! <> null() then #menuAdmin!.setSelected(Boolean.FALSE)
                 if #menuFactoryDefaults! <> null() then #menuFactoryDefaults!.setSelected(Boolean.TRUE)

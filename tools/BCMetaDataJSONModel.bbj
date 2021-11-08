@@ -1,4 +1,4 @@
-use ::BusinessUIComponents/tools/IBCMetaDataPersistenceModel.bbj::IBCMetaDataModel
+use com.basiscomponents.bc.meta.IBCMetaDataModel
 use com.basiscomponents.db.DataRow
 
 
@@ -7,6 +7,8 @@ class public BCMetaDataJSONModel implements IBCMetaDataModel
     field private String folder! = ""
     field private String name! = ""
     field private DataRow meta!
+    
+    field private BBjVector locales!
 
     method private BCMetaDataJSONModel()
     methodend
@@ -128,13 +130,18 @@ class public BCMetaDataJSONModel implements IBCMetaDataModel
     methodend
     
     method public BBjVector getLocales()
-           v! = new BBjVector()
-           rem v!.addItem("#")
-           v!.addItem("en_GB")
-           v!.addItem("de_DE")
-           v!.addItem("nl_NL")
-           methodret v!
+           if (#locales! = null()) then
+                #locales! = new BBjVector()
+                #locales!.addItem("en_GB")
+                #locales!.addItem("de_DE")
+           fi
+           methodret #locales!
     methodend    
+    
+    
+    method public void setLocales(BBjVector v!)
+            #locales! = v!
+    methodend
 
 classend
 

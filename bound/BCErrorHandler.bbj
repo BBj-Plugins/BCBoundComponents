@@ -3,7 +3,7 @@ REM  * BCErrorHandler.bbj
 REM  *
 REM  * an error handler that reacts to the error signal from BCBinder
 REM  */
-use ::BusinessUIComponents/AbstractBCBoundWidget.bbj::AbstractBCBoundWidget
+use ::BusinessUIComponents/bound/AbstractBCBoundWidget.bbj::AbstractBCBoundWidget
 use ::BBjGridExWidget/BBjGridExWidget.bbj::BBjGridExWidget
 use com.basiscomponents.bc.BCBound
 use com.basiscomponents.bc.IBCBound
@@ -62,6 +62,10 @@ class public BCErrorHandler implements IBCBound
             endif
 
             a = msgbox(message!,16,#title!);rem 16 = OK button + stop sign
+            bc! = #getBinder().getBC()
+            stmt$ = bc!.getLastSqlStatement()
+            a=msgbox(stmt$)
+            
         endif
     methodend
 

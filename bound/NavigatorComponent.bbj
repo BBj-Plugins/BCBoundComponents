@@ -1,10 +1,10 @@
-use ::BusinessUIComponents/AbstractBCBoundWidget.bbj::AbstractBCBoundWidget
+use ::BusinessUIComponents/bound/AbstractBCBoundWidget.bbj::AbstractBCBoundWidget
 use ::BBjGridExWidget/BBjGridExWidget.bbj::BBjGridExWidget
 use com.basiscomponents.bc.BCBound
 use com.basiscomponents.bc.BCBinder
 use com.basiscomponents.db.ResultSet
 use com.basiscomponents.db.DataRow
-use com.basiscomponents.ui.theming.Theme
+
 
 class public NavigatorComponent extends AbstractBCBoundWidget
     field private BBjToolButton btn_first!
@@ -14,7 +14,6 @@ class public NavigatorComponent extends AbstractBCBoundWidget
     field private BBjInputE     input_display!
     field private BBjVector keys!
     field private BBjVector keyLabels!
-    field private Theme theme! = Theme.getInstance()
     rem --------------------- constructors -------------------------------------
     rem /**
     rem  * disabled default constructor
@@ -49,8 +48,6 @@ class public NavigatorComponent extends AbstractBCBoundWidget
             #updateProperties()
         endif
 
-        width = #theme!.getNumProperty("NAVIGATOR_WIDTH")
-        height = #theme!.getNumProperty("SECONDARY_TB_HEIGHT")
         #resizeComponents(width, height)
     methodend
     rem /**
@@ -58,10 +55,6 @@ class public NavigatorComponent extends AbstractBCBoundWidget
     rem  */
     method protected void updateProperties()
         #super!.updateProperties()
-        #btn_first!.setImage(theme!.getBBjImage("IC_NAV_FIRST"))
-        #btn_previous!.setImage(theme!.getBBjImage("IC_NAV_PREVIOUS"))
-        #btn_last!.setImage(theme!.getBBjImage("IC_NAV_LAST"))
-        #btn_next!.setImage(theme!.getBBjImage("IC_NAV_NEXT"))
         height = uiProperties!.getPropertyAsNumber("NAVIGATOR_HEIGHT")
 
         if height > 0 then

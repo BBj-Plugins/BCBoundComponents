@@ -1,6 +1,6 @@
 use ::BBjWidget/BBjWidget.bbj::BBjWidget
-use ::BusinessUIComponents/AbstractBCBoundWidget.bbj::AbstractBCBoundWidget
-use ::BusinessUIComponents/BusinessGrid.bbj::BusinessGrid
+use ::BusinessUIComponents/bound/AbstractBCBoundWidget.bbj::AbstractBCBoundWidget
+use ::BusinessUIComponents/bound/BusinessGrid.bbj::BusinessGrid
 use ::BusinessUIComponents/bound/BCErrorHandler.bbj::BCErrorHandler
 use ::BusinessUIComponents/bound/WindowHandler.bbj::WindowHandler
 use ::BusinessUIComponents/configurations/ConfigurationStateHandler.bbj::ConfigurationStateHandler
@@ -21,7 +21,6 @@ use com.basiscomponents.db.DataRow
 use com.basiscomponents.db.ResultSet
 use java.util.HashMap
 
-use com.basiscomponents.ui.theming.Theme
 use com.basiscomponents.i18n.Props
 
 
@@ -32,7 +31,6 @@ class public ConfigurationSettingsDialog
     field protected BBjSysGui sysgui!
     field protected BBjNumber height = 10
     
-    field protected BBjMenuButton buttonBackground!
     field protected BBjButton buttonOK!
     field protected BBjButton buttonCancel!
     
@@ -58,7 +56,6 @@ class public ConfigurationSettingsDialog
     field protected String realm! = ""
     field protected String userid! = ""
     
-    field protected Theme theme! = Theme.getInstance()
     field protected Props props! = Props.getInstance()
     
     field protected Boolean suppressSelectionEvent! = Boolean.FALSE
@@ -66,37 +63,43 @@ class public ConfigurationSettingsDialog
     method public ConfigurationSettingsDialog(IConfigurationsBC configBC!, ConfigurationStateHandler stateHandler!, String key!, String realm!, String userid!, Boolean allowFactoryDefaults!)
         ? 'HIDE'
         #sysgui! = BBjAPI().openSysGui("X0")
-REM         #sysgui!.setRepaintEnabled(0)
         title! = #props!.getText("SETTINGS_TITLE")
-        if info(3,6)="5" then
-            #wnd! = #sysgui!.addWindow(#sysgui!.getAvailableContext(), 100,100,354,416,title!,$41001010$)
-        else
-            #wnd! = #sysgui!.addWindow(#sysgui!.getAvailableContext(), 100,100,354,416,title!,$40000093$)
-        endif
         
-        #buttonBackground! = #wnd!.addMenuButton(3,-2,0,800,20,"")
-        #buttonBackground!.setTabTraversable(0)
-        #buttonBackground!.setFocusable(0)
-        #buttonBackground!.setBorderPainted(1)
-        bgColor! = #theme!.getPrimaryColorPalette().getBBjColor()
-        #buttonBackground!.setForeColor(bgColor!)
-        #buttonBackground!.setBackColor(bgColor!)
+        #wnd! = #sysgui!.addWindow(#sysgui!.getAvailableContext(), 0,0,0,0,title!,$01100000$)
+        #wnd!.setCallback(BBjAPI.ON_LOST_FOCUS,"onClose")
         
-        #wnd!.setBackColor(#theme!.getBBjBackgroundColor())
+        #wnd!.setStyle("background","#fafafa")
+        #wnd!.setDockStyle("border","none")
+        #wnd!.setStyle("border","none")
+        #wnd!.setPanelStyle("border","none")
+        
+        #wnd!.setDockStyle("background","yellow")
+        #wnd!.setStyle("height","calc( 100vh - 40px )")
+        #wnd!.setStyle("width","400px")
+        #wnd!.setStyle("position","absolute")
+        #wnd!.setStyle("right","0px")
+        #wnd!.setStyle("top","0px")
+        
         #windowHandler! = new WindowHandler(#wnd!)
         #windowHandler!.setProgramName(#title!)
         #windowHandler!.setCloseMode(#windowHandler!.CLOSE_MODE_OFF())
         #windowHandler!.applyWindowConfig()
         #wnd!.setCallback(BBjAPI.ON_CLOSE,"onClose")
         #stateHandler! = stateHandler!
-        #wnd!.setCallback(BBjAPI.ON_RESIZE, #this!,"resize")
+
         #key! = key!
         #realm! = realm!
         #userid! = userid!
         #configBC! = configBC!
         #configBC!.setUserName(#userid!)
         #allowFactoryDefaults! = allowFactoryDefaults!
-        #settingsWindow! = #wnd!.addChildWindow(105, 2, 22, 350, 350, "", $02000800$, #sysgui!.getAvailableContext())
+        #settingsWindow! = #wnd!.addChildWindow(105, 2, 22, 350, 350, "", $02100800$, #sysgui!.getAvailableContext())
+        
+        #settingsWindow!.setStyle("width","400px")
+        #settingsWindow!.setStyle("position","absolute")
+        #settingsWindow!.setStyle("right","0px")
+        #settingsWindow!.setStyle("top","20px")
+        
         #settingsWidget! = new BBjSettingsWidget(#settingsWindow!)
         #settingsWidget!.setCallback(#settingsWidget!.ON_GROUP_SELECT(), #this!, "onGroupSelect")
         #settingsWidget!.setCallback(#settingsWidget!.ON_ITEM_CHANGED(), #this!, "onItemChanged")
@@ -104,6 +107,7 @@ REM         #sysgui!.setRepaintEnabled(0)
         #settingsWidget!.setCallback(#settingsWidget!.ON_ITEM_REMOVED(), #this!, "onItemRemoved")
         #settingsWidget!.setCallback(#settingsWidget!.ON_ITEM_SELECTED(), #this!, "onItemSelected")
         #settingsWidget!.setBackColor(bgColor!)
+        
         #buttonOK!     = #wnd!.addButton(1,2,372,100,20,"OK")
         #buttonCancel! = #wnd!.addButton(2,102,372,100,20,"Cancel")
         #buttonOK!.setCallback(BBjButton.ON_BUTTON_PUSH,"onOK")
@@ -271,13 +275,10 @@ REM         #groupFactoryDefaults!
     methodend
     
     method public void doModal()
-        #delayed_resize(null())
         if #allowFactoryDefaults! and #settingsWidget!.getCurrentGroup() = #groupFactoryDefaults! then
             userName! = #configBC!.getFactoryDefaultUser()
             #configBC!.setUserName(#configBC!.getFactoryDefaultUser())
         endif
-        #sysgui!.setRepaintEnabled(1)
-        #wnd!.setVisible(1)
         
         process_events
         onOK:
@@ -290,22 +291,6 @@ REM         #groupFactoryDefaults!
     methodend
     
     rem ############## Events ######################
-    
-    method public void resize(BBjEvent ev!)
-        BBjAPI().removeTimer("resize",err=*next)
-        BBjAPI().createTimer("resize", .4, #this!, "delayed_resize")
-    methodend
-    
-    method public void delayed_resize(BBjEvent ev!)
-        BBjAPI().removeTimer("resize",err=*next)
-        w = #wnd!.getWidth()
-        h = #wnd!.getHeight()
-        #settingsWindow!.setSize(w - 4, h - 2 - #settingsWindow!.getY())
-        #settingsWidget!.setSize(#settingsWindow!.getWidth() - 2, #settingsWindow!.getHeight() - 22)
-        #buttonBackground!.setSize(w + 4, #buttonBackground!.getHeight())
-        #buttonCancel!.setLocation(102,h - 20)
-        #buttonOK!.setLocation(2,h - 20)
-    methodend
     
     method public void onItemSelected(BBjCustomEvent e!)
         if #suppressSelectionEvent! then

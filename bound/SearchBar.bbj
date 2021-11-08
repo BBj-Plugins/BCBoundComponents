@@ -1,17 +1,15 @@
-use ::BusinessUIComponents/AbstractBCBoundWidget.bbj::AbstractBCBoundWidget
+use ::BusinessUIComponents/bound/AbstractBCBoundWidget.bbj::AbstractBCBoundWidget
 use ::BBjGridExWidget/BBjGridExWidget.bbj::BBjGridExWidget
 use com.basiscomponents.bc.BCBound
 use com.basiscomponents.bc.BCBinder
 use com.basiscomponents.db.ResultSet
 use com.basiscomponents.db.DataRow
-use com.basiscomponents.ui.theming.Theme
 
 class public SearchBar extends AbstractBCBoundWidget
 
     field private BBjToolButton btn_retrieve!
     field private BBjInputE searchField!
     field protected BBjNumber minLength = 100
-    field private Theme theme! = Theme.getInstance()
     
     rem --------------------- constructors -------------------------------------
     rem /**
@@ -43,8 +41,6 @@ class public SearchBar extends AbstractBCBoundWidget
             #btn_retrieve!.setCallback(BBjAPI.ON_TOOL_BUTTON_PUSH,#this!,"onBtnRetrieve")
             #searchField! = #getCanvas().addInputE(101,0,1,#getWidth() - 20,#getHeight() - 2)
             #updateProperties()
-            #searchField!.setCallback(#searchField!.ON_GAINED_FOCUS, #this!, "controlChangeBackColorOnGainedFocus")
-            #searchField!.setCallback(#searchField!.ON_LOST_FOCUS, #this!, "controlChangeBackColorOnLostFocus")
         endif
     methodend
     rem /**
@@ -52,8 +48,6 @@ class public SearchBar extends AbstractBCBoundWidget
     rem  */
     method protected void updateProperties()
         #super!.updateProperties()
-        #btn_retrieve!.setImage(#theme!.getBBjImage("IC_SEARCH"))
-        size = #theme!.getNumProperty("SECONDARY_TB_HEIGHT")
         #btn_retrieve!.setImageSize(size, size)
     methodend
     rem /**
@@ -90,16 +84,6 @@ class public SearchBar extends AbstractBCBoundWidget
 
     method public Boolean canSetSelection()
         methodret BBjAPI.TRUE
-    methodend
-
-    method public void controlChangeBackColorOnGainedFocus(BBjGainedFocusEvent ev!)
-        control! = ev!.getControl()
-        control!.setBackColor(#getColorFocusGained())
-    methodend
-
-    method public void controlChangeBackColorOnLostFocus(BBjLostFocusEvent ev!)
-        control! = ev!.getControl()
-        control!.setBackColor(#getColorFocusLost())
     methodend
 
 classend

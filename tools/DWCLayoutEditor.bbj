@@ -1,0 +1,748 @@
+if info(3,6)="6" goto preview
+
+DECLARE BBjAdminEnvironment env!
+ BBjAPI().getAdmin("admin", "admin123").getEnvironment().reloadClasspath("components")
+Class.forName("com.basiscomponents.ui.layout.dwc.DWCLayout")
+use com.basiscomponents.ui.layout.dwc.DWCLayout
+use com.basiscomponents.ui.layout.dwc.Panel
+use com.basiscomponents.ui.layout.dwc.GridPanel
+use com.basiscomponents.ui.layout.dwc.TabPanel
+
+use com.basiscomponents.ui.layout.dwc.BBjControlPod
+use com.basiscomponents.ui.layout.dwc.BBjWidgetPod 
+
+use java.util.HashMap
+
+sg! = BBjAPI().openSysGui("X0")
+wnd! = sg!.addWindow(0,0,1024,768,"EDIT DWC Layout")
+wnd!.maximize()
+
+myMenuBar!=wnd!.addMenuBar()
+myMenu!=myMenuBar!.addMenu(-1,"&File")
+myMenu!.addMenuItem(-2,"&New",0,0).setCallback(BBjAPI.ON_MENU_ITEM_SELECT,"onNew")
+myMenu!.addMenuItem(-3,"&Open",0,0).setCallback(BBjAPI.ON_MENU_ITEM_SELECT,"onOpen")
+myMenu!.addMenuItem(-4,"&Save",0,0).setCallback(BBjAPI.ON_MENU_ITEM_SELECT,"onSave")
+myMenu!.addMenuItem(-5,"Save &As",0,0).setCallback(BBjAPI.ON_MENU_ITEM_SELECT,"onSaveas")
+MRUMenu! = MyMenu!.addMenu(-10,"Recent...")
+myMenu!.addSeparator()
+myMenu!.addMenuItem(-6,"E&xit",0,0).setCallback(BBjAPI.ON_MENU_ITEM_SELECT,"byebye")
+gosub show_mru
+
+
+tree! = wnd!.addTree(100,10,40,400,370)
+tree!.setRoot(0,"Layout Root Panel")
+tree!.setCallback( BBjAPI.ON_TREE_SELECT,"onTreeSelect" )
+tree!.setDragEnabled(1)
+v! = new BBjVector()
+v!.addItem("node")
+tree!.setDropTypes(v!)
+
+tree!.setCallback(BBjAPI.ON_DROP_TARGET_DROP,"onTreeDrop")
+
+btn_del! = wnd!.addButton(800,10,10,22,22,"-")
+btn_del!.setCallback(BBjAPI.ON_BUTTON_PUSH,"onDeleteItem")
+
+btn_add! = wnd!.addMenuButton(801,35,10,60,22,"Add...")
+addMenu!=sg!.addPopupMenu()
+addItem1! = addMenu!.addMenuItem(-201,"BBjControl")
+addItem1!.setCallback(BBjAPI.ON_POPUP_ITEM_SELECT,"onAddControlPod")
+addItem2! = addMenu!.addMenuItem(-202,"Panel")
+addItem2!.setCallback(BBjAPI.ON_POPUP_ITEM_SELECT,"onAddPanelPod")
+addItem3! = addMenu!.addMenuItem(-203,"Panel (CSS Grid Layout)")
+addItem3!.setCallback(BBjAPI.ON_POPUP_ITEM_SELECT,"onAddGridPanelPod")
+addItem4! = addMenu!.addMenuItem(-204,"Tab Control")
+addItem4!.setCallback(BBjAPI.ON_POPUP_ITEM_SELECT,"onAddTabPanelPod")
+
+btn_add!.setDropdownMenu(addMenu!)
+
+
+common_tab! = wnd!.addTabCtrl(199,10,410,400,200)
+
+common_panel! = wnd!.addChildWindow(1100,10,410,400,200,"",$00010800$,sg!.getAvailableContext())
+common_panel!.addStaticText(100,5,10,80,22,"Name:")
+
+ed_name! = common_panel!.addEditBox(101,90,10,300,22,"")
+ed_name!.setCallback(BBjAPI.ON_EDIT_MODIFY,"onModifyName")
+common_panel!.addStaticText(102,5,35,80,22,"Text:")
+ed_Text! = common_panel!.addEditBox(103,90,35,300,22,"")
+ed_Text!.setCallback(BBjAPI.ON_EDIT_MODIFY,"onModifyText")
+
+common_panel!.addStaticText(104,5,60,80,22,"CSS Classes:")
+ed_Classes! = common_panel!.addEditBox(105,90,60,300,22,"")
+st_Classes_Panel! = common_panel!.addStaticText(106,5,85,80,22,"CSS Cl. Panel:",$0010$)
+ed_Classes_Panel! = common_panel!.addEditBox(107,90,85,300,22,"",$0010$)
+
+
+stylprop_panel! = wnd!.addChildWindow(1102,10,410,400,510,"",$00010808$,sg!.getAvailableContext())
+stylprop_panel!.setTrack(0)
+for i=0 to 19
+    ed! = stylprop_panel!.addEditBox(100+i,5,10+i*25,80,22,"")
+    ed!.setCallback(BBjAPI.ON_LOST_FOCUS,"updateData")
+    ed! = stylprop_panel!.addEditBox(200+i,90,10+i*25,270,22,"")
+    ed!.setCallback(BBjAPI.ON_LOST_FOCUS,"updateData")
+next
+
+attributes_panel! = wnd!.addChildWindow(1103,10,410,400,510,"",$00010808$,sg!.getAvailableContext())
+attributes_panel!.setTrack(0)
+for i=0 to 19
+    ed! = attributes_panel!.addEditBox(100+i,5,10+i*25,80,22,"")
+    ed!.setCallback(BBjAPI.ON_LOST_FOCUS,"updateData")
+    ed! = attributes_panel!.addEditBox(200+i,90,10+i*25,270,22,"")
+    ed!.setCallback(BBjAPI.ON_LOST_FOCUS,"updateData")
+next
+
+panel_stylprop_panel! = wnd!.addChildWindow(1105,10,410,400,510,"",$00010808$,sg!.getAvailableContext())
+panel_stylprop_panel!.setTrack(0)
+for i=0 to 19
+    ed! = panel_stylprop_panel!.addEditBox(100+i,5,10+i*25,80,22,"")
+    ed!.setCallback(BBjAPI.ON_LOST_FOCUS,"updateData")
+    ed! = panel_stylprop_panel!.addEditBox(200+i,90,10+i*25,270,22,"")
+    ed!.setCallback(BBjAPI.ON_LOST_FOCUS,"updateData")
+next
+
+outer_stylprop_panel! = wnd!.addChildWindow(1106,10,410,400,510,"",$00010808$ ,sg!.getAvailableContext())
+outer_stylprop_panel!.setTrack(0)
+for i=0 to 19
+    ed! = outer_stylprop_panel!.addEditBox(100+i,5,10+i*25,80,22,"")
+    ed!.setCallback(BBjAPI.ON_LOST_FOCUS,"updateData")
+    ed! = outer_stylprop_panel!.addEditBox(200+i,90,10+i*25,270,22,"")
+    ed!.setCallback(BBjAPI.ON_LOST_FOCUS,"updateData")
+next
+
+common_tab!.addTab("Common",common_panel!)
+
+common_tab!.addTab("Styles",stylprop_panel!)
+common_tab!.addTab("Attributes",attributes_panel!)
+common_tab!.addTab("Panel Styles",panel_stylprop_panel!)
+common_tab!.addTab("Outer Styles",outer_stylprop_panel!)
+
+
+cw_panel! = wnd!.addChildWindow(200,10,610,400,400,"",$00010810$,sg!.getAvailableContext())
+cw_panel!.addStaticText(100,10,5,200,22,"Panel")
+
+cw_GridPanel! = wnd!.addChildWindow(201,10,610,400,400,"",$00010810$,sg!.getAvailableContext())
+cw_GridPanel!.addStaticText(100,10,5,200,22,"Panel (Grid Layout)")
+
+cw_GridPanel_cbinline! = cw_GridPanel!.addCheckBox(101,100,28,300,22,"Inline Grid")
+cw_GridPanel!.addStaticText(102,10,55,100,22,"Columns:")
+cw_GridPanel_edcols! = cw_GridPanel!.addEditBox(103,100,55,250,22,"")
+cw_GridPanel!.addStaticText(104,10,80,100,22,"Rows:")
+cw_GridPanel_edrows! = cw_GridPanel!.addEditBox(105,100,80,250,22,"")
+cw_GridPanel!.addStaticText(106,10,105,100,22,"Column Gap:")
+cw_GridPanel_edcolgap! = cw_GridPanel!.addEditBox(107,100,105,250,22,"")
+cw_GridPanel!.addStaticText(108,10,130,100,22,"Row Gap:")
+cw_GridPanel_edrowgap! = cw_GridPanel!.addEditBox(109,100,130,250,22,"")
+
+cw_GridPanel_cbinline!.setCallback(BBjAPI.ON_CHECK_OFF,"updateData")
+cw_GridPanel_cbinline!.setCallback(BBjAPI.ON_CHECK_ON,"updateData")
+cw_GridPanel_edcols!.setCallback(BBjAPI.ON_EDIT_MODIFY,"updateData")
+cw_GridPanel_edrows!.setCallback(BBjAPI.ON_EDIT_MODIFY,"updateData")
+cw_GridPanel_edcolgap!.setCallback(BBjAPI.ON_EDIT_MODIFY,"updateData")
+cw_GridPanel_edrowgap!.setCallback(BBjAPI.ON_EDIT_MODIFY,"updateData")
+
+cw_control! = wnd!.addChildWindow(202,10,610,400,400,"",$00010810$,sg!.getAvailableContext())
+cw_control!.addStaticText(100,10,5,200,22,"BBjControl")
+
+l$=""
+BBjControlPodTypes! = new BBjVector()
+v! = BBjControlPod.ControlType.values()
+for i=0 to v!.length-1
+    l$=l$+str(v![i])+$0a$
+    BBjControlPodTypes!.add(str(v![i]))
+next
+
+cw_control_controltype! = cw_control!.addListButton(101,10,30,200,250,l$)
+cw_control_controltype!.setCallback(BBjAPI.ON_LIST_CHANGE,"updateData")
+
+nodeInventory! = new HashMap()
+nodeInventory!.put(CAST(int,0),l!)
+
+wnd!.setCallback(wnd!.ON_CLOSE,"byebye")
+
+htmlview! = wnd!.addHtmlView(400,420,10,1000,800,"TEST")
+
+l! = new DWCLayout()
+TreeBuilder.buildPanel(l!,tree!,0,1, nodeInventory!)
+BBjAPI().getGlobalNamespace().setValue("dwcpanelmodel",l!.toJson())
+gosub publish_preview
+
+process_events
+
+byebye:
+     if dirty then
+         a=msgbox("Save changes?",35,"Save Data")
+         if a=2 then return
+         if a=6 then gosub onSave
+     fi
+     bye
+
+onModifyText:
+    dirty=1
+    ev! = BBjAPI().getLastEvent()
+    text$=ev!.getText()
+    el!.setText(text$)
+    BBjAPI().getGlobalNamespace().setValue("dwcpanelmodel",l!.toJson())
+return
+
+onModifyName:
+    dirty=1
+    ev! = BBjAPI().getLastEvent()
+    text$=ev!.getText()
+    el!.setName(text$)
+    tree!.setNodeText(node,text$)
+    BBjAPI().getGlobalNamespace().setValue("dwcpanelmodel",l!.toJson())
+return
+
+onDeleteItem:
+    dirty=1
+    if el!=null() OR el!.getClass().getSimpleName()="DWCLayout" then return
+    l!.removeElement(el!)
+    tree!.removeNode(node)
+    BBjAPI().getGlobalNamespace().setValue("dwcpanelmodel",l!.toJson())
+return
+
+
+updateData:
+    dirty=1
+    panel_style_props! = new HashMap()
+    attribute_props! = new HashMap()
+    style_props! = new HashMap()
+    outer_style_props! = new HashMap()
+
+    for i=0 to 19
+        k$=panel_stylprop_panel!.getControl(100+i).getText()
+        v$=panel_stylprop_panel!.getControl(200+i).getText()
+        if cvs(k$,3)>"" and cvs(v$,3)>"" then panel_style_props!.put(k$,v$)
+
+        k$=attributes_panel!.getControl(100+i).getText()
+        v$=attributes_panel!.getControl(200+i).getText()
+        if cvs(k$,3)>"" and cvs(v$,3)>"" then attribute_props!.put(k$,v$)
+
+        k$=stylprop_panel!.getControl(100+i).getText()
+        v$=stylprop_panel!.getControl(200+i).getText()
+        if cvs(k$,3)>"" and cvs(v$,3)>"" then style_props!.put(k$,v$)
+
+        k$=outer_stylprop_panel!.getControl(100+i).getText()
+        v$=outer_stylprop_panel!.getControl(200+i).getText()
+        if cvs(k$,3)>"" and cvs(v$,3)>"" then outer_style_props!.put(k$,v$)
+    next
+
+    el!.setStyleAttributes(attribute_props!)
+    el!.setStyleProperties(style_props!)
+
+
+    if name$="Panel" OR name$="GridPanel" or name$="DWCLayout" then
+        el!.setPanelStyleProperties(panel_style_props!)
+        el!.setOuterStyleProperties(outer_style_props!)
+    fi
+
+    if name$="BBjControlPod" then
+        el!.setType(cw_control_controltype!.getText())
+    fi
+
+    if name$="GridPanel" then
+        el!.setInline(cw_GridPanel_cbinline!.isSelected())
+        el!.setGridCols(cw_GridPanel_edcols!.getText())
+        el!.setGridRows(cw_GridPanel_edrows!.getText())
+        el!.setGridGapCols(cw_GridPanel_edcolgap!.getText())
+        el!.setGridGapRows(cw_GridPanel_edrowgap!.getText())
+    fi
+
+    BBjAPI().getGlobalNamespace().setValue("dwcpanelmodel",l!.toJson())
+return
+
+
+onAddControlPod:
+    dirty=1
+    if el!=null() then return
+    if name$<>"DWCLayout" and name$<>"Panel" and name$<>"GridPanel" and name$<>"TabPanel" then
+        node = tree!.getParentNode(node)
+        el! = nodeInventory!.get(CAST(int,node))
+    fi
+
+    c! = new BBjControlPod(BBjControlPod.ControlType.BBjStaticText, "text_"+str(System.currentTimeMillis()), "static text")
+    el!.add(c!)
+    gosub rebuildTree
+
+    BBjAPI().getGlobalNamespace().setValue("dwcpanelmodel",l!.toJson())
+
+    it!= nodeInventory!.keySet().iterator()
+    while it!.hasNext()
+        node=it!.next()
+        el! = nodeInventory!.get(CAST(int,node))
+        if el!.getName() = c!.getName() then break
+    wend
+    tree!.setNodeVisible(node)
+    tree!.deselectAll()
+    tree!.selectNode(node)
+    tree!.expandNode(node)
+    gosub onTreeSelectJump
+return
+
+onAddPanelPod:
+    dirty=1
+    if el!=null() then return
+    if name$<>"DWCLayout" and name$<>"Panel" and name$<>"GridPanel" and name$<>"TabPanel" then
+        node = tree!.getParentNode(node)
+        el! = nodeInventory!.get(CAST(int,node))
+    fi
+
+    c! = new Panel()
+    c!.setName("New Panel")
+    el!.add(c!)
+    gosub rebuildTree
+
+    BBjAPI().getGlobalNamespace().setValue("dwcpanelmodel",l!.toJson())
+
+    it!= nodeInventory!.keySet().iterator()
+    while it!.hasNext()
+        node=it!.next()
+        el1! = nodeInventory!.get(CAST(int,node))
+        if el1!.getName() = c!.getName() then break
+    wend
+    tree!.setNodeVisible(node)
+    tree!.deselectAll()
+    tree!.selectNode(node)
+    tree!.expandNode(node)
+    gosub onTreeSelectJump
+return
+
+onAddGridPanelPod:
+    dirty=1
+    if el!=null() then return
+    if name$<>"DWCLayout" and name$<>"Panel" and name$<>"GridPanel" and name$<>"TabPanel" then
+        node = tree!.getParentNode(node)
+        el! = nodeInventory!.get(CAST(int,node))
+    fi
+
+    c! = new GridPanel()
+    c!.setName("New CSS Grid Panel")
+    c!.setGridCols("1fr 1fr 1fr")
+    c!.setGridGapCols("5px")
+    c!.setGridGapRows("5px")
+    el!.add(c!)
+    gosub rebuildTree
+
+    BBjAPI().getGlobalNamespace().setValue("dwcpanelmodel",l!.toJson())
+
+    it!= nodeInventory!.keySet().iterator()
+    while it!.hasNext()
+        node=it!.next()
+        el1! = nodeInventory!.get(CAST(int,node))
+        if el1!.getName() = c!.getName() then break
+    wend
+    tree!.setNodeVisible(node)
+    tree!.deselectAll()
+    tree!.selectNode(node)
+    tree!.expandNode(node)
+    gosub onTreeSelectJump
+return
+
+onAddTabPanelPod:
+    dirty=1
+    if el!=null() then return
+    if name$<>"DWCLayout" and name$<>"Panel" and name$<>"GridPanel" and name$<>"TabPanel" then
+        node = tree!.getParentNode(node)
+        el! = nodeInventory!.get(CAST(int,node))
+    fi
+
+    c! = new TabPanel()
+    c!.setName("New CSS TabPanel")
+    el!.add(c!)
+    gosub rebuildTree
+
+    BBjAPI().getGlobalNamespace().setValue("dwcpanelmodel",l!.toJson())
+
+    it!= nodeInventory!.keySet().iterator()
+    while it!.hasNext()
+        node=it!.next()
+        el1! = nodeInventory!.get(CAST(int,node))
+        if el1!.getName() = c!.getName() then break
+    wend
+    tree!.setNodeVisible(node)
+    tree!.deselectAll()
+    tree!.selectNode(node)
+    tree!.expandNode(node)
+    gosub onTreeSelectJump
+return
+
+rebuildTree:
+    nodeInventory! = new HashMap()
+    nodeInventory!.put(CAST(int,0),l!)
+    TreeBuilder.buildPanel(l!,tree!,0,1, nodeInventory!)
+return
+
+onTreeDrop:
+
+   event! = BBjAPI().getLastEvent()
+   dragSource!=event!.getDragSource()
+   dropTarget!=event!.getControl()
+   drag! = CAST(int,event!.getSelection().get(0))
+   drop! = CAST(int,event!.getDropLocation().get(0))
+    if drag! = 0 then
+        return
+    fi
+    el! = nodeInventory!.get(drag!)
+
+    if drop! = 0 then
+        el! = l!
+    else
+        drop_el! = nodeInventory!.get(drop!)
+    fi
+    drop_type$ = drop_el!.getClass().getSimpleName()
+    if pos(drop_type$="Panel DWCLayout GridPanel TabPanel")>0 then
+        l!.removeElement(el!)
+        drop_el!.addFirst(el!)
+    else
+        parent_node! = CAST(int,tree!.getParentNode(drop!))
+        parent_drop_el! = nodeInventory!.get(parent_node!)
+        if parent_drop_el! <> null() then
+            l!.removeElement(el!)
+            parent_drop_el!.addAfter(el!,drop_el!); rem add after drop_el!
+        fi
+    fi
+   gosub rebuildTree
+   BBjAPI().getGlobalNamespace().setValue("dwcpanelmodel",l!.toJson())
+
+    tree!.setNodeVisible(drop!)
+    tree!.deselectAll()
+    tree!.selectNode(drop!)
+    tree!.expandNode(drop!)
+    gosub onTreeSelectJump
+
+    return
+
+onTreeSelect:
+    ev! = BBjAPI().getLastEvent()
+    node= ev!.getNodeID()
+onTreeSelectJump:
+    if node = 0 then
+        el! = l!
+    else
+        el! = nodeInventory!.get(CAST(int,node))
+    fi
+    name$ = el!.getClass().getSimpleName()
+    cw_panel!.setVisible(name$="Panel" OR name$="DWCLayout")
+    cw_GridPanel!.setVisible(name$="GridPanel")
+    cw_control!.setVisible(name$="BBjControlPod")
+
+    enable! = name$="Panel" OR name$="GridPanel" OR name$="TabPanel" OR name$="DWCLayout"
+    st_Classes_Panel!.setVisible(enable!)
+    ed_Classes_Panel!.setVisible(enable!)
+
+    common_tab!.setEnabledAt(3,enable!)
+    common_tab!.setEnabledAt(4,enable!)
+
+    ed_name!.setText(el!.getName())
+    ed_text!.setText(el!.getText())
+
+    css$ = ""
+    it! = el!.getStyles().iterator()
+    while it!.hasNext()
+        css$=css$+it!.next()
+    wend
+    ed_Classes!.setText(cvs(css$,3))
+
+
+    for i=0 to 19
+        panel_stylprop_panel!.getControl(100+i).setText("")
+        panel_stylprop_panel!.getControl(200+i).setText("")
+        attributes_panel!.getControl(100+i).setText("")
+        attributes_panel!.getControl(200+i).setText("")
+        stylprop_panel!.getControl(100+i).setText("")
+        stylprop_panel!.getControl(200+i).setText("")
+        outer_stylprop_panel!.getControl(100+i).setText("")
+        outer_stylprop_panel!.getControl(200+i).setText("")
+
+    next
+    sa! = el!.getStyleAttributes()
+    it! = sa!.keySet().iterator()
+    i=0
+    while it!.hasNext()
+        k$=it!.next()
+        v$=sa!.get(k$)
+        attributes_panel!.getControl(100+i).setText(k$ )
+        attributes_panel!.getControl(200+i).setText(v$ )
+        i=i+1
+    wend
+
+    sa! = el!.getStyleProperties()
+    it! = sa!.keySet().iterator()
+    i=0
+    while it!.hasNext()
+        k$=it!.next()
+        v$=sa!.get(k$)
+        stylprop_panel!.getControl(100+i).setText(k$ )
+        stylprop_panel!.getControl(200+i).setText(v$ )
+        i=i+1
+    wend
+
+    if name$="BBjControlPod" then
+        cw_control_controltype!.selectIndex(BBjControlPodTypes!.indexOf(str(el!.getType())))
+    fi
+
+    if name$="Panel" OR name$="DWCLayout" OR name$="GridPanel" or name$="TreePanel" then
+
+      css$ = ""
+      it! = el!.getPanelStyles().iterator()
+      while it!.hasNext()
+          css$=css$+it!.next()
+      wend
+      ed_Classes_Panel!.setText(css$)
+
+      sa! = el!.getPanelStyleProperties()
+      it! = sa!.keySet().iterator()
+      i=0
+      while it!.hasNext()
+          k$=it!.next()
+          v$=sa!.get(k$)
+          panel_stylprop_panel!.getControl(100+i).setText(k$ )
+          panel_stylprop_panel!.getControl(200+i).setText(v$ )
+          i=i+1
+      wend
+
+      sa! = el!.getOuterStyleProperties()
+      it! = sa!.keySet().iterator()
+      i=0
+      while it!.hasNext()
+          k$=it!.next()
+          v$=sa!.get(k$)
+          outer_stylprop_panel!.getControl(100+i).setText(k$ )
+          outer_stylprop_panel!.getControl(200+i).setText(v$ )
+          i=i+1
+      wend
+
+    fi
+
+    if name$="GridPanel" then
+        cw_GridPanel_cbinline!.setSelected(el!.isInline())
+        cw_GridPanel_edcols!.setText(el!.getGridColsAsCSS())
+        cw_GridPanel_edrows!.setText(el!.getGridRowsAsCSS())
+        cw_GridPanel_edcolgap!.setText(el!.getGridGapCols())
+        cw_GridPanel_edrowgap!.setText(el!.getGridGapRows())
+    fi
+
+
+return
+
+onNew:
+     if dirty then
+         a=msgbox("Save changes?",35,"Save Data")
+         if a=2 then return
+         if a=6 then gosub onSave
+     fi
+     l! = new DWCLayout()
+     BBjAPI().getGlobalNamespace().setValue("dwcpanelmodel",l!.toJson())
+     gosub rebuildTree
+     tree!.selectNode(0)
+     node=0
+     gosub onTreeSelectJump
+
+return
+
+onOpen:
+
+     if dirty then
+         a=msgbox("Save changes?",35,"Save Data")
+         if a=2 then return
+         if a=6 then gosub onSave
+     fi
+     wnd!.setEnabled(0)
+     last_path$=BBjAPI().getThinClient().getUserProperty("DWCFormEditor.lastpath",err=*next)
+     FILTER$="DWC Form Definitions"+$0a$+"*.dwcform"
+     FILTER$=FILTER$+$0a$+"All Files (*.*)"+$0a$+"*.*"
+     FILE_DIR$=last_path$
+     FILE_NAME$=FILEOPEN("Open DWC Form Definition",FILE_DIR$,"","",FILTER$)
+     wnd!.setEnabled(1)
+     if file_name$ = "::CANCEL::" then return
+onOpenDirect:
+     last_path$ = org.apache.commons.io.FilenameUtils.getFullPath(file_name$)
+     BBjAPI().getThinClient().setUserProperty("DWCFormEditor.lastpath",last_path$)
+     openfilename$ = file_name$
+     ch=unt
+     open (ch)openfilename$
+     read record (ch,siz=dec(fin(ch)(1,4))+10)json$
+     close (ch)
+     l! = DWCLayout.fromJson(json$)
+     gosub update_mru
+     gosub rebuildTree
+     tree!.selectNode(0)
+     node=0
+     gosub onTreeSelectJump
+     BBjAPI().getGlobalNamespace().setValue("dwcpanelmodel",json$)
+
+wnd!.setTitle("DWC Layout - "+openfilename$)
+
+return
+
+
+onSaveAs:
+     wnd!.setEnabled(0)
+     last_path$=BBjAPI().getThinClient().getUserProperty("DWCFormEditor.lastpath",err=*next)
+     FILTER$="DWC Form Definitions"+$0a$+"*.dwcform"
+     FILTER$=FILTER$+$0a$+"All Files (*.*)"+$0a$+"*.*"
+     FILE_DIR$=last_path$
+     FILE_NAME$=FILESAVE("Save Resource File",FILE_DIR$,"","",FILTER$)
+     wnd!.setEnabled(1)
+     if file_name$ = "::CANCEL::" then return
+     last_path$ = org.apache.commons.io.FilenameUtils.getFullPath(file_name$)
+     BBjAPI().getThinClient().setUserProperty("DWCFormEditor.lastpath",last_path$)
+     openfilename$ = file_name$
+     rem fall thru'
+onSave:
+    if openfilename$="" then goto onSaveAs
+
+    ch=unt
+    open (ch,mode="O_CREATE,O_TRUNC")openfilename$
+    print (ch)l!.toJson(),
+    close (ch)
+
+    dirty=0
+return
+
+
+update_mru:
+
+    mru$=BBjAPI().getThinClient().getUserProperty("DWCFormEditor.MRU",err=*next)
+    if pos(openfilename$+$0a$=mru$)=0 then
+        mru$=openfilename$+$0a$+mru$
+        if pos($0a$=mru$,1,0)>10 then
+            mru$=mru$(1,pos($0a$=mru$,1,10))
+        fi
+        BBjAPI().getThinClient().setUserProperty("DWCFormEditor.MRU",mru$)
+        gosub show_mru_direct
+    fi
+return
+
+show_mru:
+    mru$=BBjAPI().getThinClient().getUserProperty("DWCFormEditor.MRU",err=*next)
+show_mru_direct:
+    for i=-310 to -300
+        MRUMenu!.BBjMenu.removeMenuItem(i,err=*next)
+    next
+    i=-300
+    while pos($0a$=mru$)>0
+        m$=mru$(1,pos($0a$=mru$)-1)
+        mru$=mru$(pos($0a$=mru$)+1)
+        MRUMenu!.addMenuItem(i,m$,0,0).setCallback(BBjAPI.ON_MENU_ITEM_SELECT,"onMRUSelect")
+        i=i-1
+    wend
+return
+
+onMRUSelect:
+    if dirty then
+         a=msgbox("Save changes?",35,"Save Data")
+         if a=2 then return
+         if a=6 then gosub onSave
+     fi
+
+    ev! = BBjAPI().getLastEvent()
+    FILE_NAME$=ev!.getControl().getText()
+    goto onOpenDirect
+return
+
+
+publish_preview:
+
+    source$=BBjAPI().getFileSystem().resolvePath(pgm(-1))
+    appname$ = source$(1,pos("."=source$)-1)
+    path$=""
+    while pos("/"=appname$)>0
+        path$=path$+appname$(1,pos("/"=appname$)-1)+"/"
+        appname$=appname$(pos("/"=appname$)+1)
+    wend
+    while pos("\"=appname$)>0
+        path$=path$+appname$(1,pos("\"=appname$)-1)+"/"
+        appname$=appname$(pos("\"=appname$)+1)
+    wend
+    bbjHome! = System.getProperty("basis.BBjHome")
+    config$ = bbjhome! + "/cfg/config.bbx"
+    appServer! = bbjapi().getAdmin("admin","admin123").getWebAppServer()
+    appConfig! = appServer!.makeEmptyAppConfig()
+    appConfig!.setProgramName(source$)
+    appConfig!.setConfigFile(config$)
+    appConfig!.setWorkingDirectory(path$)
+    appConfig!.setDwcEnabled(1)
+    appConfig!.setBuiEnabled(0)
+    app! = appConfig!.buildApplication(appname$+"_x")
+    published = appServer!.isPublished(app!)
+    appServer!.publish(app!)
+    htmlview!.setUrl("http://localhost:8888/webapp/"+appname$+"_x")
+return
+
+class public TreeBuilder
+
+    method public static int  buildPanel(Panel p!, BBjTree tree!, int parentNodeID!, int nextNodeID!, HashMap nodeInventory!)
+
+        if parentNodeID! = 0 then
+            tree!.removeDescendants(0)
+        fi
+
+        els! = p!.getElements()
+        it! = els!.iterator()
+        while it!.hasNext()
+            el! = it!.next()
+            nodeInventory!.put(nextNodeID!,el!)
+            if el!.hasChildren() then
+                tree!.addExpandableNode(nextNodeID!,parentNodeID!,el!.getName())
+                tree!.setDragType(nextNodeID!,"node")
+
+                nextNodeID!=TreeBuilder.buildPanel(CAST(Panel,el!),tree!,nextNodeID!, nextNodeID!+1, nodeInventory!)
+
+            else
+                tree!.addNode(nextNodeID!,parentNodeID!,el!.getName())
+                tree!.setDragType(nextNodeID!,"node")
+
+                nextNodeID!=nextNodeID!+1
+            fi
+
+        wend
+        methodret nextNodeID!
+
+
+    methodend
+
+classend
+
+
+preview:
+
+sysgui = unt
+open (sysgui)"X0"
+sysgui! = bbjapi().getSysGui()
+
+    BBjAPI().getGlobalNamespace().setCallbackForVariableChange("dwcpanelmodel","updateview")
+
+wh! = new WidgetHelper()
+rem com.basiscomponents.ui.layout.dwc.BBjWidgetPod.setBBjWidgetHelper(wh!)
+    
+    
+    gosub updateview
+    process_events
+
+updateview:
+
+
+
+if window! <> null() then
+    window!.destroy()
+    window! = null()
+fi
+    json$ = BBjAPI().getGlobalNamespace().getValue("dwcpanelmodel",err=*return)
+    window! = sysgui!.addWindow(25,25,1200,750,"HTML",$01101083$)
+    window!.setCallback(BBjAPI.ON_CLOSE,"byebye")
+    l! = DWCLayout.fromJson(json$)
+    l!.render(window!,sysgui!)
+return
+
+
+
+class public WidgetHelper implements com.basiscomponents.ui.layout.dwc.IBBjWidgetHelper
+    
+         method public BBjControl createWidget(BBjChildWindow wnd!, String classname!)
+                ex$ = "new "+classname!+"(wnd!,wnd!.getAvailableControlID())"
+                c! = eval(ex$)
+                methodret c! 
+         methodend
+
+classend

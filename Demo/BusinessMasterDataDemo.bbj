@@ -1,7 +1,7 @@
+if info(3,6)<>"6" then call "WebKit/util/deploy.bbj",pgm(-1)
+
 use com.basiscomponents.db.DataRow
 use com.basiscomponents.db.ResultSet
-
-BBjAPI().getAdmin("guest", "").getEnvironment().reloadClasspath("uicomponents")
 
 declare ResultSet forms!
 forms! = new ResultSet()

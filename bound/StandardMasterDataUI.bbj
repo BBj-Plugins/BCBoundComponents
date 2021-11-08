@@ -1,0 +1,115 @@
+use ::BBjWidget/BBjWidget.bbj::BBjWidget
+use ::WebKit/util/ClientUtil.bbj::ClientUtil
+use ::WebKit/widgets/Splitter/Splitter.bbj::Splitter
+use ::BusinessUIComponents/bound/BusinessGrid.bbj::BusinessGrid
+use ::BusinessUIComponents/bound/SimpleFormComponent.bbj::SimpleFormComponent
+use ::BusinessUIComponents/bound/EditToolbarComponent.bbj::EditToolbarComponent
+use ::BusinessUIComponents/bound/BCErrorHandler.bbj::BCErrorHandler
+
+use com.basiscomponents.db.ResultSet
+use com.basiscomponents.db.DataRow
+use com.basiscomponents.bc.BCBinder
+
+class public StandardMasterDataUI extends BBjWidget
+
+    field protected BBjString BC$
+    field protected BBjString Form$
+    field protected BCBinder Binder!
+    field protected BusinessGrid BusinessGrid!
+    
+    field protected EditToolbarComponent EditToolbar!
+    
+    field protected BBjChildWindow EditTbWnd!
+    field protected BBjChildWindow GridTbWnd!
+    field protected BBjChildWindow GridWnd!
+    field protected BBjChildWindow FormWnd!
+    field protected BBjTabCtrl formTabCtrl!
+
+
+    
+    rem /**
+    rem  * @Override
+    rem  * This method is called whenever the widget needs to be rendered
+    rem  * @param Boolean f_init!: if TRUE the control is rendered for the first time so this method has to perform initial rendering
+    rem  */
+    method public void redraw(Boolean f_init!)
+        
+        declare BBjChildWindow canvas!
+        
+        
+        if f_init!>0 then
+            
+            
+            ClientUtil.init()
+            ClientUtil.addLocalCSS("WebKit/css/webkit.css")
+            ClientUtil.addLocalCSS("BusinessUIComponents/css/BusinessUIComponents.css")
+            ClientUtil.addStyleURL("https://fonts.googleapis.com/icon?family=Material+Icons")
+           
+            canvas! = #getCanvas()
+            sysgui! = BBjAPI().getSysGui()    
+            
+            canvas!.addStyle("fullheight")
+            
+            bc! = eval("new "+#BC$+"()")
+            #Binder! = new BCBinder(bc!)
+            #Binder!.setDebugLevel(1)            
+            
+            tb! = canvas!.addChildWindow(canvas!.getAvailableControlID(),0,0,1,1,"Row",$00100800$,sysgui!.getAvailableContext())
+            tb!.addPanelStyle("tbar")
+        
+            #EditTbWnd! = CAST(BBjChildWindow,tb!.addChildWindow(100,0,0,1,1,"Row",$00100800$,sysgui!.getAvailableContext()))
+            #EditTbWnd!.addPanelStyle("tbar")
+            #EditTbWnd!.addStyle("tbarleft")
+            #EditToolbar! = new EditToolbarComponent(#EditTbWnd!)
+            #Binder!.register(#EditToolbar!)
+
+            #GridTbWnd! =  CAST(BBjChildWindow,tb!.addChildWindow(101,0,0,1,1,"Row",$00100800$,sysgui!.getAvailableContext()))
+            #GridTbWnd!.addPanelStyle("tbar")
+            #GridTbWnd!.addStyle("tbarright")
+
+            Headline! = canvas!.addStaticText(canvas!.getAvailableControlID(),0,0,0,0,"")
+            Headline!.addStyle("tilesheadline")       
+
+            
+            splitter! = new Splitter(canvas!)
+            splitter!.addStyle("fullheight")
+            #GridWnd! = CAST(BBjChildWindow,splitter!.getTop())
+            #GridWnd!.addStyle("fullheight")
+            #FormWnd! = CAST(BBjChildWindow,splitter!.getBottom())
+            #FormWnd!.addStyle("fullheight")
+            
+            #BusinessGrid! = new BusinessGrid(#GridWnd!,#GridTbWnd! )
+            #Binder!.register(#BusinessGrid!)
+            
+            #formTabCtrl! = #FormWnd!.addTabCtrl(700,0,0,10,0) 
+            #formTabCtrl!.setStyle("width","100%")
+            #formTabCtrl!.setStyle("height","100%")
+            
+            formCW! = #FormWnd!.addChildWindow(#FormWnd!.getAvailableControlID(),0,0,500,500,"",$00100800$, sysgui!.getAvailableContext(),$$)
+            #formTabCtrl!.addTab("Details", formCW!)
+
+            formCW!.addStyle("fullheight")
+            formCW!.setStyle("overflow-y","auto")
+            
+            #addForm(formCW!)
+            #addAdditonalTabs()
+            errorhandler! = new BCErrorHandler()
+            errorhandler!.setTitle("Error")
+
+            #Binder!.register(errorhandler!)
+            #Binder!.retrieve()
+        FI
+        
+    methodend
+ 
+    method protected void addForm(BBjWindow formCW!)
+            form! = new SimpleFormComponent(formCW!)
+            form!.setDWCForm(#Form$)
+            #Binder!.register(form!)
+    methodend
+
+    method protected void addAdditonalTabs()
+    methodend
+
+    
+classend

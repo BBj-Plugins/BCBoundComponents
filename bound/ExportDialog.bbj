@@ -5,7 +5,7 @@ REM  *
 REM  */
 
 use ::BusinessUIComponents/configurations/CustomConfigurationsBC.bbj::CustomConfigurationsBC
-use ::BusinessUIComponents/BusinessGrid.bbj::BusinessGrid
+use ::BusinessUIComponents/bound/BusinessGrid.bbj::BusinessGrid
 use ::BBjGridExWidget/BBjGridExWidgetState.bbj::BBjGridExWidgetState
 
 use com.basiscomponents.db.DataRow
@@ -17,8 +17,6 @@ use com.basiscomponents.db.export.SheetConfiguration
 use com.basiscomponents.db.export.ReportDetails
 use com.basiscomponents.db.export.ColumnWidthCalculator
 use com.basiscomponents.bc.BCBinder
-
-use com.basiscomponents.ui.theming.Theme
 
 use net.sf.jasperreports.engine.JasperCompileManager
 use net.sf.jasperreports.engine.JasperReport
@@ -51,8 +49,6 @@ class public ExportDialog
     field private static BBjString TXT_CUSTOM_PDF$ = "Custom PDF"
 
     field private Boolean showsBaristaHeader! = Boolean.FALSE
-    
-    field private Theme theme! = Theme.getInstance()
     
     field private BBjButton btnExport!
     field private BBjButton btnCancel!
@@ -127,7 +123,7 @@ class public ExportDialog
     
     method public void createDialogWindow()
         wnd! = #createDialogWindow("Export file")
-        if info(3,6) = "5" then
+        if info(3,6) > "4" then
             #addBaseLayout(wnd!)
             #addExportLayouts(0, 40, 500, 135)
         else
@@ -145,8 +141,8 @@ class public ExportDialog
     
         sysGui! = BBjAPI().getSysGui()
         declare BBjTopLevelWindow wnd!
-        if info(3,6) = "5" then
-            wnd! = cast(BBjTopLevelWindow, sysGui!.addWindow(sysGui!.getAvailableContext(),10,10,500,210,windowTitle$, $40000002$)) ; rem BUI - not resizeable
+        if info(3,6) > "4" then
+            wnd! = cast(BBjTopLevelWindow, sysGui!.addWindow(sysGui!.getAvailableContext(),0,00,500,510,windowTitle$, $40000002$)) ; rem BUI - not resizeable
         else
             wnd! = cast(BBjTopLevelWindow, sysGui!.addWindow(sysGui!.getAvailableContext(),10,10,500,517,windowTitle$, $40000003$))
         endif
@@ -160,7 +156,7 @@ class public ExportDialog
         h = ev!.getHeight()
         w = ev!.getWidth()
         
-        if info(3,6) <> "5" then 
+        if info(3,6) < "5" then 
             for i = 0 to #childWindowList!.size() -1
                 #fileChooser!.setSize(w, h - #cwPdf!.getHeight())
                 cw! = #childWindowList!.getItem(i)
@@ -240,15 +236,13 @@ class public ExportDialog
     methodend
     
     method protected void setCallbacks()
-        if info(3,6) = "5" then
+        if info(3,6) > "4" then
             #btnExport!.setCallback(BBjButton.ON_BUTTON_PUSH, #this!, "onExportButtonPush")
             #btnCancel!.setCallback(BBjButton.ON_BUTTON_PUSH, #this!, "onCancelButtonPush")
         endif
     methodend
     
     method private void addBaseLayout(BBjWindow wnd!)
-        #btnExport! = wnd!.addButton(5010, 190, 180, 145, 23, "Export")
-        #btnCancel! = wnd!.addButton(5020, 345, 180, 145, 23, "Cancel")
         #txExportFunction! = #mainWindow!.addStaticText(6003, 16, 15, 150, 21, "Export to")
         #lbExportFunction! = #mainWindow!.addListButton(6005, 175, 15, 300, 200, "")
         #lbExportFunction!.addItem(#TXT_PDF$)
@@ -269,6 +263,10 @@ class public ExportDialog
         
         #lbExportFunction!.selectIndex(0)
         #lbExportFunction!.setCallback(#lbExportFunction!.ON_LIST_SELECT, #this!, "onExportFunctionSelected")
+        
+        #btnExport! = wnd!.addButton(5010, 190, 180, 145, 23, "Export")
+        #btnCancel! = wnd!.addButton(5020, 345, 180, 145, 23, "Cancel")
+        
     methodend
     
     method private void addExportLayouts(BBjNumber x, BBjNumber y, BBjNumber width, BBjNumber height)
@@ -316,10 +314,10 @@ class public ExportDialog
         #cwPdf!.addStaticText(2040, 16, 100, 150, 23, "Display column labels instead of column names")
         #cbPdfLabel! = #cwPdf!.addCheckBox(3040, 175, 100, 23, 23, "")
         
-        #gbPdf! = #cwPdf!.addGroupBox(2005, 10, 2, width-20, height-4, "Options")
-        #groupBoxList!.addItem(#gbPdf!)
+REM         #gbPdf! = #cwPdf!.addGroupBox(2005, 10, 2, width-20, height-4, "Options")
+REM         #groupBoxList!.addItem(#gbPdf!)
         
-        if info(3,6) <> "5" then
+        if info(3,6) < "5" then
             #cwPdf!.addStaticText(2050, 16, 125, 150, 23, "Open file after export")
             #cbPdfOpen! = #cwPdf!.addCheckBox(3050, 175, 125, 23, 23, "")
         endif
@@ -336,10 +334,10 @@ class public ExportDialog
         #cwXlsx!.addStaticText(2020, 16, 50, 150, 23, "Display column labels instead of column names")
         #cbXlsxLabel! = #cwXlsx!.addCheckBox(3020, 175, 50, 23, 23, "")
 
-        #gbXlsx! = #cwXlsx!.addGroupBox(2005, 10, 2, width-20, height-4, "Options")
-        #groupBoxList!.addItem(#gbXlsx!)
+REM         #gbXlsx! = #cwXlsx!.addGroupBox(2005, 10, 2, width-20, height-4, "Options")
+REM         #groupBoxList!.addItem(#gbXlsx!)
         
-        if info(3,6) <> "5" then
+        if info(3,6) < "5" then
             #cwXlsx!.addStaticText(2030, 16, 75, 150, 23, "Open file after export")
             #cbXlsxOpen! = #cwXlsx!.addCheckBox(3030, 175, 75, 23, 23, "")
         endif
@@ -353,10 +351,10 @@ class public ExportDialog
         #cwHtml!.addStaticText(2010, 16, 25, 150, 23, "Display column labels instead of column names")
         #cbHtmlLabel! = #cwHtml!.addCheckBox(3010, 175, 25, 23, 23, "")
         
-        #gbHtml! = #cwHtml!.addGroupBox(2005, 10, 2, width-20, height-4, "Options")
-        #groupBoxList!.addItem(#gbHtml!)
+REM         #gbHtml! = #cwHtml!.addGroupBox(2005, 10, 2, width-20, height-4, "Options")
+REM         #groupBoxList!.addItem(#gbHtml!)
         
-        if info(3,6) <> "5" then
+        if info(3,6) < "5" then
             #cwHtml!.addStaticText(2020, 16, 50, 150, 23, "Open file after export")
             #cbHtmlOpen! = #cwHtml!.addCheckBox(3020, 175, 50, 23, 23, "")
         endif
@@ -376,10 +374,10 @@ class public ExportDialog
         #cwXml!.addStaticText(2030, 16, 75, 150, 23, "Display column labels instead of column names")
         #cbXmlLabel! = #cwXml!.addCheckBox(3030, 175, 75, 23, 23, "")
 
-        #gbXml! = #cwXml!.addGroupBox(2005, 10, 2, width-20, height-4, "Options")
-        #groupBoxList!.addItem(#gbXml!)
+REM         #gbXml! = #cwXml!.addGroupBox(2005, 10, 2, width-20, height-4, "Options")
+REM         #groupBoxList!.addItem(#gbXml!)
         
-        if info(3,6) <> "5" then
+        if info(3,6) < "5" then
             #cwXml!.addStaticText(2040, 16, 100, 150, 23, "Open file after export")
             #cbXmlOpen! = #cwXml!.addCheckBox(3040, 175, 100, 23, 23, "")
         endif
@@ -393,10 +391,10 @@ class public ExportDialog
         #cwTxt!.addStaticText(2010, 16, 25, 150, 23, "Display column labels instead of column names")
         #cbTxtLabel! = #cwTxt!.addCheckBox(3010, 175, 25, 23, 23, "")
         
-        #gbTxt! = #cwTxt!.addGroupBox(2005, 10, 2, width-20, height-4, "Options")
-        #groupBoxList!.addItem(#gbTxt!)
+REM         #gbTxt! = #cwTxt!.addGroupBox(2005, 10, 2, width-20, height-4, "Options")
+REM         #groupBoxList!.addItem(#gbTxt!)
 
-        if info(3,6) <> "5" then
+        if info(3,6) < "5" then
             #cwTxt!.addStaticText(2020, 16, 50, 150, 23, "Open file after export")
             #cbTxtOpen! = #cwTxt!.addCheckBox(3020, 175, 50, 23, 23, "")
         endif
@@ -410,10 +408,10 @@ class public ExportDialog
         #cwCsv!.addStaticText(2010, 16, 25, 150, 23, "Display column labels instead of column names")
         #cbCsvLabel! = #cwCsv!.addCheckBox(3010, 175, 25, 23, 23, "")
 
-        #gbCsv! = #cwCsv!.addGroupBox(2005, 10, 2, width-20, height-4, "Options")
-        #groupBoxList!.addItem(#gbCsv!)
+REM         #gbCsv! = #cwCsv!.addGroupBox(2005, 10, 2, width-20, height-4, "Options")
+REM         #groupBoxList!.addItem(#gbCsv!)
         
-        if info(3,6) <> "5" then
+        if info(3,6) < "5" then
             #cwCsv!.addStaticText(2020, 16, 50, 150, 23, "Open file after export")
             #cbCsvOpen! = #cwCsv!.addCheckBox(3020, 175, 50, 23, 23, "")
         endif
@@ -427,10 +425,10 @@ class public ExportDialog
         #cwCustomPdf!.addStaticText(2010, 16, 25, 150, 23, "Display column labels instead of column names")
         #cbCustomPdfLabel! = #cwCustomPdf!.addCheckBox(3010, 175, 25, 23, 23, "")
         
-        #gbCustomPdf! = #cwCustomPdf!.addGroupBox(2005, 10, 2, width-20, height-4, "Options")
-        #groupBoxList!.addItem(#gbCustomPdf!)
+REM         #gbCustomPdf! = #cwCustomPdf!.addGroupBox(2005, 10, 2, width-20, height-4, "Options")
+REM         #groupBoxList!.addItem(#gbCustomPdf!)
 
-        if info(3,6) <> "5" then
+        if info(3,6) < "5" then
             #cwCustomPdf!.addStaticText(2020, 16, 50, 150, 23, "Open file after export")
             #cbCustomPdfOpen! = #cwCustomPdf!.addCheckBox(3020, 175, 50, 23, 23, "")
         endif
@@ -609,7 +607,7 @@ REM         if info(3,6) = "5" then
             cf! = fs!.getClientFile(outputFilePath$)
             cf!.copyToClient(outputFile!.getAbsolutePath())
 REM         else
-        if info(3,6) <> "5" then
+        if info(3,6) < "5" then
             if #cbXlsxOpen!.isSelected() then 
                 fileToOpen! = new File(outputFilePath$)
                 #openExportetFile(fileToOpen!)
@@ -653,7 +651,7 @@ REM         if info(3,6) = "5" then
             cf! = fs!.getClientFile(outputFilePath$) 
             cf!.copyToClient(tempFile!.getAbsolutePath())
 REM         else
-        if info(3,6) <> "5" then
+        if info(3,6) < "5" then
             if #cbHtmlOpen!.isSelected() then 
                 fileToOpen! = new File(outputFilePath$)
                 #openExportetFile(fileToOpen!)
@@ -701,7 +699,7 @@ REM         if info(3,6) = "5" then
             cf! = fs!.getClientFile(outputFilePath$) 
             cf!.copyToClient(tempFile!.getAbsolutePath())
 REM         else
-        if info(3,6) <> "5" then
+        if info(3,6) < "5" then
             if #cbXmlOpen!.isSelected() then 
                 fileToOpen! = new File(outputFilePath$)
                 #openExportetFile(fileToOpen!)
@@ -745,7 +743,7 @@ REM         if info(3,6) = "5" then
             cf! = fs!.getClientFile(outputFilePath$) 
             cf!.copyToClient(tempFile!.getAbsolutePath())
 REM         else
-        if info(3,6) <> "5" then
+        if info(3,6) < "5" then
             if #cbTxtOpen!.isSelected() then 
                 fileToOpen! = new File(outputFilePath$)
                 #openExportetFile(fileToOpen!)
@@ -786,7 +784,7 @@ REM         if info(3,6) = "5" then
             cf! = fs!.getClientFile(outputFilePath$) 
             cf!.copyToClient(outputFile!.getAbsolutePath())
 REM         else
-        if info(3,6) <> "5" then
+        if info(3,6) < "5" then
             if #cbCsvOpen!.isSelected() then 
                 fileToOpen! = new File(outputFilePath$)
                 #openExportetFile(fileToOpen!)
@@ -856,7 +854,7 @@ REM         if info(3,6) = "5" then
             cf!.copyToClient(outputFile!.getAbsolutePath())
             
 REM         else
-        if info(3,6) <> "5" then
+        if info(3,6) < "5" then
             if #cbPdfOpen!.isSelected() then 
                 fileToOpen! = new File(outputFilePath$)
                 #openExportetFile(fileToOpen!)
@@ -927,7 +925,7 @@ REM         if info(3,6) = "5" then
             cf! = fs!.getClientFile(outputFilePath$) 
             cf!.copyToClient(outputFile!.getAbsolutePath())
 REM         else
-        if info(3,6) <> "5" then
+        if info(3,6) < "5" then
             if #cbCustomPdfOpen!.isSelected() then 
                 fileToOpen! = new File(outputFilePath$)
                 #openExportetFile(fileToOpen!)
@@ -1033,7 +1031,7 @@ REM         else
         config!.setFieldValue(#cfgBC!.getFieldNameUserid(), #cfgBC!.getUserName())
         #cfgBC!.write(config!)
 
-        if info(3,6) <> "5" then
+        if info(3,6) < "5" then
             rem latest export
             config! = new DataRow()
             json! = new JsonObject()
@@ -1215,11 +1213,6 @@ REM         else
     methodend
     
     method private void updateProperties()
-        windowLogo! = #theme!.getProperty("WINDOW_LOGO")
-
-        if !windowLogo!.equals("") then
-            #mainWindow!.setIcon(windowLogo!)
-        endif
     methodend
     
 classend
