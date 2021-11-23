@@ -58,9 +58,12 @@ basis-button[type='default']::part(button) {
     background-color: var(--bbj-color-primary-70);
 }
 
-.fullheight,
-.fullheight > div,
-.fullheight > div > div 
+.fullheight
 {
     height:100%;
+}
+
+.bottomarea
+{
+    height:calc( 100% - 35px );
 }

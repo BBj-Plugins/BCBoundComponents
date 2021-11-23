@@ -63,7 +63,7 @@ class public EditToolbarComponent extends AbstractBCBoundWidget
             
             #getCanvas().addPanelStyle("tbar")
                                     
-            #btn_new! =  #getCanvas().addChildWindow(80,0,0,100,80,"",$00100800$,BBjAPI().getSysGui().getAvailableContext())
+            #btn_new! =  #getCanvas().addChildWindow(80,0,0,100,80,"",$00108800$,BBjAPI().getSysGui().getAvailableContext())
             #btn_new!.addPanelStyle("tbn")
             #btn_new!.setStyle("width","fit-content")
             #btn_new!.setStyle("width","-moz-fit-content")
@@ -71,7 +71,7 @@ class public EditToolbarComponent extends AbstractBCBoundWidget
             img!.addStyle("material-icons")
             #btn_new!.setCallback(BBjAPI.ON_MOUSE_DOWN,#this!,"onBtnNew")
 
-            #btn_save! =  #getCanvas().addChildWindow(81,0,0,100,80,"",$00100800$,BBjAPI().getSysGui().getAvailableContext())
+            #btn_save! =  #getCanvas().addChildWindow(81,0,0,100,80,"",$00108800$,BBjAPI().getSysGui().getAvailableContext())
             #btn_save!.addPanelStyle("tbn")
             #btn_save!.setStyle("width","fit-content")
             #btn_save!.setStyle("width","-moz-fit-content")
@@ -79,7 +79,7 @@ class public EditToolbarComponent extends AbstractBCBoundWidget
             img!.addStyle("material-icons")
             #btn_save!.setCallback(BBjAPI.ON_MOUSE_DOWN,#this!,"onBtnSave")
             
-            #btn_delete! =  #getCanvas().addChildWindow(82,0,0,100,80,"",$00100800$,BBjAPI().getSysGui().getAvailableContext())
+            #btn_delete! =  #getCanvas().addChildWindow(82,0,0,100,80,"",$00108800$,BBjAPI().getSysGui().getAvailableContext())
             #btn_delete!.addPanelStyle("tbn")
             #btn_delete!.setStyle("width","fit-content")
             #btn_delete!.setStyle("width","-moz-fit-content")
@@ -87,7 +87,7 @@ class public EditToolbarComponent extends AbstractBCBoundWidget
             img!.addStyle("material-icons")
             #btn_delete!.setCallback(BBjAPI.ON_MOUSE_DOWN,#this!,"onBtnDelete")            
 
-            #btn_refresh! =  #getCanvas().addChildWindow(83,0,0,100,80,"",$00100800$,BBjAPI().getSysGui().getAvailableContext())
+            #btn_refresh! =  #getCanvas().addChildWindow(83,0,0,100,80,"",$00108800$,BBjAPI().getSysGui().getAvailableContext())
             #btn_refresh!.addPanelStyle("tbn")
             #btn_refresh!.setStyle("width","fit-content")
             #btn_refresh!.setStyle("width","-moz-fit-content")
@@ -95,7 +95,7 @@ class public EditToolbarComponent extends AbstractBCBoundWidget
             img!.addStyle("material-icons")
             #btn_refresh!.setCallback(BBjAPI.ON_MOUSE_DOWN,#this!,"onBtnRefresh")
             
-REM             #btn_blank! =  #getCanvas().addChildWindow(84,0,0,100,80,"",$00100800$,BBjAPI().getSysGui().getAvailableContext())
+REM             #btn_blank! =  #getCanvas().addChildWindow(84,0,0,100,80,"",$00108800$,BBjAPI().getSysGui().getAvailableContext())
 REM             #btn_blank!.addPanelStyle("tbn")
 REM             #btn_blank!.setStyle("width","fit-content")
 REM             #btn_blank!.setStyle("width","-moz-fit-content")

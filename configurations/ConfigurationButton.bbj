@@ -64,7 +64,7 @@ REM         #popupButton!.setImageSize(buttonImageSize, buttonImageSize)
 REM         #popupButton!.setCallback(#popupButton!.ON_BUTTON_PUSH, #this!, "settingsTool")
 REM         #popupMenu! = #popupButton!.addDropdownMenu()
 
-            cfgbutton! =  cw!.addChildWindow(cw!.getAvailableControlID(),0,0,100,80,"",$00100800$,BBjAPI().getSysGui().getAvailableContext())
+            cfgbutton! =  cw!.addChildWindow(cw!.getAvailableControlID(),0,0,100,80,"",$00108800$,BBjAPI().getSysGui().getAvailableContext())
             cfgbutton!.addPanelStyle("tbn")
             cfgbutton!.setStyle("float","right")
             cfgbutton!.setStyle("width","fit-content")

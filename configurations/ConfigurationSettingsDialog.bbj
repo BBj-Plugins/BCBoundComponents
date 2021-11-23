@@ -73,7 +73,6 @@ class public ConfigurationSettingsDialog
         #wnd!.setStyle("border","none")
         #wnd!.setPanelStyle("border","none")
         
-        #wnd!.setDockStyle("background","yellow")
         #wnd!.setStyle("height","calc( 100vh - 40px )")
         #wnd!.setStyle("width","400px")
         #wnd!.setStyle("position","absolute")

@@ -773,7 +773,7 @@ class public BBjSettingsWidget extends BBjWidget
     rem /**
     rem  * Create the top child window and attach the tab control
     rem  */
-REM     #Fcw! = cast(BBjChildWindow, canvas!.addChildWindow(101, 0, 0, cw!, th!, "", $00100800$, sysGui!.getAvailableContext()))
+REM     #Fcw! = cast(BBjChildWindow, canvas!.addChildWindow(101, 0, 0, cw!, th!, "", $00108800$, sysGui!.getAvailableContext()))
 REM     #Fcw!.setStyle("height","60px")
 REM     #Fcw!.setStyle("width","100%")
 
@@ -790,7 +790,7 @@ REM     #Fcw!.setStyle("width","100%")
     rem /**
     rem  * Create the second child window and attach the grid
     rem  */
-    #Scw! = cast(BBjChildWindow, canvas!.addChildWindow(103, 0, th!, cw!, ch! - th!, "", $00100800$,  sysGui!.getAvailableContext()))
+    #Scw! = cast(BBjChildWindow, canvas!.addChildWindow(103, 0, th!, cw!, ch! - th!, "", $00108800$,  sysGui!.getAvailableContext()))
     #Scw!.setDockStyle("height","calc( 100vh - 140px )")
     #Scw!.setStyle("height","calc( 100vh - 140px )")
     #Scw!.setPanelStyle("height","calc( 100vh - 144px )")

@@ -54,16 +54,16 @@ class public StandardMasterDataUI extends BBjWidget
             #Binder! = new BCBinder(bc!)
             #Binder!.setDebugLevel(1)            
             
-            tb! = canvas!.addChildWindow(canvas!.getAvailableControlID(),0,0,1,1,"Row",$00100800$,sysgui!.getAvailableContext())
+            tb! = canvas!.addChildWindow(canvas!.getAvailableControlID(),0,0,1,1,"Row",$00108800$,sysgui!.getAvailableContext())
             tb!.addPanelStyle("tbar")
         
-            #EditTbWnd! = CAST(BBjChildWindow,tb!.addChildWindow(100,0,0,1,1,"Row",$00100800$,sysgui!.getAvailableContext()))
+            #EditTbWnd! = CAST(BBjChildWindow,tb!.addChildWindow(100,0,0,1,1,"Row",$00108800$,sysgui!.getAvailableContext()))
             #EditTbWnd!.addPanelStyle("tbar")
             #EditTbWnd!.addStyle("tbarleft")
             #EditToolbar! = new EditToolbarComponent(#EditTbWnd!)
             #Binder!.register(#EditToolbar!)
 
-            #GridTbWnd! =  CAST(BBjChildWindow,tb!.addChildWindow(101,0,0,1,1,"Row",$00100800$,sysgui!.getAvailableContext()))
+            #GridTbWnd! =  CAST(BBjChildWindow,tb!.addChildWindow(101,0,0,1,1,"Row",$00108800$,sysgui!.getAvailableContext()))
             #GridTbWnd!.addPanelStyle("tbar")
             #GridTbWnd!.addStyle("tbarright")
 
@@ -72,7 +72,7 @@ class public StandardMasterDataUI extends BBjWidget
 
             
             splitter! = new Splitter(canvas!)
-            splitter!.addStyle("fullheight")
+            splitter!.addStyle("bottomarea")
             #GridWnd! = CAST(BBjChildWindow,splitter!.getTop())
             #GridWnd!.addStyle("fullheight")
             #FormWnd! = CAST(BBjChildWindow,splitter!.getBottom())
@@ -85,7 +85,7 @@ class public StandardMasterDataUI extends BBjWidget
             #formTabCtrl!.setStyle("width","100%")
             #formTabCtrl!.setStyle("height","100%")
             
-            formCW! = #FormWnd!.addChildWindow(#FormWnd!.getAvailableControlID(),0,0,500,500,"",$00100800$, sysgui!.getAvailableContext(),$$)
+            formCW! = #FormWnd!.addChildWindow(#FormWnd!.getAvailableControlID(),0,0,500,500,"",$00108800$, sysgui!.getAvailableContext(),$$)
             #formTabCtrl!.addTab("Details", formCW!)
 
             formCW!.addStyle("fullheight")

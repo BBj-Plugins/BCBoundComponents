@@ -41,7 +41,7 @@ class public ExportButton extends BBjWidget
 
     method public ExportButton(BBjWindow wnd!, BBjNumber id, BBjNumber x, BBjNumber y, BBjNumber width, BBjNumber height)
     
-            #exportButton! =  CAST(BBjChildWindow,wnd!.addChildWindow(203,0,0,100,80,"",$00100800$,BBjAPI().getSysGui().getAvailableContext()))
+            #exportButton! =  CAST(BBjChildWindow,wnd!.addChildWindow(203,0,0,100,80,"",$00108800$,BBjAPI().getSysGui().getAvailableContext()))
             #exportButton!.addPanelStyle("tbn")
             #exportButton!.setStyle("width","fit-content")
             #exportButton!.setStyle("width","-moz-fit-content")
