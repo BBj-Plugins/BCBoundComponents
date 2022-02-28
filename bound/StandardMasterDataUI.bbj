@@ -97,7 +97,7 @@ class public StandardMasterDataUI extends BBjWidget
             #Binder!.register(errorhandler!)
             #Binder!.retrieve()
             
-            canvas!.setStyle("height","calc( 100vh - 100px )")
+            canvas!.setStyle("height","100vh")
             canvas!.setStyle("top","0px")
             
         FI
