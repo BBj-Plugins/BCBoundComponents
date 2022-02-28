@@ -112,12 +112,12 @@ class public BusinessGrid extends AbstractBCBoundWidget implements IPersistentSt
             canvas! = #getCanvas()
             canvas!.setName("BusinessGridCanvas")
             if #toolbar_handle! = null() then
-                cw_top! = canvas!.addChildWindow(100,0,0,1024,40,"Row",$00100800$,BBjAPI().getSysGui().getAvailableContext())
+                cw_top! = canvas!.addChildWindow(100,0,0,1024,40,"Row",$00108800$,BBjAPI().getSysGui().getAvailableContext())
             else
                 cw_top! = #toolbar_handle!
             fi
                 
-            cw_grid! = canvas!.addChildWindow(101,0,40,10,10,"Row",$00100800$,BBjAPI().getSysGui().getAvailableContext())
+            cw_grid! = canvas!.addChildWindow(101,0,40,10,10,"Row",$00108800$,BBjAPI().getSysGui().getAvailableContext())
             #grid! = new BBjGridExWidget(cw_grid!)
             cw_grid!.setDockStyle("height","100%")
             cw_grid!.setDockStyle("min-height","100%")
@@ -155,7 +155,7 @@ class public BusinessGrid extends AbstractBCBoundWidget implements IPersistentSt
             #exportButton!.setProgramName(pgmName$)
             
             
-            #fitToGridButton! =  CAST(BBjChildWindow,cw_top!.addChildWindow(204,0,0,100,80,"",$00100800$,BBjAPI().getSysGui().getAvailableContext()))
+            #fitToGridButton! =  CAST(BBjChildWindow,cw_top!.addChildWindow(204,0,0,100,80,"",$00108800$,BBjAPI().getSysGui().getAvailableContext()))
             #fitToGridButton!.addPanelStyle("tbn")
             #fitToGridButton!.setStyle("float","right")
             #fitToGridButton!.setStyle("width","fit-content")
@@ -165,7 +165,7 @@ class public BusinessGrid extends AbstractBCBoundWidget implements IPersistentSt
             #fitToGridButton!.setCallback(BBjAPI.ON_MOUSE_DOWN,#this!,"fitToGrid")
             
             
-            #autoSizeColumnsButton! =  CAST(BBjChildWindow,cw_top!.addChildWindow(205,0,0,100,80,"",$00100800$,BBjAPI().getSysGui().getAvailableContext()))
+            #autoSizeColumnsButton! =  CAST(BBjChildWindow,cw_top!.addChildWindow(205,0,0,100,80,"",$00108800$,BBjAPI().getSysGui().getAvailableContext()))
             #autoSizeColumnsButton!.addPanelStyle("tbn")
             #autoSizeColumnsButton!.setStyle("float","right")
             #autoSizeColumnsButton!.setStyle("width","fit-content")

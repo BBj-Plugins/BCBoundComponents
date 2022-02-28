@@ -48,22 +48,22 @@ class public StandardMasterDataUI extends BBjWidget
             canvas! = #getCanvas()
             sysgui! = BBjAPI().getSysGui()    
             
-            canvas!.addStyle("fullheight")
+            
             
             bc! = eval("new "+#BC$+"()")
             #Binder! = new BCBinder(bc!)
             #Binder!.setDebugLevel(1)            
             
-            tb! = canvas!.addChildWindow(canvas!.getAvailableControlID(),0,0,1,1,"Row",$00100800$,sysgui!.getAvailableContext())
+            tb! = canvas!.addChildWindow(canvas!.getAvailableControlID(),0,0,1,1,"Row",$00108800$,sysgui!.getAvailableContext())
             tb!.addPanelStyle("tbar")
         
-            #EditTbWnd! = CAST(BBjChildWindow,tb!.addChildWindow(100,0,0,1,1,"Row",$00100800$,sysgui!.getAvailableContext()))
+            #EditTbWnd! = CAST(BBjChildWindow,tb!.addChildWindow(100,0,0,1,1,"Row",$00108800$,sysgui!.getAvailableContext()))
             #EditTbWnd!.addPanelStyle("tbar")
             #EditTbWnd!.addStyle("tbarleft")
             #EditToolbar! = new EditToolbarComponent(#EditTbWnd!)
             #Binder!.register(#EditToolbar!)
 
-            #GridTbWnd! =  CAST(BBjChildWindow,tb!.addChildWindow(101,0,0,1,1,"Row",$00100800$,sysgui!.getAvailableContext()))
+            #GridTbWnd! =  CAST(BBjChildWindow,tb!.addChildWindow(101,0,0,1,1,"Row",$00108800$,sysgui!.getAvailableContext()))
             #GridTbWnd!.addPanelStyle("tbar")
             #GridTbWnd!.addStyle("tbarright")
 
@@ -71,24 +71,22 @@ class public StandardMasterDataUI extends BBjWidget
             Headline!.addStyle("tilesheadline")       
 
             
-            splitter! = new Splitter(canvas!)
-            splitter!.addStyle("fullheight")
-            #GridWnd! = CAST(BBjChildWindow,splitter!.getTop())
-            #GridWnd!.addStyle("fullheight")
-            #FormWnd! = CAST(BBjChildWindow,splitter!.getBottom())
-            #FormWnd!.addStyle("fullheight")
-            
+            #GridWnd! = CAST(BBjChildWindow,canvas!.addChildWindow(111,0,0,1,1,"Row",$00108800$,sysgui!.getAvailableContext()))
             #BusinessGrid! = new BusinessGrid(#GridWnd!,#GridTbWnd! )
+
+            #FormWnd! = CAST(BBjChildWindow,canvas!.addChildWindow(112,0,0,1,1,"Row",$00108800$,sysgui!.getAvailableContext()))
+
+            #GridWnd!.setStyle("height","calc( 50vh - 25px )")
+            #FormWnd!.setStyle("height","calc( 50vh - 25px )")
+
             #Binder!.register(#BusinessGrid!)
             
             #formTabCtrl! = #FormWnd!.addTabCtrl(700,0,0,10,0) 
             #formTabCtrl!.setStyle("width","100%")
             #formTabCtrl!.setStyle("height","100%")
             
-            formCW! = #FormWnd!.addChildWindow(#FormWnd!.getAvailableControlID(),0,0,500,500,"",$00100800$, sysgui!.getAvailableContext(),$$)
+            formCW! = #FormWnd!.addChildWindow(#FormWnd!.getAvailableControlID(),0,0,0,0,"",$00108800$, sysgui!.getAvailableContext(),$$)
             #formTabCtrl!.addTab("Details", formCW!)
-
-            formCW!.addStyle("fullheight")
             formCW!.setStyle("overflow-y","auto")
             
             #addForm(formCW!)
@@ -98,6 +96,10 @@ class public StandardMasterDataUI extends BBjWidget
 
             #Binder!.register(errorhandler!)
             #Binder!.retrieve()
+            
+            canvas!.setStyle("height","calc( 100vh - 100px )")
+            canvas!.setStyle("top","0px")
+            
         FI
         
     methodend
