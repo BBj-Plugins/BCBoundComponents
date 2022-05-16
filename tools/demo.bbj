@@ -1,0 +1,46 @@
+
+use com.basiscomponents.ui.layout.dwc.DWCLayout
+
+sysgui = unt
+open (sysgui)"X0"
+sysgui! = bbjapi().getSysGui()
+
+    BBjAPI().getGlobalNamespace().setCallbackForVariableChange("dwcpanelmodel","updateview")
+
+wh! = new WidgetHelper()
+rem com.basiscomponents.ui.layout.dwc.BBjWidgetPod.setBBjWidgetHelper(wh!)
+    
+    
+    
+
+    window! = sysgui!.addWindow(25,25,1200,750,"HTML",$01101083$)
+    window!.setCallback(BBjAPI.ON_CLOSE,"byebye")
+    
+    ch=unt
+    open (ch)"demo.dwcform"
+    read record (ch,siz=256000)json$
+    close (ch)
+    
+    l! = DWCLayout.fromJson(json$)
+
+    l!.render(window!,sysgui!)    
+    
+    x!= window!.getControlByName("text_1652693811072")
+    x!.setText("HELLO")
+    
+    
+    process_events
+
+
+
+class public WidgetHelper implements com.basiscomponents.ui.layout.dwc.IBBjWidgetHelper
+    
+         method public BBjControl createWidget(BBjChildWindow wnd!, String classname!)
+                ex$ = "new "+classname!+"(wnd!,wnd!.getAvailableControlID())"
+                c! = eval(ex$)
+                methodret c! 
+         methodend
+
+classend
+
+
